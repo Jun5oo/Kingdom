@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,14 +9,16 @@ public class Grid
     private float cellSize;
 
     private Vector3 originPos;
-    private GameObject prefab; 
+    private GameObject prefab;
 
-    // key: gridPosition, value: gridObject 
-    Dictionary<Vector2Int, GameObject> positionToObject;
-    Dictionary<GameObject, Vector2Int> objectToPosition;
-    // Test 
+    #region Dictionaries 
+    Dictionary<Vector2Int,  GridCell> positionToCell;
     Dictionary<Vector2Int, GameObject> objectOnGrid;
+    #endregion 
 
+    List<GridCell> cellList; 
+
+    #region Constructor 
     public Grid(int width, int height, float cellSize, Vector3 originPos, GameObject prefab)
     {
         this.width = width; 
@@ -24,11 +27,15 @@ public class Grid
         this.originPos = originPos; 
         this.prefab = prefab; 
     }
+    #endregion 
+
+    #region Create Grid 
     public void CreateGridMap(Transform gridParent)
     {
-        positionToObject = new Dictionary<Vector2Int, GameObject>(); 
-        objectToPosition = new Dictionary<GameObject, Vector2Int>();
-        objectOnGrid = new Dictionary<Vector2Int, GameObject>(); 
+        positionToCell = new Dictionary<Vector2Int, GridCell>(); 
+        objectOnGrid = new Dictionary<Vector2Int, GameObject>();
+
+        cellList = new List<GridCell>(); 
 
         // GridPosition: (0, 0) ~ (width - 1,  height - 1); 
 
@@ -43,14 +50,26 @@ public class Grid
                 Vector2Int gridPos = new Vector2Int(j, i); 
 
                 GridCell gridCell = gridObject.GetComponent<GridCell>();
-                gridCell.Init(gridPos); 
+                gridCell.Init(gridPos);
 
-                positionToObject.Add(gridPos, gridObject);
-                objectToPosition.Add(gridObject, gridPos);
+                gridCell.OnClicked += HandleGridCellClicked; 
+
+                // isMyCell = 왕 카드를 놓을 수 있는 Cell
+                if (i < 3)
+                    gridCell.isMyCell = true; 
+                else 
+                    gridCell.isMyCell = false;
+
+                positionToCell.Add(gridPos, gridCell);
                 objectOnGrid.Add(gridPos, null); 
+
+                cellList.Add(gridCell);
             }
         }
     }
+    #endregion
+
+    #region Get Functions 
     public Vector3 GetWorldPosition(Vector2Int gridPosition)
     {
         float totalWidth = width * cellSize;
@@ -81,17 +100,10 @@ public class Grid
 
         return new Vector2Int(gridX, gridZ);
     }
-    public Vector2Int GetGridPosition(GameObject obj)
+    public GridCell GetGridCell(Vector2Int gridPosition)
     {
-        if (objectToPosition.TryGetValue(obj, out Vector2Int position))
-            return position;
-        else
-            return -Vector2Int.one; 
-    }
-    public GameObject GetGridCell(Vector2Int gridPosition)
-    {
-        if (positionToObject.TryGetValue(gridPosition, out GameObject obj))
-            return obj; 
+        if (positionToCell.TryGetValue(gridPosition, out GridCell cell))
+            return cell; 
         else
             return null; 
     }
@@ -99,5 +111,33 @@ public class Grid
     {
         return objectOnGrid[gridPosition]; 
     }
+    public List<GridCell> GetAllCells() => cellList; 
+    #endregion
 
+    #region Grid Placement 
+    public void PlaceObjectTo(GameObject obj, Vector2Int gridPosition)
+    {
+        if (objectOnGrid.ContainsKey(gridPosition))
+            objectOnGrid[gridPosition] = obj; 
+    }
+    public void RemoveObjectFrom(GameObject obj, Vector2Int gridPosition)
+    {
+        if(objectOnGrid.TryGetValue(gridPosition, out GameObject gameObject))
+            objectOnGrid[gridPosition] = null; 
+    }
+    public void MoveObject(Vector2Int from, Vector2Int to)
+    {
+        GameObject gameObject = GetObjectOnGridCell(from);
+        RemoveObjectFrom(gameObject, from);
+        PlaceObjectTo(gameObject, to); 
+    }
+    #endregion
+
+    #region Actions 
+    public Action<GridCell> OnGridCellClicked;
+    public void HandleGridCellClicked(GridCell gridCell)
+    {
+        OnGridCellClicked?.Invoke(gridCell);
+    }
+    #endregion 
 }

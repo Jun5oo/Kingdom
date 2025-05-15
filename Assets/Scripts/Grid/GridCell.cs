@@ -15,32 +15,57 @@ public class GridCell : MonoBehaviour, IHoverable, ISelectable
     [SerializeField] private Material redMaterial;
     [SerializeField] private Material greenMaterial;
 
-    public bool isSelectable = false;
+    public bool isMyCell;
+    public bool isHighlighted;
+    public bool isSelected; 
 
     public void Init(Vector2Int gridPosition)
     {
         this.gridPosition = gridPosition;
+        isHighlighted = false; 
     }
 
     public Vector2Int GetGridPosition() => gridPosition;
+
+    #region Hoverable
     public void OnHover() => hoverSprite.material = onHoverMaterial;
     public void OffHover() => hoverSprite.material = offHoverMaterial;
+    #endregion
+
+    #region Highlight
+    public void Highlight()
+    {
+        gridSprite.material = greenMaterial;
+        isHighlighted = true; 
+    }
+    public void Unhighlight()
+    {
+        gridSprite.material = whiteMaterial;
+        isHighlighted = false;
+    }
+    #endregion
+
+    #region Action 
+    public Action<GridCell> OnClicked;
+
+    private void OnMouseDown()
+    {
+        OnClicked?.Invoke(this); 
+    }
+    #endregion 
 
     public void OnSelected()
     {
-
+        OnClicked?.Invoke(this); 
     }
+
     public void OnDeselected()
     {
-
+        throw new NotImplementedException();
     }
+
     public bool IsSelectable()
     {
-        return isSelectable;
+        return isSelected; 
     }
-
-    public void HighLightValid() => gridSprite.material = greenMaterial;
-    public void HighLightInvalid() => gridSprite.material = redMaterial; 
-    public void UnHighLight() => gridSprite.material = whiteMaterial;
-
 }

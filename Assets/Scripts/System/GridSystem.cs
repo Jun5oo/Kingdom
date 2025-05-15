@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class GridSystem : MonoBehaviour
@@ -11,43 +12,77 @@ public class GridSystem : MonoBehaviour
 
     void Awake()
     {
-        if (gridPrefab == null)
-        {
-            Debug.LogError("Grid Prefab is not found");
-            return;
-        }
-
         float gridSize = gridPrefab.GetComponent<BoxCollider>().size.x;
 
         grid = new Grid(HEIGHT, WIDTH, gridSize, Vector3.zero, gridPrefab);
+       
         grid.CreateGridMap(this.transform);
+        
+        foreach(GridCell gridCell in grid.GetAllCells())
+            gridCell.OnClicked += HandleGridCell; 
     }
 
-    public void HighLightGridCell()
+    #region Action 
+    public Action<Vector2Int> OnActionOccured;
+    public void HandleGridCell(GridCell gridCell)
     {
-        for(int i=0; i< HEIGHT; i++)
+        if (!gridCell.isHighlighted)
         {
-            for(int j=0; j< WIDTH; j++)
-            {
-                Vector2Int gridPos = new Vector2Int(j, i);
-                GameObject cellObject = grid.GetObjectOnGridCell(gridPos); 
-                GridCell gridCell = cellObject.GetComponent<GridCell>();
+            return; 
+        }
 
-                if (cellObject == null)
-                    gridCell.HighLightValid();
-                else
-                    gridCell.HighLightInvalid(); 
+        Vector2Int gridPosition = gridCell.GetGridPosition();  
+        OnActionOccured?.Invoke(gridPosition); 
+    }
+    #endregion 
+
+    #region Highlight
+    public void HighlightGridCells(Predicate<Vector2Int> predicate)
+    {
+        // Predicate는 delegate의 일종으로 bool type 리턴값을 가진다. 
+        foreach(GridCell gridCell in grid.GetAllCells())
+        {
+            if (predicate(gridCell.GetGridPosition()))
+                gridCell.Highlight(); 
+        }
+    }
+    public void UnhighlightGridCells()
+    {
+        for (int i = 0; i < HEIGHT; i++)
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                Vector2Int pos = new Vector2Int(j, i);
+                GridCell gridCell = grid.GetGridCell(pos);
+                gridCell.Unhighlight(); 
             }
         }
     }
+    #endregion
 
-    public Vector3 GetSingleTestGrid()
+    #region Grid Placement 
+    public void PlaceObjectTo(GameObject obj, Vector2Int gridPosition)
     {
-        int x = Random.Range(0, 8);
-        int y = Random.Range(0, 5); 
-
-        Vector2Int vec2Int = new Vector2Int(x, y);
-        Vector3 pos = grid.GetWorldPosition(vec2Int);
-        return pos; 
+        grid.PlaceObjectTo(obj, gridPosition); 
     }
+    public void RemoveObjectFrom(GameObject obj, Vector2Int gridPosition)
+    {
+        grid.RemoveObjectFrom(obj, gridPosition); 
+    }
+    public void MoveObjectFrom(Vector2Int from, Vector2Int to)
+    {
+        grid.MoveObject(from, to); 
+    }
+    public bool IsObjectOnGridPosition(Vector2Int gridPosition)
+    {
+        if (grid.GetObjectOnGridCell(gridPosition) == null)
+            return false;
+        else
+            return true; 
+    }
+    #endregion
+
+    #region Get Functions 
+    public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition); 
+    #endregion 
 }

@@ -32,7 +32,6 @@ public class DrawTest : MonoBehaviour
         cardObj.transform.position = deck.transform.position;
         cardObj.transform.parent = parent; 
         return cardObj; 
-        
     }
     
     void OnDrawCard(GameObject card)
@@ -66,7 +65,7 @@ public class DrawTest : MonoBehaviour
         for(int i=0; i < cardCount; i++)
         {
             float posX = Mathf.Lerp(left.position.x, right.position.x, cardObjLerpX[i]);
-            float posY = center.transform.position.y + (i * 0.01f);
+            float posY = center.transform.position.y + (0.1f) * i;
             float posZ = center.transform.position.z + EvaluateCurveValue(0.5f, cardObjLerpX[i]);
 
             float rotationX = handList[i].transform.rotation.x; 

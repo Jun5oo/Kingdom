@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class HoverSystem : MonoBehaviour
 {
-     private IHoverable currentHoverable = null;
+    [SerializeField] SelectionSystem selectionSystem; 
+
+    private IHoverable currentHoverable = null;
 
     void Update()
     {
@@ -15,7 +17,7 @@ public class HoverSystem : MonoBehaviour
 
             if (hit.transform.gameObject.TryGetComponent<IHoverable>(out hoverable))
             {
-                if(hoverable != currentHoverable)
+                if(hoverable != currentHoverable && !ReferenceEquals(selectionSystem.GetCurentSelectable(), hoverable))
                 {
                     ExitHover();
                     EnterHover(hoverable); 
@@ -33,11 +35,16 @@ public class HoverSystem : MonoBehaviour
     void EnterHover(IHoverable hoverable)
     {
         currentHoverable = hoverable;
-        currentHoverable.OnHover();
+        currentHoverable?.OnHover();
     }
     void ExitHover()
     {
-        currentHoverable?.OffHover();
+        if(!ReferenceEquals(selectionSystem.GetCurentSelectable(), currentHoverable))
+            currentHoverable?.OffHover();
+
         currentHoverable = null; 
     }
+
+    public IHoverable GetCurrentHoverable() => currentHoverable; 
+ 
 }
