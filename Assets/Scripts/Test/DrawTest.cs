@@ -79,7 +79,7 @@ public class DrawTest : MonoBehaviour
 
     float EvaluateCurveValue(float height, float lerpValue)
     {
-        // x°¡ 0ºÎÅÍ 1ÀÌ°í ³ôÀÌ°¡ 0.5ÀÎ °î¼± 
+        // xï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ 1ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ 0.5ï¿½ï¿½ ï¿½î¼± 
         AnimationCurve curve = new AnimationCurve();
         
         curve.AddKey(0, 0);
