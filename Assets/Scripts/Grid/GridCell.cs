@@ -68,4 +68,5 @@ public class GridCell : MonoBehaviour, IHoverable, ISelectable
     {
         return isSelected; 
     }
+
 }
