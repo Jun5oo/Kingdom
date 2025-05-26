@@ -1,8 +1,9 @@
 using UnityEngine;
 public enum CardState
 {
-    Idle,
-    Hovered,
-    Selected
+    Hand, 
+    Field, 
+    Deck, 
+    Graveyard 
 }
 

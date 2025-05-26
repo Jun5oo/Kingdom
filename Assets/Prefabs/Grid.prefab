@@ -106,10 +106,13 @@ MonoBehaviour:
   hoverSprite: {fileID: 6121286038020990677}
   onHoverMaterial: {fileID: 2100000, guid: 4d5e7e564c8a95c4d8277fcd24a7b3de, type: 2}
   offHoverMaterial: {fileID: 2100000, guid: dd2fe57ae842daf4980c286c27bf4101, type: 2}
-  whiteMaterial: {fileID: 2100000, guid: b252125ed8d7557469774370661033dc, type: 2}
+  whiteMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
   redMaterial: {fileID: 2100000, guid: 3addcd786052cb2418e91f4d5bd67547, type: 2}
   greenMaterial: {fileID: 2100000, guid: 5d436cd3af0a4104287799708bc37065, type: 2}
-  isSelectable: 0
+  isMyCell: 0
+  isHighlighted: 0
+  isSelected: 0
+  isHoverable: 1
 --- !u!65 &5008047614858289097
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -129,8 +132,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5, y: 5, z: 0.5}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 5, y: 5, z: 1.3552932}
+  m_Center: {x: 0, y: 0, z: -0.42764658}
 --- !u!1 &4906085455193627297
 GameObject:
   m_ObjectHideFlags: 0
