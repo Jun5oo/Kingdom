@@ -1,50 +1,67 @@
 using UnityEngine;
+using UnityEngine.EventSystems; 
 
-public class HoverSystem : MonoBehaviour
+public class HoverSystem : MonoBehaviour, IHoverSystem
 {
-    [SerializeField] SelectionSystem selectionSystem; 
-
     private IHoverable currentHoverable = null;
 
     void Update()
     {
+        // IHoverable 오브젝트위에 UI가 있는 경우 
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            ExitHover();
+            return; 
+        }
+
+        // Input.mousePosition의 경우, 화면에서의 위치값을 반환하기 때문에 world 좌표계 값으로 변경해줘야한다. 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, 50f))
+        // Collider를 탐지하는 경우 
+        if (Physics.Raycast(ray, out hit, 100f))
         {
             IHoverable hoverable = null;
 
             if (hit.transform.gameObject.TryGetComponent<IHoverable>(out hoverable))
             {
-                if(hoverable != currentHoverable && !ReferenceEquals(selectionSystem.GetCurentSelectable(), hoverable))
+                // 새로운 IHoverable 오브젝트를 탐지했을 경우 
+                if (hoverable != currentHoverable)
                 {
-                    ExitHover();
-                    EnterHover(hoverable); 
+                    // 이전의 IHoverable을 Exit
+                    ExitHover(); 
+
+                    // 새로 찾은 IHoverable 오브젝트가 Hoverable인 경우 (카드의 경우, 선택되었거나, 카드가 움직이고 있거나, 액션을 하는 도중에는 Hover가 되어서는 안됨)  
+                    if(hoverable.IsHoverable())
+                        EnterHover(hoverable);
                 }
             }
         }
 
+        // Collider를 탐지하지 못한 경우 
         else
         {
-            if(currentHoverable != null)
+            // 기존 IHoverable 오브젝트가 드로우, 액션을 통해 움직여서 범위에서 벗어날 경우 ExitHover가 되면 이상하게 보일 수 있으므로 IsHoverable() 조건을 축 ㅏ
+            // IHoverable 객체의 OffHover() 함수에도 조건을 걸어줌 
+            if(currentHoverable != null && currentHoverable.IsHoverable())
                 ExitHover();
         }
     }
 
-    void EnterHover(IHoverable hoverable)
+    #region Hover
+    public void EnterHover(IHoverable hoverable)
     {
         currentHoverable = hoverable;
         currentHoverable?.OnHover();
     }
-    void ExitHover()
+    public void ExitHover()
     {
-        if(!ReferenceEquals(selectionSystem.GetCurentSelectable(), currentHoverable))
-            currentHoverable?.OffHover();
-
+        currentHoverable?.OffHover();
         currentHoverable = null; 
     }
+    #endregion 
 
-    public IHoverable GetCurrentHoverable() => currentHoverable; 
- 
+    public IHoverable GetCurrentHoverable() => currentHoverable;
+
+
 }

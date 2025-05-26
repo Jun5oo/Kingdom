@@ -1,7 +1,8 @@
+using JetBrains.Annotations;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
-public class GridCell : MonoBehaviour, IHoverable, ISelectable
+public class GridCell : MonoBehaviour, IHoverable 
 {
     private Vector2Int gridPosition;
 
@@ -17,7 +18,9 @@ public class GridCell : MonoBehaviour, IHoverable, ISelectable
 
     public bool isMyCell;
     public bool isHighlighted;
-    public bool isSelected; 
+    public bool isSelected;
+
+    public bool isHoverable = true; 
 
     public void Init(Vector2Int gridPosition)
     {
@@ -28,8 +31,20 @@ public class GridCell : MonoBehaviour, IHoverable, ISelectable
     public Vector2Int GetGridPosition() => gridPosition;
 
     #region Hoverable
-    public void OnHover() => hoverSprite.material = onHoverMaterial;
-    public void OffHover() => hoverSprite.material = offHoverMaterial;
+    public void OnHover()
+    {
+        if (!isHoverable)
+            return; 
+
+        hoverSprite.material = onHoverMaterial;
+    }
+    public void OffHover()
+    {
+        if (!isHoverable)
+            return; 
+        hoverSprite.material = offHoverMaterial;
+    }
+    public bool IsHoverable() => isHoverable; 
     #endregion
 
     #region Highlight
@@ -47,25 +62,9 @@ public class GridCell : MonoBehaviour, IHoverable, ISelectable
 
     #region Action 
     public Action<GridCell> OnClicked;
-
-    private void OnMouseDown()
+    public void OnMouseDown()
     {
         OnClicked?.Invoke(this); 
     }
     #endregion 
-
-    public void OnSelected()
-    {
-        OnClicked?.Invoke(this); 
-    }
-
-    public void OnDeselected()
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool IsSelectable()
-    {
-        return isSelected; 
-    }
 }

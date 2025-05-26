@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class GridSystem : MonoBehaviour
+public class GridSystem : MonoBehaviour, IGridSystem
 {
     const int HEIGHT = 8; 
     const int WIDTH = 8; 
@@ -23,16 +23,15 @@ public class GridSystem : MonoBehaviour
     }
 
     #region Action 
-    public Action<Vector2Int> OnActionOccured;
+    public event Action<Vector2Int> OnActionOccured;
     public void HandleGridCell(GridCell gridCell)
     {
-        if (!gridCell.isHighlighted)
-        {
-            return; 
-        }
+        Vector2Int gridPosition = gridCell.GetGridPosition();
 
-        Vector2Int gridPosition = gridCell.GetGridPosition();  
-        OnActionOccured?.Invoke(gridPosition); 
+        if (!gridCell.isHighlighted)
+            return; 
+
+        OnActionOccured?.Invoke(gridPosition);
     }
     #endregion 
 
@@ -84,5 +83,26 @@ public class GridSystem : MonoBehaviour
 
     #region Get Functions 
     public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition); 
-    #endregion 
+    public GameObject GetGameObjectOnGrid(Vector2Int gridPosition)
+    {
+        return grid.GetObjectOnGridCell(gridPosition); 
+    }
+    public Vector2Int GetGridPositionOfGameObject(GameObject go)
+    {
+        for(int i=0; i<HEIGHT; i++)
+        {
+            for(int j=0; j<WIDTH; j++)
+            {
+                Vector2Int gridPosition = new Vector2Int(j, i); 
+                if(go == grid.GetObjectOnGridCell(gridPosition))
+                {
+                    return gridPosition; 
+                }
+            }
+        }
+
+        return -Vector2Int.one; 
+    }
+    public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition); 
+    #endregion
 }
