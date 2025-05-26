@@ -38,7 +38,7 @@ public class GridSystem : MonoBehaviour, IGridSystem
     #region Highlight
     public void HighlightGridCells(Predicate<Vector2Int> predicate)
     {
-        // Predicate´Â delegateÀÇ ÀÏÁ¾À¸·Î bool type ¸®ÅÏ°ªÀ» °¡Áø´Ù. 
+        // Predicateï¿½ï¿½ delegateï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ bool type ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½. 
         foreach(GridCell gridCell in grid.GetAllCells())
         {
             if (predicate(gridCell.GetGridPosition()))
@@ -105,4 +105,15 @@ public class GridSystem : MonoBehaviour, IGridSystem
     }
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition); 
     #endregion
+    public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
+    #endregion
+
+    public Vector2Int GetGridPosition(Vector3 worldPosition)
+    {
+        return grid.GetGridPosition(worldPosition);
+    }
+    public bool IsValidPosition(Vector2Int pos)
+    {
+        return pos.x >= 0 && pos.x < WIDTH && pos.y >= 0 && pos.y < HEIGHT;
+    }
 }
