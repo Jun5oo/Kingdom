@@ -105,8 +105,6 @@ public class GridSystem : MonoBehaviour, IGridSystem
     }
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition); 
     #endregion
-    public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
-    #endregion
 
     public Vector2Int GetGridPosition(Vector3 worldPosition)
     {
