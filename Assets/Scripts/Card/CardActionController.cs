@@ -17,10 +17,11 @@ public class CardActionController : MonoBehaviour
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
 
-        // ÃßÈÄ¿¡´Â ActionList¸¦ CardData·ÎºÎÅÍ ¹Þ¾Æ¿Í ÃÊ±âÈ­ ½ÃÄÑÁÙ ¿¹Á¤ 
+        // ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ ActionListï¿½ï¿½ CardDataï¿½Îºï¿½ï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
         SummonAction summonAction = new SummonAction(gridSystem, actionSystem, this.gameObject);
         MoveAction moveAction = new MoveAction(gridSystem, actionSystem, this.gameObject);
         AttackAction attackAction = new AttackAction(gridSystem, actionSystem, this.gameObject);
+        KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, this.gameObject);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
@@ -28,6 +29,9 @@ public class CardActionController : MonoBehaviour
         actions.Add(summonAction);
         actions.Add(moveAction);
         actions.Add(attackAction);
+        actions.Add(kingSummonAction);
+
+        actionSystem.EnterAction(kingSummonAction);
 
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;

@@ -10,7 +10,9 @@ public class Card : MonoBehaviour
     [SerializeField] CardHover cardHover;
     [SerializeField] CardMovement cardMovement;
     [SerializeField] CardActionController cardActionController;
+    [SerializeField] private bool isKing; 
 
+    public bool IsKing => isKing;
 
     public CardState CardState 
     {   get { return cardState; }

@@ -74,7 +74,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
     public GameObject CreateCard(int playerID)
     {
-        // ÇöÀç´Â CreateCard´Â ´Ü¼øÈ÷ CardPrefab¸¸À» »ý¼ºÇÏÁö¸¸, ÃßÈÄ¿¡´Â deckList·ÎºÎÅÍ Card °´Ã¼¸¦ °¡Á®¿Â ÈÄ¿¡ ÀúÀåµÇ¾îÀÖ´Â cardData¸¦ °¡Á®¿Ã ¿¹Á¤ 
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ CreateCardï¿½ï¿½ ï¿½Ü¼ï¿½ï¿½ï¿½ CardPrefabï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ deckListï¿½Îºï¿½ï¿½ï¿½ Card ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½Ö´ï¿½ cardDataï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
         CardData cardData = null;
 
         if (!players.ContainsKey(playerID))
@@ -93,7 +93,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
 
-        // ¿©±â¼­ Card¿¡°Ô Event¸¦ ºÙ¿©¼­ Ä«µå°¡ Summon µÇ¸é RemoveCardFromHand¸¦ ÀÛµ¿ 
+        // ï¿½ï¿½ï¿½â¼­ Cardï¿½ï¿½ï¿½ï¿½ Eventï¿½ï¿½ ï¿½Ù¿ï¿½ï¿½ï¿½ Ä«ï¿½å°¡ Summon ï¿½Ç¸ï¿½ RemoveCardFromHandï¿½ï¿½ ï¿½Ûµï¿½ 
 
         return cardObject; 
     }
@@ -167,7 +167,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
     float EvaluateCurveValue(float height, float lerpValue)
     {
-        // x°¡ 0ºÎÅÍ 1ÀÌ°í ³ôÀÌ°¡ 0.5ÀÎ °î¼± 
+        // xï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ 1ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ 0.5ï¿½ï¿½ ï¿½î¼± 
         AnimationCurve curve = new AnimationCurve();
 
         curve.AddKey(0, 0);

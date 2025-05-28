@@ -34,7 +34,7 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         this.uiSystem = uiSystem;
 
         cardMovement.OnCardMoved += OnPRSUpdate;
-        // Ä«µå°¡ ¿òÁ÷ÀÌ°í ÀÖÀ» ¶§´Â Hover°¡ µÇ¾î¼­´Â ¾ÈµÈ´Ù. (µå·Î¿ì¸¦ ÇÏ°Å³ª, Ä«µå¸¦ ¼ÒÈ¯, ÀÌµ¿ÇÒ ¶§ ¸¶¿ì½º°¡ ÇØ´ç °æ·Î¿¡ ÀÖÀ¸¸é HoverSystemÀÌ ¹ßµ¿ÇØ¼­´Â ¾ÈµÈ´Ù) 
+        // Ä«ï¿½å°¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Hoverï¿½ï¿½ ï¿½Ç¾î¼­ï¿½ï¿½ ï¿½ÈµÈ´ï¿½. (ï¿½ï¿½Î¿ì¸¦ ï¿½Ï°Å³ï¿½, Ä«ï¿½å¸¦ ï¿½ï¿½È¯, ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ì½ºï¿½ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HoverSystemï¿½ï¿½ ï¿½ßµï¿½ï¿½Ø¼ï¿½ï¿½ï¿½ ï¿½ÈµÈ´ï¿½) 
         cardMovement.OnCardMovedComplete += OnHoverEnable; 
     }
 
@@ -71,7 +71,7 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         if (!IsSelectable())
             return;
 
-        // ÀÌ ºÎºÐÀº ³ªÁß¿¡ ¾î¶»°Ô ÇØ°áÇÒÁö Á¤ÇØ¾ßÇÒ µí 
+        // ï¿½ï¿½ ï¿½Îºï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½ ï¿½ï¿½ 
         uiSystem.DisplayUI();
 
         Vector3 targetPosition = originPos + selectedOffset;
@@ -85,7 +85,8 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
     }
     public void OnDeselected()
     {
-        uiSystem.CloseUI(); 
+        if (uiSystem != null)
+            uiSystem.CloseUI(); 
 
         if(!cardMovement.IsMoving())
             cardMovement.MoveTransform(new PRS(originPos, originRotation, originScale), 0.2f, true);
