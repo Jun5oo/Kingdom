@@ -24,8 +24,8 @@ public class Card : MonoBehaviour
         this.cardData = cardData;
         this.cardState = CardState.Hand;
 
-        this.isMyCard = isMyCard; 
-
+        this.isMyCard = isMyCard;
+        if(cardData != null) this.isKing = cardData.isKing;
         cardHover?.Init(uiSystem);
         cardActionController?.Init(uiSystem, actionSystem, gridSystem); 
     }

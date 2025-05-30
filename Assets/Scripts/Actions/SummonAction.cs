@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SummonAction : IAction
@@ -14,7 +15,7 @@ public class SummonAction : IAction
     {
         actionType = ActionType.Summon;
 
-        // ÇöÀç´Â GameObject¸¦ ¹ŞÁö¸¸, ÃßÈÄ¿¡´Â CardData¸¦ ¹ŞÀ» °Í 
+        // í˜„ì¬ëŠ” GameObjectë¥¼ ë°›ì§€ë§Œ, ì¶”í›„ì—ëŠ” CardDataë¥¼ ë°›ì„ ê²ƒ 
         this.card = card;
         this.gridSystem = gridSystem; 
         this.actionSystem = actionSystem;
@@ -23,15 +24,20 @@ public class SummonAction : IAction
     public void Enter()
     {
         Exit();
+        // ì™•ì˜ ìœ„ì¹˜ ì°¾ê¸°
+        GameObject king = GameObject.FindWithTag("King");
+        if (king == null)
+        {
+            Debug.LogWarning("ì™•ì´ ë°°ì¹˜ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤!");
+            return;
+        }
+
+        Vector2Int kingPos = gridSystem.GetGridPosition(king.transform.position);
+        List<Vector2Int> validPositions = GetAdjacentPositions(kingPos);
 
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            GridCell gridCell = gridSystem.GetGridCell(gridPosition);
-
-            if (gridSystem.IsObjectOnGridPosition(gridPosition) || !gridCell.isMyCell)
-                return false;
-            else
-                return true;
+            return validPositions.Contains(gridPosition) && !gridSystem.IsObjectOnGridPosition(gridPosition);
         });
 
         gridSystem.OnActionOccured += SummonCard;
@@ -65,8 +71,32 @@ public class SummonAction : IAction
             actionSystem?.CancelAction(); 
         });
 
-        // ³ªÁß¿¡ event¸¦ ÅëÇØ¼­ º¯°æÇÏ´Â ¹æ¹ı ¸ğ»ö 
+        // ë‚˜ì¤‘ì— eventë¥¼ í†µí•´ì„œ ë³€ê²½í•˜ëŠ” ë°©ë²• ëª¨ìƒ‰ 
         Card _card = card.GetComponent<Card>();
         _card.CardState = CardState.Field;
+    }
+
+    private List<Vector2Int> GetAdjacentPositions(Vector2Int center)
+    {
+        List<Vector2Int> positions = new List<Vector2Int>();
+        Vector2Int[] deltas = {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right,
+            new Vector2Int(-1, 1),  // â†–
+            new Vector2Int(1, 1),   // â†—
+            new Vector2Int(-1, -1), // â†™
+            new Vector2Int(1, -1)   // â†˜
+        };
+
+        foreach (var delta in deltas)
+        {
+            Vector2Int checkPos = center + delta;
+            if (gridSystem.IsValidPosition(checkPos))
+                positions.Add(checkPos);
+        }
+
+        return positions;
     }
 }

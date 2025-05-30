@@ -31,8 +31,6 @@ public class CardActionController : MonoBehaviour
         actions.Add(attackAction);
         actions.Add(kingSummonAction);
 
-        actionSystem.EnterAction(kingSummonAction);
-
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
 
@@ -46,19 +44,24 @@ public class CardActionController : MonoBehaviour
         uiLayout.transform.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
         foreach(IAction action in actions)
-        { 
-            if (action.IsValid())
-            {
-                GameObject obj = uiSystem.PopActionUI();
-                ActionUI actionUI = obj.GetComponent<ActionUI>();
+        {
+            if (!action.IsValid())
+                continue;
 
-                actionUI.Init(action);
-                
-                actionUI.OnUIClicked -= ActionUiClicked;
-                actionUI.OnUIClicked += ActionUiClicked;
+            // 왕 카드이면 UI를 생성하지 않음
+            Card card = this.gameObject.GetComponent<Card>();
+            if (card != null && card.IsKing)
+                continue;
 
-                actionUIList.Add(actionUI); 
-            }
+            GameObject obj = uiSystem.PopActionUI();
+            ActionUI actionUI = obj.GetComponent<ActionUI>();
+
+            actionUI.Init(action);
+
+            actionUI.OnUIClicked -= ActionUiClicked;
+            actionUI.OnUIClicked += ActionUiClicked;
+
+            actionUIList.Add(actionUI);
         }
     }
     public void HideEnableActions()

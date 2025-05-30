@@ -31,7 +31,10 @@ public class CardSystem : MonoBehaviour, ICardSystem
     [SerializeField] Transform enemyCardParent; 
 
     const int playerID = 0;
-    const int enemyID = 1; 
+    const int enemyID = 1;
+
+    private Card playerKing;
+    private Card enemyKing;
 
     void Update()
     {
@@ -39,6 +42,11 @@ public class CardSystem : MonoBehaviour, ICardSystem
             DrawCard(playerID);
         if (Input.GetKeyDown(KeyCode.E))
             DrawCard(enemyID);
+
+        if (Input.GetKeyDown(KeyCode.K))
+            SummonKing(playerKing);
+        if (Input.GetKeyDown(KeyCode.L))
+            SummonKing(enemyKing);
     }
 
     public void Init(IGridSystem gridSystem, IUISystem uiSystem, ISelectionSystem selectionSystem, IActionSystem actionSystem)
@@ -56,7 +64,11 @@ public class CardSystem : MonoBehaviour, ICardSystem
         PlayerData enemy = new PlayerData(enemyID, enemyHand, enemyHandLeftTransform, enemyHandRightTransform, enemyDeckTransform, enemyCardParent);
 
         players.Add(playerID, player);
-        players.Add(enemyID, enemy); 
+        players.Add(enemyID, enemy);
+
+        //왕 생성 및 참조 저장
+        playerKing = CreateKing(playerID);
+        enemyKing = CreateKing(enemyID);
     }
 
     public void DrawCard(int playerID)
@@ -177,4 +189,35 @@ public class CardSystem : MonoBehaviour, ICardSystem
         return curve.Evaluate(lerpValue);
     }
     #endregion 
+
+    private Card CreateKing(int playerID)
+    {
+        GameObject kingObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity, players[playerID].cardParent);
+        Card card = kingObj.GetComponent<Card>();
+
+        CardData kingData = new CardData(); // 실제로는 왕 전용 CardData 불러와야 함
+        kingData.isKing = true;
+
+        bool isMyCard = playerID == 0;
+
+        card.Init(uiSystem, gridSystem, actionSystem, isMyCard, kingData);
+
+        return card;
+    }
+
+    private void SummonKing(Card kingCard)
+    {
+        if (kingCard == null)
+        {
+            Debug.LogError("King card is not assigned.");
+            return;
+        }
+
+        KingSummonAction summonAction = new KingSummonAction(gridSystem, actionSystem, kingCard.gameObject);
+
+        if (summonAction.IsValid())
+        {
+            actionSystem.EnterAction(summonAction);
+        }
+    }
 }
