@@ -15,7 +15,6 @@ public class ActionSystem : MonoBehaviour, IActionSystem
         else
             currentActionName = "Null";
 
-        // 우클릭 시 실행하려는 액션 취소 
         if (Input.GetKeyDown(KeyCode.Mouse1))
             CancelAction(); 
     }

@@ -26,14 +26,13 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
         else
             currentSelectableName = "Null";
 
-        // ¿ìÅ¬¸¯ ½Ã ¼±ÅÃÃë¼Ò 
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
             OnExitSelected();
             return; 
         }
 
-        // UI°¡ À§¿¡ °¡·ÁÁ® ÀÖÀ» ½Ã Å¬¸¯µÇ¼­´Â ¾ÈµÊ 
+        // UIì— ê°€ë ¤ì ¸ ìˆëŠ” ê²½ìš°
         if (EventSystem.current.IsPointerOverGameObject())
             return;
 
@@ -47,11 +46,11 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
                 ISelectable selectable;
                 GridCell gridCell;
 
-                // Á÷Á¢ Å¬¸¯ÇÑ °æ¿ì 
+                // ì¹´ë“œë¥¼ ì§ì ‘ í´ë¦­í•œ ê²½ìš° (íŒ¨ì— ìœ„ì¹˜í•´ìˆì„ ë•Œ) 
                 if (hit.transform.gameObject.TryGetComponent<ISelectable>(out selectable))
                     OnEnterSelected(selectable);
 
-                // °£Á¢ÀûÀ¸·Î Å¬¸¯ÇÑ °æ¿ì
+                // ê°„ì ‘ìœ¼ë¡œ í´ë¦­í•œ ê²½ìš° (í•„ë“œìœ„ì— ìˆì„ ë•Œ) 
                 else if (hit.transform.gameObject.TryGetComponent<GridCell>(out gridCell))
                 {
                     Vector2Int gridPosition = gridCell.GetGridPosition();

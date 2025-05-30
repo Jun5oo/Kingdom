@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CardSystem : MonoBehaviour, ICardSystem
@@ -7,10 +8,12 @@ public class CardSystem : MonoBehaviour, ICardSystem
     IUISystem uiSystem;
     ISelectionSystem selectionSystem;
     IActionSystem actionSystem;
-
-    // List<Card> deckList; 
+ 
     List<Card> handList;
     List<Card> enemyHandList;
+
+    // Test 
+    [SerializeField] List<CardData> deckList;
 
     Dictionary<int, PlayerData> players; 
 
@@ -56,7 +59,8 @@ public class CardSystem : MonoBehaviour, ICardSystem
         PlayerData enemy = new PlayerData(enemyID, enemyHand, enemyHandLeftTransform, enemyHandRightTransform, enemyDeckTransform, enemyCardParent);
 
         players.Add(playerID, player);
-        players.Add(enemyID, enemy); 
+        players.Add(enemyID, enemy);
+        
     }
 
     public void DrawCard(int playerID)
@@ -74,8 +78,8 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
     public GameObject CreateCard(int playerID)
     {
-        // ÇöÀç´Â CreateCard´Â ´Ü¼øÈ÷ CardPrefab¸¸À» »ı¼ºÇÏÁö¸¸, ÃßÈÄ¿¡´Â deckList·ÎºÎÅÍ Card °´Ã¼¸¦ °¡Á®¿Â ÈÄ¿¡ ÀúÀåµÇ¾îÀÖ´Â cardData¸¦ °¡Á®¿Ã ¿¹Á¤ 
-        CardData cardData = null;
+        // í˜„ì¬ëŠ” í…ŒìŠ¤íŠ¸ ìš©ìœ¼ë¡œ deckListì— ë‘ ê°€ì§€ ì¢…ë¥˜ì˜ ì¹´ë“œë§Œì„ ë„£ê³  ëœë¤ ìƒì„±. ë‚˜ì¤‘ì—ëŠ” ìì‹ ì´ êµ¬ì„±í•œ ë±ì˜ ì¹´ë“œ ë°ì´í„°ë“¤ì„ ê°€ì§€ê³  ìˆœì°¨ì ìœ¼ë¡œ ìƒì„±ì˜ˆì • (ì…”í”Œ í•¨ìˆ˜ë„ êµ¬í˜„ì˜ˆì •) 
+        CardData cardData = deckList[Random.Range(0, 2)]; 
 
         if (!players.ContainsKey(playerID))
         {
@@ -93,8 +97,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
 
-        // ¿©±â¼­ Card¿¡°Ô Event¸¦ ºÙ¿©¼­ Ä«µå°¡ Summon µÇ¸é RemoveCardFromHand¸¦ ÀÛµ¿ 
-
+        // ì´ ë¶€ë¶„ì—ì„œ ì´ì œ cardì— Eventë¥¼ ë¶™ì´ëŠ” ê²ƒì„ ê³ ë ¤ì¤‘ 
         return cardObject; 
     }
 
@@ -147,27 +150,30 @@ public class CardSystem : MonoBehaviour, ICardSystem
                     cardObjLerpX[i] = (i + 1) * interval;
                 break;
         }
-
-        float height = playerID == 0 ? 0.5f : -0.5f; 
+        
+        float height = playerID == 0 ? 0.5f : -0.5f;
+        float heightBuffer = playerID == 0 ? 0.3f : 0.1f; 
 
         for (int i = 0; i < cardCount; i++)
         {
             float posX = Mathf.Lerp(left.position.x, right.position.x, cardObjLerpX[i]);
-            float posY = hand.transform.position.y + (0.01f) * i;
+            float posY = hand.transform.position.y + (heightBuffer) * i;
             float posZ = hand.transform.position.z + EvaluateCurveValue(height, cardObjLerpX[i]);
 
             float rotationX = handList[i].gameObject.transform.rotation.x;
             float rotationY = Mathf.LerpAngle(left.eulerAngles.y, right.eulerAngles.y, cardObjLerpX[i]);
-            float rotationZ = 180f;
-
+            float rotationZ = playerID == 0 ? 180f : 0f; 
             Quaternion rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
-            handList[i].gameObject.GetComponent<CardMovement>().MoveTransform(new PRS(new Vector3(posX, posY, posZ), rotation, Vector3.one), 0.5f);
+
+            Vector3 scale = playerID == 0 ? Vector3.one : Vector3.one * 2; 
+
+            handList[i].gameObject.GetComponent<CardMovement>().MoveTransform(new PRS(new Vector3(posX, posY, posZ), rotation, scale), 0.5f);
         }
     }
 
     float EvaluateCurveValue(float height, float lerpValue)
     {
-        // x°¡ 0ºÎÅÍ 1ÀÌ°í ³ôÀÌ°¡ 0.5ÀÎ °î¼± 
+        // xê°€ 0~1, ë†’ì´ê°€ 0.5 
         AnimationCurve curve = new AnimationCurve();
 
         curve.AddKey(0, 0);

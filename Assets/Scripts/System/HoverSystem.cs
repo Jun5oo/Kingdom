@@ -7,42 +7,39 @@ public class HoverSystem : MonoBehaviour, IHoverSystem
 
     void Update()
     {
-        // IHoverable ¿ÀºêÁ§Æ®À§¿¡ UI°¡ ÀÖ´Â °æ¿ì 
+        // UIê°€ ìˆëŠ” ê²½ìš° 
         if (EventSystem.current.IsPointerOverGameObject())
         {
             ExitHover();
             return; 
         }
 
-        // Input.mousePositionÀÇ °æ¿ì, È­¸é¿¡¼­ÀÇ À§Ä¡°ªÀ» ¹İÈ¯ÇÏ±â ¶§¹®¿¡ world ÁÂÇ¥°è °ªÀ¸·Î º¯°æÇØÁà¾ßÇÑ´Ù. 
+        // Input.mousePositionì˜ ê²½ìš° screen positionì„ ë°˜í™˜í•˜ê¸° ë•Œë¬¸ì— world ì¢Œí‘œê³„ ê°’ìœ¼ë¡œ ë³€ê²½í•´ì¤˜ì•¼í•œë‹¤. 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
-        // Collider¸¦ Å½ÁöÇÏ´Â °æ¿ì 
+        // Colliderë¥¼ íƒì§€í–ˆì„ ê²½ìš° 
         if (Physics.Raycast(ray, out hit, 100f))
         {
-            IHoverable hoverable = null;
-
-            if (hit.transform.gameObject.TryGetComponent<IHoverable>(out hoverable))
+            if (hit.transform.gameObject.TryGetComponent<IHoverable>(out IHoverable hoverable))
             {
-                // »õ·Î¿î IHoverable ¿ÀºêÁ§Æ®¸¦ Å½ÁöÇßÀ» °æ¿ì 
+                // ìƒˆë¡œìš´ IHoverableì„ íƒì§€í–ˆì„ ê²½ìš° 
                 if (hoverable != currentHoverable)
                 {
-                    // ÀÌÀüÀÇ IHoverableÀ» Exit
+                    // ê¸°ì¡´ì˜ IHoverable Exit
                     ExitHover(); 
 
-                    // »õ·Î Ã£Àº IHoverable ¿ÀºêÁ§Æ®°¡ HoverableÀÎ °æ¿ì (Ä«µåÀÇ °æ¿ì, ¼±ÅÃµÇ¾ú°Å³ª, Ä«µå°¡ ¿òÁ÷ÀÌ°í ÀÖ°Å³ª, ¾×¼ÇÀ» ÇÏ´Â µµÁß¿¡´Â Hover°¡ µÇ¾î¼­´Â ¾ÈµÊ)  
+                    // ìƒˆë¡œ ì°¾ì€ IHoverable ì˜¤ë¸Œì íŠ¸ê°€ hoverableí•œ ê²½ìš° (ì¹´ë“œì˜ ê²½ìš°, ì„ íƒë˜ì—ˆê±°ë‚˜, ì¹´ë“œê°€ ì›€ì§ì´ê³  ìˆê±°ë‚˜, ì•¡ì…˜ì„ í•˜ëŠ” ë„ì¤‘ì—ëŠ” onHover ìƒíƒœê°€ ë˜ì–´ì„œëŠ” ì•ˆë¨) 
                     if(hoverable.IsHoverable())
                         EnterHover(hoverable);
                 }
             }
         }
 
-        // Collider¸¦ Å½ÁöÇÏÁö ¸øÇÑ °æ¿ì 
+        // Colliderë¥¼ íƒì§€í•˜ì§€ ëª»í•œ ê²½ìš° 
         else
         {
-            // ±âÁ¸ IHoverable ¿ÀºêÁ§Æ®°¡ µå·Î¿ì, ¾×¼ÇÀ» ÅëÇØ ¿òÁ÷¿©¼­ ¹üÀ§¿¡¼­ ¹ş¾î³¯ °æ¿ì ExitHover°¡ µÇ¸é ÀÌ»óÇÏ°Ô º¸ÀÏ ¼ö ÀÖÀ¸¹Ç·Î IsHoverable() Á¶°ÇÀ» Ãà ¤¿
-            // IHoverable °´Ã¼ÀÇ OffHover() ÇÔ¼ö¿¡µµ Á¶°ÇÀ» °É¾îÁÜ 
+            // ê¸°ì¡´ IHoverable ì˜¤ë¸Œì íŠ¸ê°€ ë“œë¡œìš°, ì•¡ì…˜ì„ í†µí•´ ì›€ì§ì—¬ì„œ ë²”ìœ„ì—ì„œ ë²—ì–´ë‚  ê²½ìš°, ExitHoverê°€ ë˜ë©´ ê°‘ìê¸° ExitHover ë˜ì–´ ì´ìƒí•˜ê²Œ ë³´ì´ë¯€ë¡œ IsHoverable ì¡°ê±´ì„ ì¶”ê°€ 
             if(currentHoverable != null && currentHoverable.IsHoverable())
                 ExitHover();
         }

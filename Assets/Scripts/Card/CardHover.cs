@@ -3,25 +3,25 @@ using UnityEngine;
 
 public class CardHover : MonoBehaviour, IHoverable, ISelectable
 {
-    [Header("Card Reference")]
+    [Header("Card Components")]
+    [SerializeField] Card card; 
     [SerializeField] CardMovement cardMovement;
-    [SerializeField] CardActionController actionController;
 
     [Header("System Referecne")]
     IUISystem uiSystem;
 
-    Vector3 originPos;
-    Quaternion originRotation;
-    Vector3 originScale;
+    [SerializeField] Vector3 originPos;
+    [SerializeField] Quaternion originRotation;
+    [SerializeField] Vector3 originScale;
 
     // OnHover PRS 
-    Vector3 hoverOffset = Vector3.up * 0.01f; 
-    Vector3 hoverScale = Vector3.one * 1.1f; 
+    [SerializeField] Vector3 hoverOffset;
+    [SerializeField] Vector3 hoverScale;
 
     // OnSelected PRS 
-    Vector3 selectedOffset = Vector3.up * 0.5f + Vector3.forward * 0.5f;  
-    Vector3 selectedScale = Vector3.one * 1.3f; 
-    Quaternion selectedRotation = Quaternion.Euler(0f, 0f, -180f);
+    Vector3 selectedOffset;
+    Vector3 selectedScale;
+    Quaternion selectedRotation;
 
     [SerializeField] bool isHoverable = false;
     [SerializeField] bool isSelected = false;
@@ -33,9 +33,20 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
     {
         this.uiSystem = uiSystem;
 
+        cardMovement.OnCardMoved -= OnPRSUpdate; 
         cardMovement.OnCardMoved += OnPRSUpdate;
-        // Ä«µå°¡ ¿òÁ÷ÀÌ°í ÀÖÀ» ¶§´Â Hover°¡ µÇ¾î¼­´Â ¾ÈµÈ´Ù. (µå·Î¿ì¸¦ ÇÏ°Å³ª, Ä«µå¸¦ ¼ÒÈ¯, ÀÌµ¿ÇÒ ¶§ ¸¶¿ì½º°¡ ÇØ´ç °æ·Î¿¡ ÀÖÀ¸¸é HoverSystemÀÌ ¹ßµ¿ÇØ¼­´Â ¾ÈµÈ´Ù) 
-        cardMovement.OnCardMovedComplete += OnHoverEnable; 
+        // ì¹´ë“œê°€ ì›€ì§ì´ê³  ìžˆì„ ë•ŒëŠ” Hoverê°€ ë˜ì–´ì„œëŠ” ì•ˆëœë‹¤. (ë“œë¡œìš°ë¥¼ í•˜ê±°ë‚˜, ì¹´ë“œë¥¼ ì†Œí™˜, ì´ë™í•  ë•Œ ë§ˆìš°ìŠ¤ê°€ í•´ë‹¹ ê²½ë¡œì— ìžˆìœ¼ë©´ HoverSystemì´ ë°œë™í•´ì„œëŠ” ì•ˆëœë‹¤) 
+        cardMovement.OnCardMovedComplete -= OnHoverEnable; 
+        cardMovement.OnCardMovedComplete += OnHoverEnable;
+
+        originScale = card.isMyCard ? Vector3.one : Vector3.one * 2; 
+
+        hoverOffset = Vector3.up * 0.01f;
+        hoverScale = originScale * 1.1f;
+
+        selectedOffset = Vector3.up * 0.5f + Vector3.forward * 0.5f;
+        selectedScale = originScale * 1.3f;
+        selectedRotation = card.isMyCard ? Quaternion.Euler(0f, 0f, -180f) : Quaternion.Euler(0f, 180f, 0f);
     }
 
     #region Hover 
@@ -71,17 +82,17 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         if (!IsSelectable())
             return;
 
-        // ÀÌ ºÎºÐÀº ³ªÁß¿¡ ¾î¶»°Ô ÇØ°áÇÒÁö Á¤ÇØ¾ßÇÒ µí 
-        uiSystem.DisplayUI();
+        // ì´ ë¶€ë¶„ì€ ë‚˜ì¤‘ì— ì–´ë–»ê²Œ í•´ê²°í• ì§€ ì •í•´ì•¼í•  ë“¯ 
+        uiSystem.DisplayUI(card);
 
         Vector3 targetPosition = originPos + selectedOffset;
         Quaternion targetRotation = selectedRotation;
         Vector3 targetScale = selectedScale;
 
-        cardMovement.MoveTransform(new PRS(targetPosition, targetRotation, targetScale), 0.2f, true);
+        cardMovement.MoveTransform(new PRS(targetPosition, targetRotation, targetScale), 0.2f, true, () => { OnCardSelected?.Invoke();});
         isSelected = true;
 
-        OnCardSelected?.Invoke(); 
+        
     }
     public void OnDeselected()
     {

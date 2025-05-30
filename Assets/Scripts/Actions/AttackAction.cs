@@ -1,36 +1,30 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackAction : IAction
 {
-    ActionType actionType = ActionType.Attack; 
+    ActionType actionType; 
     public ActionType ActionType { get { return actionType; } }
 
     IGridSystem gridSystem;
     IActionSystem actionSystem; 
 
-    GameObject card;
+    Card card;
 
     List<Vector2Int> positions;
 
     GameObject particleObject; 
 
-    public AttackAction(IGridSystem gridSystem, IActionSystem actionSystem, GameObject card)
+    public AttackAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
+        actionType = ActionType.Attack; 
+
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;
 
         this.card = card;
-    
-        positions = new List<Vector2Int>();
-        positions.Add(new Vector2Int(-1, 1));
-        positions.Add(new Vector2Int(0, 1));
-        positions.Add(new Vector2Int(1, 1));
-        positions.Add(new Vector2Int(-1, 0));
-        positions.Add(new Vector2Int(1, 0));
-        positions.Add(new Vector2Int(-1, -1));
-        positions.Add(new Vector2Int(0, -1));
-        positions.Add(new Vector2Int(1, -1));
+
+        positions = card.cardData.attackRange; 
 
         particleObject = Resources.Load<GameObject>("Particle");
     }
@@ -39,7 +33,7 @@ public class AttackAction : IAction
     {
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            Vector2Int currentPosition = gridSystem.GetGridPositionOfGameObject(card);
+            Vector2Int currentPosition = gridSystem.GetGridPositionOfGameObject(card.gameObject);
             
             foreach(Vector2Int position in positions)
             {

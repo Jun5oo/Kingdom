@@ -38,7 +38,7 @@ public class GridSystem : MonoBehaviour, IGridSystem
     #region Highlight
     public void HighlightGridCells(Predicate<Vector2Int> predicate)
     {
-        // Predicate´Â delegateÀÇ ÀÏÁ¾À¸·Î bool type ¸®ÅÏ°ªÀ» °¡Áø´Ù. 
+        // PredicateëŠ” delegateì˜ ì¼ì¢…ìœ¼ë¡œ bool typeì„ ë¦¬í„´ê°’ìœ¼ë¡œ ê°€ì§„ë‹¤. 
         foreach(GridCell gridCell in grid.GetAllCells())
         {
             if (predicate(gridCell.GetGridPosition()))

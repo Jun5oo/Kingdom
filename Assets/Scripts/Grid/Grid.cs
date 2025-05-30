@@ -54,7 +54,6 @@ public class Grid
 
                 gridCell.OnClicked += HandleGridCellClicked; 
 
-                // isMyCell = 왕 카드를 놓을 수 있는 Cell
                 if (i < 3)
                     gridCell.isMyCell = true; 
                 else 

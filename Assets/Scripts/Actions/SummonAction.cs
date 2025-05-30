@@ -6,15 +6,15 @@ public class SummonAction : IAction
     public ActionType ActionType { get { return actionType; } }
 
     IGridSystem gridSystem;
-    IActionSystem actionSystem; 
+    IActionSystem actionSystem;
 
-    GameObject card; 
+    Card card; 
 
-    public SummonAction(IGridSystem gridSystem, IActionSystem actionSystem, GameObject card)
+    public SummonAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
         actionType = ActionType.Summon;
 
-        // ÇöÀç´Â GameObject¸¦ ¹ŞÁö¸¸, ÃßÈÄ¿¡´Â CardData¸¦ ¹ŞÀ» °Í 
+        // í˜„ì¬ëŠ” GameObjectë¥¼ ë°›ì§€ë§Œ, ì¶”í›„ì—ëŠ” CardDataë¥¼ ë°›ì„ ê²ƒ 
         this.card = card;
         this.gridSystem = gridSystem; 
         this.actionSystem = actionSystem;
@@ -45,7 +45,7 @@ public class SummonAction : IAction
 
     public bool IsValid()
     {
-        if (card.GetComponent<Card>().CardState == CardState.Field)
+        if (card.GetComponent<Card>().CardState != CardState.Hand)
             return false; 
 
         return true; 
@@ -55,18 +55,30 @@ public class SummonAction : IAction
     {
         Exit();
 
+        // Temp 
+        CardSystem cardSystem = GameObject.FindAnyObjectByType<CardSystem>();
+        if (card.isMyCard)
+            cardSystem.RemoveCardFromHand(0, card);
+        else
+            cardSystem.RemoveCardFromHand(1, card); 
+        // 
+
+        // ìˆ˜ì¹˜ê°€ í•˜ë“œì½”ë”©ë¨ ë‚˜ì¤‘ì— 
         Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.2f);
-        PRS prs = new PRS(targetPos, Quaternion.identity, Vector3.one);
+        Vector3 eulerAngles = card.isMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
+        Quaternion quaternion = Quaternion.Euler(eulerAngles); 
+        PRS prs = new PRS(targetPos, quaternion, Vector3.one);
 
         CardMovement cardMovement = card.GetComponent<CardMovement>();
         cardMovement.MoveTransform(prs, 0.5f, false, ()=> {
-           
-            gridSystem.PlaceObjectTo(card, gridPosition);
-            actionSystem?.CancelAction(); 
+            gridSystem.PlaceObjectTo(card.gameObject, gridPosition);
+            actionSystem?.CancelAction();
+            // Temp 
+            card.GetComponent<CardView>().DisplayStatusUI(); 
+            // 
         });
 
-        // ³ªÁß¿¡ event¸¦ ÅëÇØ¼­ º¯°æÇÏ´Â ¹æ¹ı ¸ğ»ö 
-        Card _card = card.GetComponent<Card>();
-        _card.CardState = CardState.Field;
+        // ë‚˜ì¤‘ì— eventë¥¼ í†µí•´ì„œ ë³€ê²½í•˜ëŠ” ë°©ë²• ëª¨ìƒ‰ 
+        card.CardState = CardState.Field;
     }
 }

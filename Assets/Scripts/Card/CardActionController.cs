@@ -4,11 +4,13 @@ using UnityEngine;
 public class CardActionController : MonoBehaviour
 {
     IUISystem uiSystem;
-    IActionSystem actionSystem; 
+    IActionSystem actionSystem;
 
     List<IAction> actions;
     List<ActionUI> actionUIList;
 
+    [Header("Components")]
+    [SerializeField] Card card; 
     [SerializeField] CardHover cardHover; 
     [SerializeField] Transform actionUIPoisition; 
 
@@ -16,11 +18,11 @@ public class CardActionController : MonoBehaviour
     {
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
-
-        // √ﬂ»ƒø°¥¬ ActionList∏¶ CardData∑Œ∫Œ≈Õ πﬁæ∆øÕ √ ±‚»≠ Ω√ƒ—¡Ÿ øπ¡§ 
-        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, this.gameObject);
-        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, this.gameObject);
-        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, this.gameObject);
+        
+        // CardDataÎ°úÎ∂ÄÌÑ∞ ActionÏùÑ Î∞õÏïÑÏò¨ ÏòàÏ†ï 
+        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, card);
+        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, card);
+        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, card);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
@@ -38,14 +40,14 @@ public class CardActionController : MonoBehaviour
 
     public void ShowEnableActions()
     {
-        GameObject uiLayout = uiSystem.GetActionUIParent();
-        uiLayout.transform.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
+        Transform uiLayout = uiSystem.GetActionUIParent();
+        uiLayout.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
         foreach(IAction action in actions)
         { 
             if (action.IsValid())
             {
-                GameObject obj = uiSystem.PopActionUI();
+                GameObject obj = uiSystem.Pop<ActionUI>(); 
                 ActionUI actionUI = obj.GetComponent<ActionUI>();
 
                 actionUI.Init(action);
@@ -62,7 +64,7 @@ public class CardActionController : MonoBehaviour
         foreach(ActionUI actionUI in actionUIList)
         {
             actionUI.OnUIClicked -= ActionUiClicked;
-            uiSystem.PushActionUI(actionUI.gameObject); 
+            uiSystem.Push<ActionUI>(actionUI.gameObject); 
         }
 
         actionUIList.Clear(); 
