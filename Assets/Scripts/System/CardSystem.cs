@@ -107,6 +107,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
         cardObject.name = players[playerID].handList.Count.ToString(); 
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
+        card.GetComponent<CardView>().Init(card); 
 
         // 이 부분에서 이제 card에 Event를 붙이는 것을 고려중 
         return cardObject; 
@@ -193,16 +194,19 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         return curve.Evaluate(lerpValue);
     }
-    #endregion 
+    #endregion
+
+    #region Creation King 
+    [SerializeField] CardData undeadKing;
+    [SerializeField] CardData angelKing; 
 
     private Card CreateKing(int playerID)
     {
         GameObject kingObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity, players[playerID].cardParent);
+        kingObj.SetActive(false); 
         kingObj.tag = "King";
         Card card = kingObj.GetComponent<Card>();
-
-        CardData kingData = new CardData(); // 실제로는 왕 전용 CardData 불러와야 함
-        kingData.isKing = true;
+        CardData kingData = playerID == 0 ? undeadKing : angelKing; 
 
         bool isMyCard = playerID == 0;
 
@@ -219,11 +223,12 @@ public class CardSystem : MonoBehaviour, ICardSystem
             return;
         }
 
-        KingSummonAction summonAction = new KingSummonAction(gridSystem, actionSystem, kingCard.gameObject);
+        KingSummonAction summonAction = new KingSummonAction(gridSystem, actionSystem, kingCard);
 
         if (summonAction.IsValid())
         {
             actionSystem.EnterAction(summonAction);
         }
     }
+    #endregion 
 }

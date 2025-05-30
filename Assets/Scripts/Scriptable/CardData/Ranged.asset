@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e41f85cfad645d349b42903fe1b3da66, type: 3}
   m_Name: Ranged
   m_EditorClassIdentifier: 
-  cardName: 
+  cardName: Ranged
   level: 1
   cp: 4
-  description: 
+  isKing: 0
+  description: Melee
   moveRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}

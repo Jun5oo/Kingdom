@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public class GridCell : MonoBehaviour, IHoverable 
 {
@@ -64,7 +65,8 @@ public class GridCell : MonoBehaviour, IHoverable
     public Action<GridCell> OnClicked;
     public void OnMouseDown()
     {
-        OnClicked?.Invoke(this); 
+        if (!EventSystem.current.IsPointerOverGameObject())
+            OnClicked?.Invoke(this);
     }
     #endregion 
 }

@@ -23,6 +23,7 @@ public class CardActionController : MonoBehaviour
         SummonAction summonAction = new SummonAction(gridSystem, actionSystem, card);
         MoveAction moveAction = new MoveAction(gridSystem, actionSystem, card);
         AttackAction attackAction = new AttackAction(gridSystem, actionSystem, card);
+        // KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, card);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
@@ -30,7 +31,7 @@ public class CardActionController : MonoBehaviour
         actions.Add(summonAction);
         actions.Add(moveAction);
         actions.Add(attackAction);
-        actions.Add(kingSummonAction);
+        // actions.Add(kingSummonAction);
 
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
@@ -50,11 +51,11 @@ public class CardActionController : MonoBehaviour
                 continue;
 
             // 왕 카드이면 UI를 생성하지 않음
-            Card card = this.gameObject.GetComponent<Card>();
             if (card != null && card.IsKing)
                 continue;
 
-            GameObject obj = uiSystem.PopActionUI();
+            // Temp 
+            GameObject obj = uiSystem.Pop<ActionUI>(); 
             ActionUI actionUI = obj.GetComponent<ActionUI>();
 
             actionUI.Init(action);

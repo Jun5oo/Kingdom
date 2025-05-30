@@ -4,16 +4,16 @@ public class KingSummonAction : IAction
 {
     private IGridSystem gridSystem;
     private IActionSystem actionSystem;
-    private GameObject obj;
+    private Card card; 
 
     private ActionType actionType = ActionType.KingSummon;
     public ActionType ActionType => actionType;
 
-    public KingSummonAction(IGridSystem gridSystem, IActionSystem actionSystem, GameObject obj)
+    public KingSummonAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;
-        this.obj = obj;
+        this.card = card; 
     }
 
     public void Enter()
@@ -36,7 +36,7 @@ public class KingSummonAction : IAction
 
     public bool IsValid()
     {
-        Card card = obj.GetComponent<Card>();
+        Card card = this.card; 
 
         // 왕이라면 카드 상태에 관계없이 항상 소환 가능
         if (card.IsKing)
@@ -50,22 +50,31 @@ public class KingSummonAction : IAction
     {
         Exit();
 
-        gridSystem.PlaceObjectTo(obj, pos);
+        //Temp 
+        card.GetComponent<CardView>().HideStatusUI(); 
+        UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
+        // 
+
+        gridSystem.PlaceObjectTo(card.gameObject, pos);
 
         Vector3 worldPos = gridSystem.GetWorldPosition(pos);
         Quaternion rot = Quaternion.Euler(0, 0, -180);
         Vector3 scale = Vector3.one;
 
-        var cardMove = obj.GetComponent<CardMovement>();
+        card.gameObject.SetActive(true); 
+        var cardMove = card.gameObject.GetComponent<CardMovement>();
         cardMove.MoveTransform(new PRS(worldPos, rot, scale), 0.5f, false, () =>
         {
             actionSystem?.CancelAction();
+            // Temp 
+            card.GetComponent<CardView>().DisplayStatusUI(); 
+            //
         });
     }
 
     private bool IsValidKingPosition(Vector2Int pos)
     {
-        Card card = obj.GetComponent<Card>();
+        Card card = this.card; 
         if (card.isMyCard)
         {
             // 내 왕은 아래쪽 (y < 3)

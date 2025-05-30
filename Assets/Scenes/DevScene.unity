@@ -1726,6 +1726,8 @@ MonoBehaviour:
   enemyHandRightTransform: {fileID: 282202714}
   enemyDeckTransform: {fileID: 319020762}
   enemyCardParent: {fileID: 470161390}
+  undeadKing: {fileID: 11400000, guid: dd9d0c18c24a53846ace79b9ca254301, type: 2}
+  angelKing: {fileID: 11400000, guid: 20eb043be21de5d40ad9c14a51efc261, type: 2}
 --- !u!1 &1380221428
 GameObject:
   m_ObjectHideFlags: 0

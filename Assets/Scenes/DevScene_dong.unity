@@ -888,9 +888,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f15a2feb7bca2c4ca0ac51133613456, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardUI: {fileID: 624424236}
+  cardUI: {fileID: 624424240}
   actionUIPrefab: {fileID: 1152004354487428711, guid: 90dbc966eebcc184581ba055559674e3, type: 3}
-  actionUIParent: {fileID: 1293039929}
+  actionUIParent: {fileID: 1293039930}
+  cardStatusUI: {fileID: 2070557658750947667, guid: 23e4175d7e94a774ba169964ae96fe3a, type: 3}
+  cardStatusUIParent: {fileID: 1928093030}
 --- !u!1 &624424236
 GameObject:
   m_ObjectHideFlags: 0
@@ -901,6 +903,7 @@ GameObject:
   m_Component:
   - component: {fileID: 624424237}
   - component: {fileID: 624424239}
+  - component: {fileID: 624424240}
   m_Layer: 5
   m_Name: Card UI
   m_TagString: Untagged
@@ -941,6 +944,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 624424236}
   m_CullTransparentMesh: 1
+--- !u!114 &624424240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 624424236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df7bdc20f1f9f8542a45c4285e53fe69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  image: {fileID: 2117814928}
+  cardName: {fileID: 1257921871}
+  description: {fileID: 160796799}
+  level: {fileID: 1553070997}
+  cp: {fileID: 1718240233}
 --- !u!1 &743652524
 GameObject:
   m_ObjectHideFlags: 0
@@ -1534,6 +1554,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d84bbde60d4ae07458539cd864a77325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deckList:
+  - {fileID: 11400000, guid: 26b19c74dfa562f4ca80d7cec56e4c19, type: 2}
+  - {fileID: 11400000, guid: 874a6e9718d349347ba2b6a547285819, type: 2}
   cardPrefab: {fileID: 4738271081190544502, guid: 491231e68d911274d9f22b31d8255465, type: 3}
   hand: {fileID: 2088736538}
   handLeftTransform: {fileID: 73905969}
@@ -1545,6 +1568,8 @@ MonoBehaviour:
   enemyHandRightTransform: {fileID: 282202714}
   enemyDeckTransform: {fileID: 319020762}
   enemyCardParent: {fileID: 470161390}
+  undeadKing: {fileID: 11400000, guid: dd9d0c18c24a53846ace79b9ca254301, type: 2}
+  angelKing: {fileID: 11400000, guid: 20eb043be21de5d40ad9c14a51efc261, type: 2}
 --- !u!1 &1380221428
 GameObject:
   m_ObjectHideFlags: 0
@@ -1991,6 +2016,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1718240231}
   m_CullTransparentMesh: 1
+--- !u!1 &1928093029
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1928093030}
+  m_Layer: 5
+  m_Name: CardStatusUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1928093030
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1928093029}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2122167960}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1986119323
 GameObject:
   m_ObjectHideFlags: 0
@@ -2295,6 +2355,7 @@ RectTransform:
   m_Children:
   - {fileID: 624424237}
   - {fileID: 1293039930}
+  - {fileID: 1928093030}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

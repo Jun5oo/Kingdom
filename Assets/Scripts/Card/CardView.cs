@@ -19,10 +19,11 @@ public class CardView : MonoBehaviour
         descriptionTMP.text = card.Description; 
     }
 
-    GameObject cardStatusUI;
+    [SerializeField] GameObject cardStatusUI;
 
     public void DisplayStatusUI()
     {
+        Debug.Log("DisplayStatusUI"); 
         // Temp 
         UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         cardStatusUI = uiSystem.Pop<CardStatusUI>();
@@ -34,14 +35,15 @@ public class CardView : MonoBehaviour
 
     public void HideStatusUI()
     {
-        // Temp 
+        if (cardStatusUI == null)
+            return; 
+
         cardStatusUI.SetActive(true);
         UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         uiSystem.Push<CardStatusUI>(cardStatusUI);
         cardStatusUI = null; 
         // 
     }
-
     public void UpdateStatusUI()
     {
         if (cardStatusUI == null)
