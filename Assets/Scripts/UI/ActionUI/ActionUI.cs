@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler
+public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
     [SerializeField] TextMeshProUGUI actionType; 
     

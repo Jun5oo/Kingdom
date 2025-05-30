@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class CardMovement : MonoBehaviour
 {
-    public PRS prs;
+    [SerializeField] public PRS prs;
     public PRS PRS
     {
         get { return prs; }
@@ -16,9 +16,9 @@ public class CardMovement : MonoBehaviour
         }
     }
 
-    // Ä«µå°¡ ¿òÁ÷ÀÌ±â ½ÃÀÛÇßÀ» ¶§ 
+    // ì¹´ë“œê°€ ì›€ì§ì´ê¸° ì‹œì‘í–ˆì„ ë•Œ 
     public Action<PRS> OnCardMoved;
-    // Ä«µå°¡ ¿òÁ÷ÀÓÀ» ³¡³ÂÀ» ¶§ 
+    // ì¹´ë“œê°€ ì›€ì§ì„ì„ ëëƒˆì„ ë•Œ 
     public Action OnCardMovedComplete;
 
     bool isMoving = false;

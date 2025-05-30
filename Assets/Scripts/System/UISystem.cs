@@ -1,60 +1,85 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UISystem : MonoBehaviour, IUISystem
 {
+    Dictionary<Type, PoolInfo> poolDictionary;
+
     [Header("Card UI")]
-    [SerializeField] GameObject cardUI;
+    [SerializeField] CardUI cardUI;
 
     [Header("Action UI")]
     [SerializeField] GameObject actionUIPrefab;
-    [SerializeField] GameObject actionUIParent;
+    [SerializeField] Transform actionUIParent;
 
-    Queue<GameObject> actionUIQueue;
+    [Header("Card Status UI")]
+    [SerializeField] GameObject cardStatusUI;
+    [SerializeField] Transform cardStatusUIParent; 
+
 
     void Awake()
     {
-        actionUIQueue = new Queue<GameObject>(); 
+        poolDictionary = new Dictionary<Type, PoolInfo>();
+
+        RegisterPool<ActionUI>(actionUIPrefab, actionUIParent);
+        RegisterPool<CardStatusUI>(cardStatusUI, cardStatusUIParent); 
     }
 
     #region CardUI
-    public void DisplayUI()
+    public void DisplayUI(Card card)
     {
-        cardUI.SetActive(true); 
+        cardUI.OnUpdate(card); 
+        cardUI.gameObject.SetActive(true);
     }
     public void CloseUI()
     {
-        cardUI.SetActive(false); 
+        cardUI.gameObject.SetActive(false); 
     }
     #endregion 
 
-    #region Pooling 
-    public GameObject PopActionUI()
-    {
-        if(actionUIQueue.Count <= 0)
-            actionUIQueue.Enqueue(CreateActionUI());
-
-        GameObject button = actionUIQueue.Dequeue();
-        button.SetActive(true); 
-
-        return button; 
-    }
-    public void PushActionUI(GameObject button)
-    {
-        button.SetActive(false); 
-        actionUIQueue.Enqueue(button);
-    }
-    public GameObject CreateActionUI()
-    {
-        GameObject obj = Instantiate(actionUIPrefab, Vector3.zero, Quaternion.identity, actionUIParent.transform);
-        obj.SetActive(false);
-
-        return obj; 
-    }
-    #endregion 
-
-    public GameObject GetActionUIParent()
+    public Transform GetActionUIParent()
     {
         return actionUIParent; 
     }
+
+    #region Pooling 
+    public void RegisterPool<T>(GameObject prefab, Transform parent) where T: MonoBehaviour, IPoolable
+    {
+        poolDictionary[typeof(T)] = new PoolInfo(prefab, parent); 
+    }
+
+    public GameObject Pop<T>() where T: MonoBehaviour, IPoolable
+    {
+        if (poolDictionary.TryGetValue(typeof(T), out PoolInfo poolInfo))
+        {
+            GameObject obj = null; 
+
+            if (poolInfo.pool.Count == 0)
+                obj = GameObject.Instantiate(poolInfo.prefab, poolInfo.parent);
+      
+            if (obj == null)
+                obj = poolInfo.pool.Dequeue();
+
+            obj.SetActive(true);
+
+            return obj; 
+        }
+
+        Debug.LogError($"No pool register for type {typeof(T)}");
+        return null; 
+    }
+
+    public void Push<T>(GameObject gameObject) where T: MonoBehaviour, IPoolable
+    {
+        if(poolDictionary.TryGetValue(typeof(T), out PoolInfo poolInfo))
+        {
+            gameObject.SetActive(false);
+            poolInfo.pool.Enqueue(gameObject); 
+        }
+
+        else
+            Debug.LogError($"No pool registered for type {typeof(T)}"); 
+    }
+    #endregion 
 }

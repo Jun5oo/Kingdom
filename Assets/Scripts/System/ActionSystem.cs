@@ -15,7 +15,6 @@ public class ActionSystem : MonoBehaviour, IActionSystem
         else
             currentActionName = "Null";
 
-        // ��Ŭ�� �� �����Ϸ��� �׼� ��� 
         if (Input.GetKeyDown(KeyCode.Mouse1))
             CancelAction(); 
     }

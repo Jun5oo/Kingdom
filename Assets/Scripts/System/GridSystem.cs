@@ -38,7 +38,7 @@ public class GridSystem : MonoBehaviour, IGridSystem
     #region Highlight
     public void HighlightGridCells(Predicate<Vector2Int> predicate)
     {
-        // Predicate�� delegate�� �������� bool type ���ϰ��� ������. 
+        // Predicate는 delegate의 일종으로 bool type을 리턴값으로 가진다. 
         foreach(GridCell gridCell in grid.GetAllCells())
         {
             if (predicate(gridCell.GetGridPosition()))

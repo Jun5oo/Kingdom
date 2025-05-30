@@ -2,34 +2,25 @@ using System.Collections.Generic;
 using UnityEngine;
 public class MoveAction : IAction
 {
-    IGridSystem gridSystem;
-    IActionSystem actionSystem; 
-
-    GameObject obj;
-
-    List<Vector2Int> positions;
-
     ActionType actionType;
     public ActionType ActionType { get { return actionType; } }
 
-    public MoveAction(IGridSystem gridSystem, IActionSystem actionSystem, GameObject obj)
+    IGridSystem gridSystem;
+    IActionSystem actionSystem;
+
+    Card card; 
+
+    List<Vector2Int> moveablePositions;
+
+    public MoveAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
-        // CardData�� ��� Data���� �̵��Ÿ��� �����´�, ������ ��� 1�� �׽�Ʈ�� �����Ѵ�. 
-        // ����� �켱 obj�� �޾ƿ���, �̵������� Cell�� ����  
+        actionType = ActionType.Move;
 
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;
 
-        this.obj = obj; 
-
-        positions = new List<Vector2Int>();
-
-        positions.Add(new Vector2Int(-1, 0));
-        positions.Add(new Vector2Int(1, 0));
-        positions.Add(new Vector2Int(0, 1));
-        positions.Add(new Vector2Int(0, -1));
-
-        actionType = ActionType.Move;
+        this.card = card;
+        this.moveablePositions = card.cardData.moveRange; 
     }
 
     public void Enter()
@@ -38,9 +29,9 @@ public class MoveAction : IAction
 
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            Vector2Int currentGridPosition = gridSystem.GetGridPositionOfGameObject(obj); 
+            Vector2Int currentGridPosition = gridSystem.GetGridPositionOfGameObject(card.gameObject); 
 
-            foreach(Vector2Int position in positions)
+            foreach(Vector2Int position in moveablePositions)
             {
                 Vector2Int availablePosition = currentGridPosition + position; 
                 if (availablePosition == gridPosition && !gridSystem.IsObjectOnGridPosition(gridPosition))
@@ -59,7 +50,7 @@ public class MoveAction : IAction
     }
     public bool IsValid()
     {
-        if (obj.GetComponent<Card>().CardState != CardState.Hand)
+        if (card.CardState != CardState.Hand)
             return true;
 
         return false; 
@@ -69,15 +60,21 @@ public class MoveAction : IAction
     {
         Exit();
 
-        Vector2Int currentPos = gridSystem.GetGridPositionOfGameObject(obj);
-        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition);
-        PRS prs = new PRS(targetPos, obj.transform.rotation, Vector3.one); 
+        // Temp 
+        card.GetComponent<CardView>().HideStatusUI(); 
+        //
 
-        CardMovement cardMovement = obj.GetComponent<CardMovement>();
+        Vector2Int currentPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
+
+        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition);
+        PRS prs = new PRS(targetPos, card.gameObject.transform.rotation, Vector3.one); 
+
+        CardMovement cardMovement = card.gameObject.GetComponent<CardMovement>();
         cardMovement.MoveTransform(prs, 0.7f, false, () => 
         { 
             gridSystem.MoveObjectFrom(currentPos, gridPosition);
             actionSystem?.CancelAction(); 
+            card.GetComponent<CardView>().DisplayStatusUI();
         });
     }
 

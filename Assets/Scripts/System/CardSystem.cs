@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CardSystem : MonoBehaviour, ICardSystem
@@ -7,10 +8,12 @@ public class CardSystem : MonoBehaviour, ICardSystem
     IUISystem uiSystem;
     ISelectionSystem selectionSystem;
     IActionSystem actionSystem;
-
-    // List<Card> deckList; 
+ 
     List<Card> handList;
     List<Card> enemyHandList;
+
+    // Test 
+    [SerializeField] List<CardData> deckList;
 
     Dictionary<int, PlayerData> players; 
 
@@ -86,8 +89,8 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
     public GameObject CreateCard(int playerID)
     {
-        // ����� CreateCard�� �ܼ��� CardPrefab���� ����������, ���Ŀ��� deckList�κ��� Card ��ü�� ������ �Ŀ� ����Ǿ��ִ� cardData�� ������ ���� 
-        CardData cardData = null;
+        // 현재는 테스트 용으로 deckList에 두 가지 종류의 카드만을 넣고 랜덤 생성. 나중에는 자신이 구성한 덱의 카드 데이터들을 가지고 순차적으로 생성예정 (셔플 함수도 구현예정) 
+        CardData cardData = deckList[Random.Range(0, 2)]; 
 
         if (!players.ContainsKey(playerID))
         {
@@ -105,8 +108,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
 
-        // ���⼭ Card���� Event�� �ٿ��� ī�尡 Summon �Ǹ� RemoveCardFromHand�� �۵� 
-
+        // 이 부분에서 이제 card에 Event를 붙이는 것을 고려중 
         return cardObject; 
     }
 
@@ -159,27 +161,30 @@ public class CardSystem : MonoBehaviour, ICardSystem
                     cardObjLerpX[i] = (i + 1) * interval;
                 break;
         }
-
-        float height = playerID == 0 ? 0.5f : -0.5f; 
+        
+        float height = playerID == 0 ? 0.5f : -0.5f;
+        float heightBuffer = playerID == 0 ? 0.3f : 0.1f; 
 
         for (int i = 0; i < cardCount; i++)
         {
             float posX = Mathf.Lerp(left.position.x, right.position.x, cardObjLerpX[i]);
-            float posY = hand.transform.position.y + (0.01f) * i;
+            float posY = hand.transform.position.y + (heightBuffer) * i;
             float posZ = hand.transform.position.z + EvaluateCurveValue(height, cardObjLerpX[i]);
 
             float rotationX = handList[i].gameObject.transform.rotation.x;
             float rotationY = Mathf.LerpAngle(left.eulerAngles.y, right.eulerAngles.y, cardObjLerpX[i]);
-            float rotationZ = 180f;
-
+            float rotationZ = playerID == 0 ? 180f : 0f; 
             Quaternion rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
-            handList[i].gameObject.GetComponent<CardMovement>().MoveTransform(new PRS(new Vector3(posX, posY, posZ), rotation, Vector3.one), 0.5f);
+
+            Vector3 scale = playerID == 0 ? Vector3.one : Vector3.one * 2; 
+
+            handList[i].gameObject.GetComponent<CardMovement>().MoveTransform(new PRS(new Vector3(posX, posY, posZ), rotation, scale), 0.5f);
         }
     }
 
     float EvaluateCurveValue(float height, float lerpValue)
     {
-        // x�� 0���� 1�̰� ���̰� 0.5�� � 
+        // x가 0~1, 높이가 0.5 
         AnimationCurve curve = new AnimationCurve();
 
         curve.AddKey(0, 0);

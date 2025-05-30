@@ -4,11 +4,13 @@ using UnityEngine;
 public class CardActionController : MonoBehaviour
 {
     IUISystem uiSystem;
-    IActionSystem actionSystem; 
+    IActionSystem actionSystem;
 
     List<IAction> actions;
     List<ActionUI> actionUIList;
 
+    [Header("Components")]
+    [SerializeField] Card card; 
     [SerializeField] CardHover cardHover; 
     [SerializeField] Transform actionUIPoisition; 
 
@@ -16,12 +18,11 @@ public class CardActionController : MonoBehaviour
     {
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
-
-        // ���Ŀ��� ActionList�� CardData�κ��� �޾ƿ� �ʱ�ȭ ������ ���� 
-        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, this.gameObject);
-        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, this.gameObject);
-        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, this.gameObject);
-        KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, this.gameObject);
+        
+        // CardData로부터 Action을 받아올 예정 
+        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, card);
+        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, card);
+        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, card);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
@@ -40,8 +41,8 @@ public class CardActionController : MonoBehaviour
 
     public void ShowEnableActions()
     {
-        GameObject uiLayout = uiSystem.GetActionUIParent();
-        uiLayout.transform.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
+        Transform uiLayout = uiSystem.GetActionUIParent();
+        uiLayout.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
         foreach(IAction action in actions)
         {
@@ -69,7 +70,7 @@ public class CardActionController : MonoBehaviour
         foreach(ActionUI actionUI in actionUIList)
         {
             actionUI.OnUIClicked -= ActionUiClicked;
-            uiSystem.PushActionUI(actionUI.gameObject); 
+            uiSystem.Push<ActionUI>(actionUI.gameObject); 
         }
 
         actionUIList.Clear(); 
