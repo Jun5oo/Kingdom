@@ -10,7 +10,9 @@ public class Card : MonoBehaviour
     [SerializeField] CardHover cardHover;
     [SerializeField] CardMovement cardMovement;
     [SerializeField] CardActionController cardActionController;
+    [SerializeField] private bool isKing; 
 
+    public bool IsKing => isKing;
 
     public CardState CardState 
     {   get { return cardState; }
@@ -22,8 +24,8 @@ public class Card : MonoBehaviour
         this.cardData = cardData;
         this.cardState = CardState.Hand;
 
-        this.isMyCard = isMyCard; 
-
+        this.isMyCard = isMyCard;
+        if(cardData != null) this.isKing = cardData.isKing;
         cardHover?.Init(uiSystem);
         cardActionController?.Init(uiSystem, actionSystem, gridSystem); 
     }

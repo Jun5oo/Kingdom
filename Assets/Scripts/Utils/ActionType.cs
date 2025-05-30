@@ -5,5 +5,6 @@ public enum ActionType
     Summon, 
     Move, 
     Attack, 
-    Upgrade
+    Upgrade,
+    KingSummon,
 }

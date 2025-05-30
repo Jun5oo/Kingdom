@@ -14,8 +14,8 @@ public class MoveAction : IAction
 
     public MoveAction(IGridSystem gridSystem, IActionSystem actionSystem, GameObject obj)
     {
-        // CardData¸¦ ¾ò°í Data¿¡¼­ ÀÌµ¿°Å¸®¸¦ °¡Á®¿Â´Ù, ÇöÀçÀÇ °æ¿ì 1·Î Å×½ºÆ®¸¦ ÁøÇàÇÑ´Ù. 
-        // ÇöÀç´Â ¿ì¼± obj¸¦ ¹Þ¾Æ¿À°í, ÀÌµ¿°¡´ÉÇÑ CellÀ» ÁöÁ¤  
+        // CardDataï¿½ï¿½ ï¿½ï¿½ï¿½ Dataï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Å¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ 1ï¿½ï¿½ ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½. 
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ì¼± objï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½, ï¿½Ìµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Cellï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½  
 
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;

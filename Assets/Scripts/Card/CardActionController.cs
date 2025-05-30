@@ -17,10 +17,11 @@ public class CardActionController : MonoBehaviour
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
 
-        // ÃßÈÄ¿¡´Â ActionList¸¦ CardData·ÎºÎÅÍ ¹Ş¾Æ¿Í ÃÊ±âÈ­ ½ÃÄÑÁÙ ¿¹Á¤ 
+        // ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ ActionListï¿½ï¿½ CardDataï¿½Îºï¿½ï¿½ï¿½ ï¿½Ş¾Æ¿ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
         SummonAction summonAction = new SummonAction(gridSystem, actionSystem, this.gameObject);
         MoveAction moveAction = new MoveAction(gridSystem, actionSystem, this.gameObject);
         AttackAction attackAction = new AttackAction(gridSystem, actionSystem, this.gameObject);
+        KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, this.gameObject);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
@@ -28,6 +29,7 @@ public class CardActionController : MonoBehaviour
         actions.Add(summonAction);
         actions.Add(moveAction);
         actions.Add(attackAction);
+        actions.Add(kingSummonAction);
 
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
@@ -42,19 +44,24 @@ public class CardActionController : MonoBehaviour
         uiLayout.transform.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
         foreach(IAction action in actions)
-        { 
-            if (action.IsValid())
-            {
-                GameObject obj = uiSystem.PopActionUI();
-                ActionUI actionUI = obj.GetComponent<ActionUI>();
+        {
+            if (!action.IsValid())
+                continue;
 
-                actionUI.Init(action);
-                
-                actionUI.OnUIClicked -= ActionUiClicked;
-                actionUI.OnUIClicked += ActionUiClicked;
+            // ì™• ì¹´ë“œì´ë©´ UIë¥¼ ìƒì„±í•˜ì§€ ì•ŠìŒ
+            Card card = this.gameObject.GetComponent<Card>();
+            if (card != null && card.IsKing)
+                continue;
 
-                actionUIList.Add(actionUI); 
-            }
+            GameObject obj = uiSystem.PopActionUI();
+            ActionUI actionUI = obj.GetComponent<ActionUI>();
+
+            actionUI.Init(action);
+
+            actionUI.OnUIClicked -= ActionUiClicked;
+            actionUI.OnUIClicked += ActionUiClicked;
+
+            actionUIList.Add(actionUI);
         }
     }
     public void HideEnableActions()

@@ -7,6 +7,7 @@ public class CardData : ScriptableObject
     public int attack;
     public int hp;
     public int attackRange;
+    public bool isKing = false;
 
     public GameObject testObject; 
 }
