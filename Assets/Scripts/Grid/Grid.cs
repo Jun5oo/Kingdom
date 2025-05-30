@@ -54,7 +54,7 @@ public class Grid
 
                 gridCell.OnClicked += HandleGridCellClicked; 
 
-                // isMyCell = ¿Õ Ä«µå¸¦ ³õÀ» ¼ö ÀÖ´Â Cell
+                // isMyCell = ï¿½ï¿½ Ä«ï¿½å¸¦ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ Cell
                 if (i < 3)
                     gridCell.isMyCell = true; 
                 else 

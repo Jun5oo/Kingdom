@@ -193,6 +193,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
     private Card CreateKing(int playerID)
     {
         GameObject kingObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity, players[playerID].cardParent);
+        kingObj.tag = "King";
         Card card = kingObj.GetComponent<Card>();
 
         CardData kingData = new CardData(); // 실제로는 왕 전용 CardData 불러와야 함

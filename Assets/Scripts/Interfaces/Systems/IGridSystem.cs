@@ -13,4 +13,7 @@ public interface IGridSystem
     public GridCell GetGridCell(Vector2Int gridPosition);
     public Vector2Int GetGridPositionOfGameObject(GameObject go);
     public GameObject GetGameObjectOnGrid(Vector2Int gridPosition);
+
+    public Vector2Int GetGridPosition(Vector3 worldPosition);
+    public bool IsValidPosition(Vector2Int pos);
 }
