@@ -2,6 +2,10 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// 카드 오브젝트의 View를 처리하는 클래스
+/// </summary>
+
 public class CardView : MonoBehaviour
 {
     Card card; 
@@ -23,14 +27,12 @@ public class CardView : MonoBehaviour
 
     public void DisplayStatusUI()
     {
-        Debug.Log("DisplayStatusUI"); 
-        // Temp 
+        // Temp (현재는 직접적으로 찾아오지만, 초기화 시 IUISystem을 주입해줄 예정 
         UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         cardStatusUI = uiSystem.Pop<CardStatusUI>();
         cardStatusUI.GetComponent<CardStatusUI>().OnUpdate(card.Cp, card.Movement); 
         cardStatusUI.SetActive(true); 
         cardStatusUI.transform.position = Camera.main.WorldToScreenPoint(transform.position);
-        // 
     }
 
     public void HideStatusUI()
@@ -39,10 +41,11 @@ public class CardView : MonoBehaviour
             return; 
 
         cardStatusUI.SetActive(true);
+
+        // Temp
         UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         uiSystem.Push<CardStatusUI>(cardStatusUI);
         cardStatusUI = null; 
-        // 
     }
     public void UpdateStatusUI()
     {

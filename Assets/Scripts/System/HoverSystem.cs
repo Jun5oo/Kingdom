@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.EventSystems; 
 
+/// <summary>
+/// Hover를 처리하는 System 클래스 
+/// </summary>
+
 public class HoverSystem : MonoBehaviour, IHoverSystem
 {
     private IHoverable currentHoverable = null;

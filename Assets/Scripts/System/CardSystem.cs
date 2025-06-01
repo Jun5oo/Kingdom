@@ -2,6 +2,10 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// 카드를 관리하는 시스템 클래스 
+/// </summary>
+
 public class CardSystem : MonoBehaviour, ICardSystem
 {
     IGridSystem gridSystem;
@@ -45,11 +49,6 @@ public class CardSystem : MonoBehaviour, ICardSystem
             DrawCard(playerID);
         if (Input.GetKeyDown(KeyCode.E))
             DrawCard(enemyID);
-
-        if (Input.GetKeyDown(KeyCode.K))
-            SummonKing(playerKing);
-        if (Input.GetKeyDown(KeyCode.L))
-            SummonKing(enemyKing);
     }
 
     public void Init(IGridSystem gridSystem, IUISystem uiSystem, ISelectionSystem selectionSystem, IActionSystem actionSystem)
@@ -68,10 +67,6 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         players.Add(playerID, player);
         players.Add(enemyID, enemy);
-
-        //왕 생성 및 참조 저장
-        playerKing = CreateKing(playerID);
-        enemyKing = CreateKing(enemyID);
     }
 
     public void DrawCard(int playerID)
@@ -84,13 +79,12 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         if (cardObject.TryGetComponent<Card>(out card))
             AddCardToHand(playerID, card);
-
     }
 
     public GameObject CreateCard(int playerID)
     {
-        // 현재는 테스트 용으로 deckList에 두 가지 종류의 카드만을 넣고 랜덤 생성. 나중에는 자신이 구성한 덱의 카드 데이터들을 가지고 순차적으로 생성예정 (셔플 함수도 구현예정) 
-        CardData cardData = deckList[Random.Range(0, 2)]; 
+        // 현재는 테스트 용으로 deckList에 세 가지 종류의 카드만을 넣고 랜덤 생성. 나중에는 자신이 구성한 덱의 카드 데이터들을 가지고 순차적으로 생성예정 (셔플 함수도 구현예정) 
+        CardData cardData = deckList[Random.Range(0, deckList.Count)]; 
 
         if (!players.ContainsKey(playerID))
         {
@@ -109,7 +103,6 @@ public class CardSystem : MonoBehaviour, ICardSystem
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
         card.GetComponent<CardView>().Init(card); 
 
-        // 이 부분에서 이제 card에 Event를 붙이는 것을 고려중 
         return cardObject; 
     }
 
@@ -196,39 +189,4 @@ public class CardSystem : MonoBehaviour, ICardSystem
     }
     #endregion
 
-    #region Creation King 
-    [SerializeField] CardData undeadKing;
-    [SerializeField] CardData angelKing; 
-
-    private Card CreateKing(int playerID)
-    {
-        GameObject kingObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity, players[playerID].cardParent);
-        kingObj.SetActive(false); 
-        kingObj.tag = "King";
-        Card card = kingObj.GetComponent<Card>();
-        CardData kingData = playerID == 0 ? undeadKing : angelKing; 
-
-        bool isMyCard = playerID == 0;
-
-        card.Init(uiSystem, gridSystem, actionSystem, isMyCard, kingData);
-
-        return card;
-    }
-
-    private void SummonKing(Card kingCard)
-    {
-        if (kingCard == null)
-        {
-            Debug.LogError("King card is not assigned.");
-            return;
-        }
-
-        KingSummonAction summonAction = new KingSummonAction(gridSystem, actionSystem, kingCard);
-
-        if (summonAction.IsValid())
-        {
-            actionSystem.EnterAction(summonAction);
-        }
-    }
-    #endregion 
 }

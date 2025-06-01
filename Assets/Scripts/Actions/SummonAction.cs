@@ -1,9 +1,12 @@
-using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// 소환액션 클래스
+/// </summary>
 
 public class SummonAction : IAction
 {
-    ActionType actionType; 
+    private ActionType actionType; 
     public ActionType ActionType { get { return actionType; } }
 
     IGridSystem gridSystem;
@@ -15,42 +18,18 @@ public class SummonAction : IAction
     {
         actionType = ActionType.Summon;
 
-        // 현재는 GameObject를 받지만, 추후에는 CardData를 받을 것 
-        this.card = card;
         this.gridSystem = gridSystem; 
         this.actionSystem = actionSystem;
+        this.card = card;
     }
 
     public void Enter()
     {
         Exit();
 
-        GameObject[] kings = GameObject.FindGameObjectsWithTag("King");
-
-        GameObject myKing = null;
-
-        foreach (GameObject kingObj in kings)
-        {
-            Card kingCard = kingObj.GetComponent<Card>();
-            if (kingCard != null && kingCard.isMyCard == card.isMyCard)
-            {
-                myKing = kingObj;
-                break;
-            }
-        }
-
-        if (myKing == null)
-        {
-            Debug.LogWarning("해당 카드와 동일 진영의 왕을 찾을 수 없습니다!");
-            return;
-        }
-
-        Vector2Int kingPos = gridSystem.GetGridPosition(myKing.transform.position);
-        List<Vector2Int> validPositions = GetAdjacentPositions(kingPos);
-
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            return validPositions.Contains(gridPosition) && !gridSystem.IsObjectOnGridPosition(gridPosition);
+            return CanSummonAt(gridPosition); 
         });
 
         gridSystem.OnActionOccured += SummonCard;
@@ -58,33 +37,31 @@ public class SummonAction : IAction
 
     public void Exit()
     {
-        gridSystem.UnhighlightGridCells();
+        gridSystem?.UnhighlightGridCells();
         gridSystem.OnActionOccured -= SummonCard;
     }
 
     public bool IsValid()
     {
-        if (card.GetComponent<Card>().CardState != CardState.Hand)
-            return false; 
+        // 추후에는 다른 플레이어의 왕 카드 또는 카드는 소환할 수 없어야 함 
+        // if(!card.IsMyCard) return false; 
 
-        return true; 
+        return card.CardState == CardState.Hand; 
     }
 
     public void SummonCard(Vector2Int gridPosition)
     {
         Exit();
-
         // Temp 
         CardSystem cardSystem = GameObject.FindAnyObjectByType<CardSystem>();
-        if (card.isMyCard)
+        if (card.IsMyCard)
             cardSystem.RemoveCardFromHand(0, card);
         else
             cardSystem.RemoveCardFromHand(1, card); 
-        // 
 
         // 수치가 하드코딩됨 나중에 
         Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.2f);
-        Vector3 eulerAngles = card.isMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
+        Vector3 eulerAngles = card.IsMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
         Quaternion quaternion = Quaternion.Euler(eulerAngles); 
         PRS prs = new PRS(targetPos, quaternion, Vector3.one);
 
@@ -94,34 +71,46 @@ public class SummonAction : IAction
             actionSystem?.CancelAction();
             // Temp 
             card.GetComponent<CardView>().DisplayStatusUI(); 
-            // 
         });
 
         // 나중에 event를 통해서 변경하는 방법 모색 
         card.CardState = CardState.Field;
     }
 
-    private List<Vector2Int> GetAdjacentPositions(Vector2Int center)
+    private bool CanSummonAt(Vector2Int pos)
     {
-        List<Vector2Int> positions = new List<Vector2Int>();
-        Vector2Int[] deltas = {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(-1, 1),  // ↖
-            new Vector2Int(1, 1),   // ↗
-            new Vector2Int(-1, -1), // ↙
-            new Vector2Int(1, -1)   // ↘
-        };
+        if (gridSystem.IsObjectOnGridPosition(pos))
+            return false;
 
-        foreach (var delta in deltas)
+        if (card.IsKing)
         {
-            Vector2Int checkPos = center + delta;
-            if (gridSystem.IsValidPosition(checkPos))
-                positions.Add(checkPos);
+            if (card.IsMyCard)
+                return pos.y < 3;
+            else
+                return pos.y >= 5; 
         }
+    
+        Vector2Int center = GetKingPosition();
+        // 추후 GetKingPosition 다시 작성 
 
-        return positions;
+        if (center == -Vector2Int.one)
+            return false;
+
+        int distanceX = Mathf.Abs(center.x - pos.x);
+        int distanceY = Mathf.Abs(center.y - pos.y); 
+
+        return distanceX <= 1 && distanceY <= 1;
+    }
+
+    private Vector2Int GetKingPosition()
+    {
+        // Temp 
+        GameObject obj = GameObject.FindGameObjectWithTag("King");
+        Vector2Int gridPosition = -Vector2Int.one; 
+
+        if(obj != null)
+            gridPosition = gridSystem.GetGridPositionOfGameObject(obj);
+        
+        return gridPosition; 
     }
 }

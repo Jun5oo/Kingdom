@@ -75,8 +75,8 @@ public class KingSummonAction : IAction
     private bool IsValidKingPosition(Vector2Int pos)
     {
         Card card = this.card; 
-        if (card.isMyCard)
-        {
+        if (card.IsMyCard)
+        {   
             // 내 왕은 아래쪽 (y < 3)
             return pos.y < 3;
         }

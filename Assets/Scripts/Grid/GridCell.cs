@@ -1,8 +1,12 @@
-using JetBrains.Annotations;
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+/// <summary>
+/// GridCell을 처리한느 클래스  
+/// </summary>
+
 public class GridCell : MonoBehaviour, IHoverable 
 {
     private Vector2Int gridPosition;
@@ -62,6 +66,9 @@ public class GridCell : MonoBehaviour, IHoverable
     #endregion
 
     #region Action 
+    /// <summary>
+    /// GridSystem에 해당 GridCell이 클릭되었음을 전달. 
+    /// </summary>
     public Action<GridCell> OnClicked;
     public void OnMouseDown()
     {

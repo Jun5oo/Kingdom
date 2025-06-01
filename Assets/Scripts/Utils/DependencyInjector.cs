@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// System에 필요한 객체를 주입하는 클래스 
+/// </summary>
+
 public class DependencyInjector : MonoBehaviour
 {
     [SerializeField] GridSystem gridSystem; // Nothing to inject 

@@ -3,6 +3,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// 행동 가능한 UI 오브젝트 클래스. 
+/// </summary>
+
 public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
     [SerializeField] TextMeshProUGUI actionType; 
