@@ -24,15 +24,28 @@ public class SummonAction : IAction
     public void Enter()
     {
         Exit();
-        // 왕의 위치 찾기
-        GameObject king = GameObject.FindWithTag("King");
-        if (king == null)
+
+        GameObject[] kings = GameObject.FindGameObjectsWithTag("King");
+
+        GameObject myKing = null;
+
+        foreach (GameObject kingObj in kings)
         {
-            Debug.LogWarning("왕이 배치되지 않았습니다!");
+            Card kingCard = kingObj.GetComponent<Card>();
+            if (kingCard != null && kingCard.isMyCard == card.isMyCard)
+            {
+                myKing = kingObj;
+                break;
+            }
+        }
+
+        if (myKing == null)
+        {
+            Debug.LogWarning("해당 카드와 동일 진영의 왕을 찾을 수 없습니다!");
             return;
         }
 
-        Vector2Int kingPos = gridSystem.GetGridPosition(king.transform.position);
+        Vector2Int kingPos = gridSystem.GetGridPosition(myKing.transform.position);
         List<Vector2Int> validPositions = GetAdjacentPositions(kingPos);
 
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
