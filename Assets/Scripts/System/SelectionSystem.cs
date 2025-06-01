@@ -16,8 +16,6 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     {
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;
-
-        this.actionSystem.OnCancelOccured += OnExitSelected; 
     }
     void Update()
     {

@@ -33,3 +33,4 @@ MonoBehaviour:
   - {x: 0, y: -1}
   movement: 2
   sprite: {fileID: 21300000, guid: 69edbdd041319394c9854a7de31dbc03, type: 3}
+  actions: 000000000100000002000000

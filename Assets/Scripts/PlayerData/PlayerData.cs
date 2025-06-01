@@ -14,7 +14,9 @@ public class PlayerData
     public Transform handRight;
     public Transform deck;
 
-    public Transform cardParent; 
+    public Transform cardParent;
+
+    public Vector2Int kingPos; 
 
     public PlayerData(int playerID, Transform hand, Transform handLeft, Transform handRight, Transform deck, Transform cardParent)
     {
@@ -28,5 +30,7 @@ public class PlayerData
 
         handList = new List<Card>();
         deckList = new List<Card>();
+
+        kingPos = -Vector2Int.one; 
     }
 }

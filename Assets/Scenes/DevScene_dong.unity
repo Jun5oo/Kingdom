@@ -1557,6 +1557,7 @@ MonoBehaviour:
   deckList:
   - {fileID: 11400000, guid: 26b19c74dfa562f4ca80d7cec56e4c19, type: 2}
   - {fileID: 11400000, guid: 874a6e9718d349347ba2b6a547285819, type: 2}
+  - {fileID: 11400000, guid: dd9d0c18c24a53846ace79b9ca254301, type: 2}
   cardPrefab: {fileID: 4738271081190544502, guid: 491231e68d911274d9f22b31d8255465, type: 3}
   hand: {fileID: 2088736538}
   handLeftTransform: {fileID: 73905969}

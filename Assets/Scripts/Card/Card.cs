@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -13,8 +14,9 @@ public class Card : MonoBehaviour
     [SerializeField] private int level;
     [SerializeField] private int currentCp;
     // Temp 
-    [SerializeField] private int movement; 
+    [SerializeField] private int movement;
     // 
+    [SerializeField] private List<ActionType> actionTypes; 
 
     [Header("Card State")]
     [SerializeField] CardState cardState;
@@ -42,6 +44,7 @@ public class Card : MonoBehaviour
     public int Cp { get {  return currentCp; } }
 
     public int Movement { get { return movement; } }
+    public List<ActionType> Actions { get { return actionTypes; } }
 
     public void Init(IUISystem uiSystem, IGridSystem gridSystem, IActionSystem actionSystem, bool isMyCard, CardData cardData)
     {
@@ -52,7 +55,10 @@ public class Card : MonoBehaviour
         this.cardDescription = cardData.description;
         this.level = cardData.level;
         this.currentCp = cardData.cp;
-        this.movement = cardData.movement; 
+        
+        //
+        this.movement = cardData.movement;
+        this.actionTypes = cardData.actions; 
 
         this.cardState = CardState.Hand;
         this.isMyCard = isMyCard;

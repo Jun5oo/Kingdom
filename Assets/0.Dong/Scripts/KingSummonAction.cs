@@ -76,7 +76,7 @@ public class KingSummonAction : IAction
     {
         Card card = this.card; 
         if (card.isMyCard)
-        {
+        {   
             // 내 왕은 아래쪽 (y < 3)
             return pos.y < 3;
         }

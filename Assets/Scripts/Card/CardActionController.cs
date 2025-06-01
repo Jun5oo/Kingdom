@@ -18,24 +18,18 @@ public class CardActionController : MonoBehaviour
     {
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
-        
-        // CardData로부터 Action을 받아올 예정 
-        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, card);
-        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, card);
-        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, card);
-        // KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, card);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
 
-        actions.Add(summonAction);
-        actions.Add(moveAction);
-        actions.Add(attackAction);
-        // actions.Add(kingSummonAction);
+        foreach (ActionType actionType in card.Actions)
+        {
+            IAction action = actionSystem?.Create(gridSystem, card, actionType);
+            actions.Add(action); 
+        }
 
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
-
         cardHover.OnCardSelected += ShowEnableActions;
         cardHover.OnCardDeselected += HideEnableActions; 
     }
@@ -50,18 +44,14 @@ public class CardActionController : MonoBehaviour
             if (!action.IsValid())
                 continue;
 
-            // 왕 카드이면 UI를 생성하지 않음
-            if (card != null && card.IsKing)
-                continue;
-
             // Temp 
             GameObject obj = uiSystem.Pop<ActionUI>(); 
             ActionUI actionUI = obj.GetComponent<ActionUI>();
 
             actionUI.Init(action);
 
-            actionUI.OnUIClicked -= ActionUiClicked;
-            actionUI.OnUIClicked += ActionUiClicked;
+            actionUI.OnUIClicked -= ActionUIClicked;
+            actionUI.OnUIClicked += ActionUIClicked;
 
             actionUIList.Add(actionUI);
         }
@@ -70,13 +60,13 @@ public class CardActionController : MonoBehaviour
     {
         foreach(ActionUI actionUI in actionUIList)
         {
-            actionUI.OnUIClicked -= ActionUiClicked;
+            actionUI.OnUIClicked -= ActionUIClicked;
             uiSystem.Push<ActionUI>(actionUI.gameObject); 
         }
 
         actionUIList.Clear(); 
     }
-    public void ActionUiClicked(IAction action) => actionSystem?.EnterAction(action);
+    public void ActionUIClicked(IAction action) => actionSystem?.EnterAction(action);
     public bool IsActionValid() => true;
 
     public void OnDestroy()

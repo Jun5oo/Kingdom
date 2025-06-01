@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SummonAction : IAction
 {
-    ActionType actionType; 
+    private ActionType actionType; 
     public ActionType ActionType { get { return actionType; } }
 
     IGridSystem gridSystem;
@@ -15,29 +14,18 @@ public class SummonAction : IAction
     {
         actionType = ActionType.Summon;
 
-        // 현재는 GameObject를 받지만, 추후에는 CardData를 받을 것 
-        this.card = card;
         this.gridSystem = gridSystem; 
         this.actionSystem = actionSystem;
+        this.card = card;
     }
 
     public void Enter()
     {
         Exit();
-        // 왕의 위치 찾기
-        GameObject king = GameObject.FindWithTag("King");
-        if (king == null)
-        {
-            Debug.LogWarning("왕이 배치되지 않았습니다!");
-            return;
-        }
-
-        Vector2Int kingPos = gridSystem.GetGridPosition(king.transform.position);
-        List<Vector2Int> validPositions = GetAdjacentPositions(kingPos);
 
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            return validPositions.Contains(gridPosition) && !gridSystem.IsObjectOnGridPosition(gridPosition);
+            return CanSummonAt(gridPosition); 
         });
 
         gridSystem.OnActionOccured += SummonCard;
@@ -45,16 +33,16 @@ public class SummonAction : IAction
 
     public void Exit()
     {
-        gridSystem.UnhighlightGridCells();
+        gridSystem?.UnhighlightGridCells();
         gridSystem.OnActionOccured -= SummonCard;
     }
 
     public bool IsValid()
     {
-        if (card.GetComponent<Card>().CardState != CardState.Hand)
-            return false; 
+        // 추후에는 다른 플레이어의 왕 카드 또는 카드는 소환할 수 없어야 함 
+        // if(!card.IsMyCard) return false; 
 
-        return true; 
+        return card.CardState == CardState.Hand; 
     }
 
     public void SummonCard(Vector2Int gridPosition)
@@ -88,27 +76,36 @@ public class SummonAction : IAction
         card.CardState = CardState.Field;
     }
 
-    private List<Vector2Int> GetAdjacentPositions(Vector2Int center)
+    private bool CanSummonAt(Vector2Int pos)
     {
-        List<Vector2Int> positions = new List<Vector2Int>();
-        Vector2Int[] deltas = {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right,
-            new Vector2Int(-1, 1),  // ↖
-            new Vector2Int(1, 1),   // ↗
-            new Vector2Int(-1, -1), // ↙
-            new Vector2Int(1, -1)   // ↘
-        };
+        if (gridSystem.IsObjectOnGridPosition(pos))
+            return false;
 
-        foreach (var delta in deltas)
+        if (card.IsKing)
         {
-            Vector2Int checkPos = center + delta;
-            if (gridSystem.IsValidPosition(checkPos))
-                positions.Add(checkPos);
+            Debug.Log("IsKing"); 
+
+            if (card.isMyCard)
+                return pos.y < 3;
+            else
+                return pos.y >= 5; 
         }
 
-        return positions;
+        Vector2Int center = GetKingPosition();
+        // 추후 GetKingPosition 다시 작성 
+
+        int distanceX = Mathf.Abs(center.x - pos.x);
+        int distanceY = Mathf.Abs(center.y - pos.y); 
+
+        return distanceX <= 1 && distanceY <= 1;
+    }
+
+    private Vector2Int GetKingPosition()
+    {
+        // Temp 
+        GameObject obj = GameObject.FindGameObjectWithTag("King");
+        Vector2Int gridPosition = gridSystem.GetGridPositionOfGameObject(obj);
+        // 
+        return gridPosition; 
     }
 }
