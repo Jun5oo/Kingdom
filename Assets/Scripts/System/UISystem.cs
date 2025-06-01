@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// UI를 관리하는 System 클래스 
+/// </summary>
+
 public class UISystem : MonoBehaviour, IUISystem
 {
     Dictionary<Type, PoolInfo> poolDictionary;

@@ -1,6 +1,10 @@
-using NUnit.Framework;
 using System;
 using UnityEngine;
+
+/// <summary>
+/// Action을 처리하는 System 클래스 
+/// </summary>
+
 public class ActionSystem : MonoBehaviour, IActionSystem
 {
     [SerializeField] IAction currentAction;
@@ -37,9 +41,16 @@ public class ActionSystem : MonoBehaviour, IActionSystem
         currentAction?.Exit();
         currentAction = null;
     }
+    /// <summary>
+    /// 현재 Action이 진행중인지 여부 확인. 
+    /// </summary>
+    /// <returns>진행중이면 True, 아니면 False</returns>
     public bool IsActionInProgress() => currentAction == null ? false : true;
     #endregion
 
+    /// <summary>
+    /// 실행 가능한 Action 동적 생성 
+    /// </summary>
     public IAction Create(IGridSystem gridSystem, Card card, ActionType actionType)
     {
         IAction action = null; 

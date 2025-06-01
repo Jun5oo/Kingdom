@@ -1,7 +1,10 @@
 using DG.Tweening;
 using System;
-using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
+
+/// <summary>
+/// 카드 오브젝트의 이동을 담당하는 클래스
+/// </summary>
 
 public class CardMovement : MonoBehaviour
 {
@@ -22,7 +25,6 @@ public class CardMovement : MonoBehaviour
     public Action OnCardMovedComplete;
 
     bool isMoving = false;
-
     public bool IsMoving() => isMoving;
 
     public void MoveTransform(PRS targetPRS, float duration, bool isHover = false, Action callback = null)

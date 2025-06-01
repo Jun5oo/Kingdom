@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 소환액션 클래스
+/// </summary>
+
 public class SummonAction : IAction
 {
     private ActionType actionType; 
@@ -48,18 +52,16 @@ public class SummonAction : IAction
     public void SummonCard(Vector2Int gridPosition)
     {
         Exit();
-
         // Temp 
         CardSystem cardSystem = GameObject.FindAnyObjectByType<CardSystem>();
-        if (card.isMyCard)
+        if (card.IsMyCard)
             cardSystem.RemoveCardFromHand(0, card);
         else
             cardSystem.RemoveCardFromHand(1, card); 
-        // 
 
         // 수치가 하드코딩됨 나중에 
         Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.2f);
-        Vector3 eulerAngles = card.isMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
+        Vector3 eulerAngles = card.IsMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
         Quaternion quaternion = Quaternion.Euler(eulerAngles); 
         PRS prs = new PRS(targetPos, quaternion, Vector3.one);
 
@@ -69,7 +71,6 @@ public class SummonAction : IAction
             actionSystem?.CancelAction();
             // Temp 
             card.GetComponent<CardView>().DisplayStatusUI(); 
-            // 
         });
 
         // 나중에 event를 통해서 변경하는 방법 모색 
@@ -83,16 +84,17 @@ public class SummonAction : IAction
 
         if (card.IsKing)
         {
-            Debug.Log("IsKing"); 
-
-            if (card.isMyCard)
+            if (card.IsMyCard)
                 return pos.y < 3;
             else
                 return pos.y >= 5; 
         }
-
+    
         Vector2Int center = GetKingPosition();
         // 추후 GetKingPosition 다시 작성 
+
+        if (center == -Vector2Int.one)
+            return false;
 
         int distanceX = Mathf.Abs(center.x - pos.x);
         int distanceY = Mathf.Abs(center.y - pos.y); 
@@ -104,8 +106,11 @@ public class SummonAction : IAction
     {
         // Temp 
         GameObject obj = GameObject.FindGameObjectWithTag("King");
-        Vector2Int gridPosition = gridSystem.GetGridPositionOfGameObject(obj);
-        // 
+        Vector2Int gridPosition = -Vector2Int.one; 
+
+        if(obj != null)
+            gridPosition = gridSystem.GetGridPositionOfGameObject(obj);
+        
         return gridPosition; 
     }
 }

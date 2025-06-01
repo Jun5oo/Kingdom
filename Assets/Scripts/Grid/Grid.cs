@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Grid를 처리하는 데이터 컨테이너 클래스. 
+/// </summary>
+
 public class Grid
 {
     private int height;
@@ -68,7 +72,7 @@ public class Grid
     }
     #endregion
 
-    #region Get Functions 
+    #region GetFunctions 
     public Vector3 GetWorldPosition(Vector2Int gridPosition)
     {
         float totalWidth = width * cellSize;
@@ -113,7 +117,7 @@ public class Grid
     public List<GridCell> GetAllCells() => cellList; 
     #endregion
 
-    #region Grid Placement 
+    #region GridPlacement 
     public void PlaceObjectTo(GameObject obj, Vector2Int gridPosition)
     {
         if (objectOnGrid.ContainsKey(gridPosition))

@@ -1,6 +1,11 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// 카드의 Hover와 Selection(마우스 Interaction)을 처리하는 클래스. 
+/// 현재는 Hover와 Selection을 둘 다 처리하지만, 추후 코드가 늘어난다면 분리 할 예정 
+/// </summary>
+
 public class CardHover : MonoBehaviour, IHoverable, ISelectable
 {
     [Header("Card Components")]
@@ -26,8 +31,13 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
     [SerializeField] bool isHoverable = false;
     [SerializeField] bool isSelected = false;
 
+    // 카드가 선택되었을 때 
     public Action OnCardSelected;
+    // 카드의 선택이 취소되었을 때 
     public Action OnCardDeselected; 
+
+    // TODO 
+    // 적 카드가 필드에서 선택되었을 때 뒤집어지는 문제 
 
     public void Init(IUISystem uiSystem)
     {
@@ -39,14 +49,14 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         cardMovement.OnCardMovedComplete -= OnHoverEnable; 
         cardMovement.OnCardMovedComplete += OnHoverEnable;
 
-        originScale = card.isMyCard ? Vector3.one : Vector3.one * 2; 
+        originScale = card.IsMyCard ? Vector3.one : Vector3.one * 2; 
 
         hoverOffset = Vector3.up * 0.01f;
         hoverScale = originScale * 1.1f;
 
         selectedOffset = Vector3.up * 0.5f + Vector3.forward * 0.5f;
         selectedScale = originScale * 1.3f;
-        selectedRotation = card.isMyCard ? Quaternion.Euler(0f, 0f, -180f) : Quaternion.Euler(0f, 180f, 0f);
+        selectedRotation = card.IsMyCard ? Quaternion.Euler(0f, 0f, -180f) : Quaternion.Euler(0f, 180f, 0f);
     }
 
     #region Hover 
@@ -82,13 +92,14 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         if (!IsSelectable())
             return;
 
-        // 이 부분은 나중에 어떻게 해결할지 정해야할 듯 
+        // 선택된 카드를 UI로 표시 
         uiSystem.DisplayUI(card);
 
         Vector3 targetPosition = originPos + selectedOffset;
         Quaternion targetRotation = selectedRotation;
         Vector3 targetScale = selectedScale;
 
+        // 카드가 클릭된 것처럼 보이게 카드의 scale과 높이를 조정, 이후 카드가 선택되었음을 이벤트로 전달 
         cardMovement.MoveTransform(new PRS(targetPosition, targetRotation, targetScale), 0.2f, true, () => { OnCardSelected?.Invoke();});
         isSelected = true;
 
@@ -115,6 +126,10 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
     }
     #endregion
 
+    /// <summary>
+    /// CardMovement로부터 PRS를 업데이트 
+    /// </summary>
+    /// <param name="prs"> 업데이트할 PRS </param> 
     public void OnPRSUpdate(PRS prs)
     {
         if (prs != null)

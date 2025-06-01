@@ -1,5 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+
+/// <summary>
+/// 이동액션 클래스 
+/// </summary>
+
 public class MoveAction : IAction
 {
     ActionType actionType;
@@ -14,6 +19,7 @@ public class MoveAction : IAction
 
     public MoveAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
+        // 이동액션 초기화 
         actionType = ActionType.Move;
 
         this.gridSystem = gridSystem;

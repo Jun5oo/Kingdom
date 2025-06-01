@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 카드 데이터 스크립트 오브젝트 
+/// </summary>
+
 [CreateAssetMenu(fileName = "CardData", menuName = "Card Scriptable")]
 public class CardData : ScriptableObject
 {

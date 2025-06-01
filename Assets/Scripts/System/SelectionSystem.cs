@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// 선택을 관리하는 System 클래스.
+/// </summary>
+
 public class SelectionSystem : MonoBehaviour, ISelectionSystem
 {
     ISelectable currentSelectable = null;

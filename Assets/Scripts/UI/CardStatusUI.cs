@@ -1,6 +1,10 @@
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// 카드의 능력치 UI 클래스 
+/// </summary>
+
 public class CardStatusUI : MonoBehaviour, IPoolable
 {
     [SerializeField] TextMeshProUGUI cp;
