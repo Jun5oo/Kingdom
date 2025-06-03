@@ -67,6 +67,10 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         players.Add(playerID, player);
         players.Add(enemyID, enemy);
+
+        //왕 생성 및 참조 저장
+        playerKing = CreateKing(playerID);
+        enemyKing = CreateKing(enemyID);
     }
 
     public void DrawCard(int playerID)
