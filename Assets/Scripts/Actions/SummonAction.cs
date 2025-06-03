@@ -106,13 +106,17 @@ public class SummonAction : IAction
 
     private Vector2Int GetKingPosition()
     {
-        // Temp 
-        GameObject obj = GameObject.FindGameObjectWithTag("King");
-        Vector2Int gridPosition = -Vector2Int.one; 
+        GameObject[] kings = GameObject.FindGameObjectsWithTag("King");
 
-        if(obj != null)
-            gridPosition = gridSystem.GetGridPositionOfGameObject(obj);
-        
-        return gridPosition; 
+        foreach (GameObject kingObj in kings)
+        {
+            Card kingCard = kingObj.GetComponent<Card>();
+            if (kingCard != null && kingCard.IsMyCard == card.IsMyCard)
+            {
+                return gridSystem.GetGridPositionOfGameObject(kingObj);
+            }
+        }
+
+        return -Vector2Int.one;
     }
 }
