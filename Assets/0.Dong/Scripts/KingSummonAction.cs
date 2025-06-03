@@ -67,7 +67,7 @@ public class KingSummonAction : IAction
         {
             actionSystem?.CancelAction();
             // Temp 
-            card.GetComponent<CardView>().DisplayStatusUI(); 
+            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnKingPlaced();
             //
         });
     }

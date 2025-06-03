@@ -215,7 +215,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
         return card;
     }
 
-    private void SummonKing(Card kingCard)
+    public void SummonKing(Card kingCard)
     {
         if (kingCard == null)
         {
@@ -231,4 +231,9 @@ public class CardSystem : MonoBehaviour, ICardSystem
         }
     }
     #endregion 
+
+    public Card GetPlayerKing(int playerID)
+    {
+        return playerID == 0 ? playerKing : enemyKing;
+    }
 }
