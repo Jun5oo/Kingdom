@@ -86,7 +86,9 @@ public class AttackAction : IAction
         GameObject obj = GameObject.Instantiate(particleObject, worldPos, Quaternion.identity); 
         obj.GetComponent<ParticleSystem>().Play();
 
-        actionSystem?.CancelAction(); 
+        actionSystem?.CancelAction();
+
+        GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
     }
 
     public bool IsValid()

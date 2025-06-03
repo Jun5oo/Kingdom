@@ -189,4 +189,44 @@ public class CardSystem : MonoBehaviour, ICardSystem
     }
     #endregion
 
+    #region Creation King 
+    [SerializeField] CardData undeadKing;
+    [SerializeField] CardData angelKing; 
+
+    private Card CreateKing(int playerID)
+    {
+        GameObject kingObj = Instantiate(cardPrefab, Vector3.zero, Quaternion.identity, players[playerID].cardParent);
+        kingObj.SetActive(false); 
+        kingObj.tag = "King";
+        Card card = kingObj.GetComponent<Card>();
+        CardData kingData = playerID == 0 ? undeadKing : angelKing; 
+
+        bool isMyCard = playerID == 0;
+
+        card.Init(uiSystem, gridSystem, actionSystem, isMyCard, kingData);
+
+        return card;
+    }
+
+    public void SummonKing(Card kingCard)
+    {
+        if (kingCard == null)
+        {
+            Debug.LogError("King card is not assigned.");
+            return;
+        }
+
+        KingSummonAction summonAction = new KingSummonAction(gridSystem, actionSystem, kingCard);
+
+        if (summonAction.IsValid())
+        {
+            actionSystem.EnterAction(summonAction);
+        }
+    }
+    #endregion 
+
+    public Card GetPlayerKing(int playerID)
+    {
+        return playerID == 0 ? playerKing : enemyKing;
+    }
 }

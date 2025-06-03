@@ -48,7 +48,11 @@ public class CardActionController : MonoBehaviour
         Transform uiLayout = uiSystem.GetActionUIParent();
         uiLayout.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
-        foreach(IAction action in actions)
+        GameFlowManager gameFlowManager = GameObject.FindAnyObjectByType<GameFlowManager>();
+        if (!gameFlowManager.IsMyTurn(card.isMyCard))
+            return;
+
+        foreach (IAction action in actions)
         {
             if (!action.IsValid())
                 continue;

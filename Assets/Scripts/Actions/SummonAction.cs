@@ -70,7 +70,9 @@ public class SummonAction : IAction
             gridSystem.PlaceObjectTo(card.gameObject, gridPosition);
             actionSystem?.CancelAction();
             // Temp 
-            card.GetComponent<CardView>().DisplayStatusUI(); 
+            card.GetComponent<CardView>().DisplayStatusUI();
+            // 
+            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
         });
 
         // 나중에 event를 통해서 변경하는 방법 모색 

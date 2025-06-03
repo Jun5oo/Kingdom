@@ -81,6 +81,7 @@ public class MoveAction : IAction
             gridSystem.MoveObjectFrom(currentPos, gridPosition);
             actionSystem?.CancelAction(); 
             card.GetComponent<CardView>().DisplayStatusUI();
+            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
         });
     }
 
