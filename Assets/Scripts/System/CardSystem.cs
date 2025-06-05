@@ -103,9 +103,9 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         GameObject cardObject = GameObject.Instantiate(cardPrefab, deckTransform.position, Quaternion.identity, cardParent);
         cardObject.name = players[playerID].handList.Count.ToString(); 
+       
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
-        card.GetComponent<CardView>().Init(card); 
 
         return cardObject; 
     }

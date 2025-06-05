@@ -31,6 +31,7 @@ public class GridSystem : MonoBehaviour, IGridSystem
     /// 액션이 선택되었을 때 
     /// </summary>
     public event Action<Vector2Int> OnActionOccured;
+    
     /// <summary>
     /// 선택된 GridCell로 액션을 수행. 
     /// </summary>
@@ -40,8 +41,11 @@ public class GridSystem : MonoBehaviour, IGridSystem
         Vector2Int gridPosition = gridCell.GetGridPosition();
 
         if (!gridCell.isHighlighted)
+        {
+            GameObject.FindAnyObjectByType<ActionSystem>()?.CancelAction();
             return; 
-
+        }
+        
         OnActionOccured?.Invoke(gridPosition);
     }
     #endregion 

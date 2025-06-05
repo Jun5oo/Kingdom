@@ -19,15 +19,19 @@ public class UISystem : MonoBehaviour, IUISystem
 
     [Header("Card Status UI")]
     [SerializeField] GameObject cardStatusUI;
-    [SerializeField] Transform cardStatusUIParent; 
+    [SerializeField] Transform cardStatusUIParent;
 
+    [Header("Damage Popup UI")]
+    [SerializeField] GameObject damagePopupUI;
+    [SerializeField] Transform damagePopupParent; 
 
     void Awake()
     {
         poolDictionary = new Dictionary<Type, PoolInfo>();
 
         RegisterPool<ActionUI>(actionUIPrefab, actionUIParent);
-        RegisterPool<CardStatusUI>(cardStatusUI, cardStatusUIParent); 
+        RegisterPool<CardStatusUI>(cardStatusUI, cardStatusUIParent);
+        RegisterPool<DamagePopupUI>(damagePopupUI, damagePopupParent); 
     }
 
     #region CardUI

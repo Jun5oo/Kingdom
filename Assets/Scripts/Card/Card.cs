@@ -15,7 +15,9 @@ public class Card : MonoBehaviour
     [SerializeField] private Sprite cardImage; 
     [SerializeField] private string cardDescription;
     [SerializeField] private int level;
-    [SerializeField] private int currentCp;
+    [SerializeField] private int currentCP;
+
+    [SerializeField] private List<Vector2Int> attackRange; 
     [SerializeField] private List<ActionType> actionTypes;
 
     // Temp, CardDisplay UI를 나타내기 위한 데이터 
@@ -34,7 +36,7 @@ public class Card : MonoBehaviour
     [SerializeField] CardHover cardHover;
     [SerializeField] CardMovement cardMovement;
     [SerializeField] CardActionController cardActionController;
-
+    [SerializeField] CardDamageController cardDamageController;
 
     public CardState CardState 
     {   get { return cardState; }
@@ -45,9 +47,11 @@ public class Card : MonoBehaviour
     public Sprite Image { get { return cardImage; } }
     public string Description { get {  return cardDescription; } }
     public int Level { get { return level; } }
-    public int Cp { get {  return currentCp; } }
+    public int CP { get {  return currentCP; } private set { currentCP = value; } }
 
     public int Movement { get { return movement; } }
+
+    public List<Vector2Int> AttackRange { get { return attackRange; } }
     public List<ActionType> Actions { get { return actionTypes; } }
 
     public void Init(IUISystem uiSystem, IGridSystem gridSystem, IActionSystem actionSystem, bool isMyCard, CardData cardData)
@@ -59,10 +63,11 @@ public class Card : MonoBehaviour
         this.cardImage = cardData.sprite; 
         this.cardDescription = cardData.description;
         this.level = cardData.level;
-        this.currentCp = cardData.cp;
+        this.currentCP = cardData.cp;
 
+        this.attackRange = cardData.attackRange;
+        this.actionTypes = cardData.actions;
         this.movement = cardData.movement;
-        this.actionTypes = cardData.actions; 
 
         this.cardState = CardState.Hand;
         this.isMyCard = isMyCard;
@@ -71,8 +76,18 @@ public class Card : MonoBehaviour
         if (IsKing)
             this.gameObject.tag = "King"; 
         
-        cardView?.Init(this); 
         cardHover?.Init(uiSystem);
-        cardActionController?.Init(uiSystem, actionSystem, gridSystem); 
+        cardView?.Init(uiSystem, this);
+        cardDamageController?.Init(uiSystem, this);
+        cardActionController?.Init(uiSystem, actionSystem, gridSystem);
+
+        cardDamageController.OnDamaged -= OnCPChanged; 
+        cardDamageController.OnDamaged += OnCPChanged;
+    }
+
+    public void OnCPChanged(int damage)
+    {
+        CP -= damage;
+        cardView.UpdateStatusUI();
     }
 }

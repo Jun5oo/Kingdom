@@ -57,14 +57,16 @@ public class KingSummonAction : IAction
 
         gridSystem.PlaceObjectTo(card.gameObject, pos);
 
-        Vector3 worldPos = gridSystem.GetWorldPosition(pos);
-        Quaternion rot = Quaternion.Euler(0, 0, -180);
+        Vector3 worldPos = gridSystem.GetWorldPosition(pos) + (Vector3.up * 0.2f);
+        Vector3 eulerAngles = card.IsMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
+        Quaternion rot = Quaternion.Euler(eulerAngles);
         Vector3 scale = Vector3.one;
 
         card.gameObject.SetActive(true); 
         var cardMove = card.gameObject.GetComponent<CardMovement>();
         cardMove.MoveTransform(new PRS(worldPos, rot, scale), 0.5f, false, () =>
         {
+            card.CardState = CardState.Field;
             actionSystem?.CancelAction();
             // Temp 
             GameObject.FindAnyObjectByType<GameFlowManager>()?.OnKingPlaced();

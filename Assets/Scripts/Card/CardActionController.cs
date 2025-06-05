@@ -57,7 +57,6 @@ public class CardActionController : MonoBehaviour
             if (!action.IsValid())
                 continue;
 
-            // Temp 
             GameObject obj = uiSystem.Pop<ActionUI>(); 
             ActionUI actionUI = obj.GetComponent<ActionUI>();
 

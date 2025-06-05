@@ -68,15 +68,11 @@ public class SummonAction : IAction
         CardMovement cardMovement = card.GetComponent<CardMovement>();
         cardMovement.MoveTransform(prs, 0.5f, false, ()=> {
             gridSystem.PlaceObjectTo(card.gameObject, gridPosition);
+            card.CardState = CardState.Field;
             actionSystem?.CancelAction();
-            // Temp 
             card.GetComponent<CardView>().DisplayStatusUI();
-            // 
             GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
         });
-
-        // 나중에 event를 통해서 변경하는 방법 모색 
-        card.CardState = CardState.Field;
     }
 
     private bool CanSummonAt(Vector2Int pos)

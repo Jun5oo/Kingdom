@@ -39,27 +39,21 @@ public class AttackAction : IAction
 
     public void Enter()
     {
+        gridSystem.OnActionOccured -= Attack;
+        gridSystem.OnActionOccured += Attack;
+
         // gridPosition: gridSystem에서 검증할 gridCell의 position 
         gridSystem?.HighlightGridCells((Vector2Int gridPosition) =>
         {
             // 현재 카드의 위치 
             Vector2Int currentPosition = gridSystem.GetGridPositionOfGameObject(card.gameObject);
-            
+       
             foreach(Vector2Int position in positions)
             {
                 // 현재 카드위치에서 공격범위를 더해 해당 값이 gridPosition과 같다면 highlight 
                 Vector2Int availablePosition = currentPosition + position;
                 if (gridPosition == availablePosition)
-                {
-                    // 만약 highlight된 위치에 적 카드가 존재한다면, 해당 Cell에 이벤트 등록 (이 Cell들을 클릭하면 공격이 실행) 
-                    if (gridSystem.IsObjectOnGridPosition(availablePosition))
-                    {
-                        if(!gridSystem.GetGameObjectOnGrid(availablePosition).GetComponent<Card>().IsMyCard)
-                            gridSystem.OnActionOccured += Attack;
-                    }
-
                     return true; 
-                }
             }
 
             return false; 
@@ -75,20 +69,58 @@ public class AttackAction : IAction
         gridSystem?.UnhighlightGridCells(); 
     }
 
-    // TODO 
-    // Attack이 제대로 구현되어있지 않음. 
-    // 공격 애니메이션, 데미지 처리 필요. 
     public void Attack(Vector2Int gridPosition)
     {
         Exit();
-        
-        Vector3 worldPos = gridSystem.GetWorldPosition(gridPosition);
-        GameObject obj = GameObject.Instantiate(particleObject, worldPos, Quaternion.identity); 
-        obj.GetComponent<ParticleSystem>().Play();
 
-        actionSystem?.CancelAction();
+        GameObject obj = gridSystem?.GetGameObjectOnGrid(gridPosition);
 
-        GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
+        if (obj == null)
+        {
+            actionSystem?.CancelAction();
+            return; 
+        }
+
+        if (obj != null)
+        {
+            if (obj.TryGetComponent<IDamageable>(out IDamageable damageable))
+            {
+                if (damageable.IsAlies())
+                    return; 
+
+                Vector3 position = gridSystem.GetWorldPosition(gridPosition);
+                PRS cardPRS = card.GetComponent<CardMovement>().PRS;
+
+                card.GetComponent<CardMovement>().AttackTargetFrom(
+                    position,
+                    cardPRS,
+                    onHitCallback: () =>
+                    {
+                        Card onHitCard = obj.GetComponent<Card>();
+
+                        int counterDamage = onHitCard.CP; 
+
+                        damageable?.TakeDamage(card.CP);
+                        Vector2Int attackerPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
+                        
+                        foreach(Vector2Int pos in onHitCard.AttackRange)
+                        {
+                            if(gridPosition + pos == attackerPos)
+                            {
+                                card?.GetComponent<IDamageable>().TakeDamage(counterDamage);
+                                break; 
+                            }
+                        }
+
+                    },
+                    onCompleteCallback: () =>
+                    {
+                        actionSystem?.CancelAction();
+                        GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
+                    }
+                );
+            }
+        }
     }
 
     public bool IsValid()

@@ -93,28 +93,27 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
             return;
 
         // 선택된 카드를 UI로 표시 
-        uiSystem.DisplayUI(card);
+        uiSystem?.DisplayUI(card);
 
         Vector3 targetPosition = originPos + selectedOffset;
-        Quaternion targetRotation = selectedRotation;
-        Vector3 targetScale = selectedScale;
+        Quaternion targetRotation = card.CardState == CardState.Hand ? selectedRotation : originRotation;
+        Vector3 targetScale = card.CardState == CardState.Hand ? selectedScale : originScale * 1.1f; 
 
         // 카드가 클릭된 것처럼 보이게 카드의 scale과 높이를 조정, 이후 카드가 선택되었음을 이벤트로 전달 
-        cardMovement.MoveTransform(new PRS(targetPosition, targetRotation, targetScale), 0.2f, true, () => { OnCardSelected?.Invoke();});
+        cardMovement.MoveTransform(new PRS(targetPosition, targetRotation, targetScale), 0.2f, true, () => 
+        { 
+            OnCardSelected?.Invoke();
+        });
         isSelected = true;
-
-        
     }
     public void OnDeselected()
     {
-        if (uiSystem != null)
-            uiSystem.CloseUI(); 
+        uiSystem?.CloseUI(); 
 
         if(!cardMovement.IsMoving())
             cardMovement.MoveTransform(new PRS(originPos, originRotation, originScale), 0.2f, true);
 
         isSelected = false;
-
         OnCardDeselected?.Invoke(); 
     }
     public bool IsSelectable()

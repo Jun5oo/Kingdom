@@ -77,10 +77,11 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     #region Selection
     public void OnEnterSelected(ISelectable selectable)
     {
+        OnExitSelected();
+
         if (!selectable.IsSelectable())
             return;
 
-        OnExitSelected(); 
         currentSelectable = selectable;
         currentSelectable?.OnSelected();
     }
@@ -88,7 +89,7 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     {
         if (actionSystem.IsActionInProgress())
             actionSystem?.CancelAction();
-
+ 
         currentSelectable?.OnDeselected();
         currentSelectable = null; 
     }

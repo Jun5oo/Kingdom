@@ -38,6 +38,7 @@ public class ActionSystem : MonoBehaviour, IActionSystem
     }
     public void CancelAction()
     {
+        Debug.Log("CancelAction Invoked");
         currentAction?.Exit();
         currentAction = null;
     }

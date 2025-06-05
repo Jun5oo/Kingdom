@@ -20,6 +20,6 @@ public class CardUI : MonoBehaviour
         cardName.text = card.Name;
         description.text = card.Description;
         level.text = card.Level.ToString();
-        cp.text = card.Cp.ToString(); 
+        cp.text = card.CP.ToString(); 
     }
 }

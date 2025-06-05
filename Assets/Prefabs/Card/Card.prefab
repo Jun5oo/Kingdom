@@ -122,6 +122,7 @@ GameObject:
   - component: {fileID: 4672314079874639214}
   - component: {fileID: 4922591440356138599}
   - component: {fileID: 2036130756155132049}
+  - component: {fileID: 7074014796900068688}
   - component: {fileID: 4851641943146037442}
   m_Layer: 0
   m_Name: Card
@@ -169,13 +170,14 @@ MonoBehaviour:
   cardDescription: 
   level: 0
   currentCp: 0
+  actionTypes: 
   movement: 0
   cardState: 0
-  isMyCard: 0
   cardView: {fileID: 2036130756155132049}
   cardHover: {fileID: 7422365057498935147}
   cardMovement: {fileID: 4672314079874639214}
   cardActionController: {fileID: 4922591440356138599}
+  cardDamageController: {fileID: 7074014796900068688}
 --- !u!114 &7422365057498935147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,6 +192,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   card: {fileID: 6311913766039321938}
   cardMovement: {fileID: 4672314079874639214}
+  originPos: {x: 0, y: 0, z: 0}
+  originRotation: {x: 0, y: 0, z: 0, w: 0}
+  originScale: {x: 0, y: 0, z: 0}
+  hoverOffset: {x: 0, y: 0, z: 0}
+  hoverScale: {x: 0, y: 0, z: 0}
   isHoverable: 1
   isSelected: 0
 --- !u!114 &4672314079874639214
@@ -234,6 +241,19 @@ MonoBehaviour:
   rd: {fileID: 8185231451117092763}
   nameTMP: {fileID: 5337600894643215305}
   descriptionTMP: {fileID: 3957669356744116686}
+  cardStatusUI: {fileID: 0}
+--- !u!114 &7074014796900068688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4738271081190544502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9a5feb3a0d69eb4fb8f52460a93079d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!65 &4851641943146037442
 BoxCollider:
   m_ObjectHideFlags: 0
