@@ -80,4 +80,9 @@ public class ActionSystem : MonoBehaviour, IActionSystem
 
         return action; 
     }
+
+    public IAction GetCurrentAction()
+    {
+        return currentAction;
+    }
 }

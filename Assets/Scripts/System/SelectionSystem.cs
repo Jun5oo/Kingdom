@@ -23,6 +23,7 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     }
     void Update()
     {
+        
         if (currentSelectable != null)
             currentSelectableName = currentSelectable.ToString();
         else
@@ -45,6 +46,12 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
 
             if (Physics.Raycast(ray, out hit, 100f))
             {
+                if (actionSystem.IsActionInProgress())
+                {
+                    IAction current = (actionSystem as ActionSystem)?.GetCurrentAction();
+                    if (current != null && current.GetType().Name == "KingSummonAction")
+                        return;
+                }
                 ISelectable selectable;
                 GridCell gridCell;
 

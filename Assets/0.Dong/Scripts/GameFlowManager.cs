@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class GameFlowManager : MonoBehaviour
@@ -48,17 +49,31 @@ public class GameFlowManager : MonoBehaviour
 
         currentState = TurnState.InitialDraw;
 
-        // 드로우
-        cardSystem.DrawCard(firstPlayerID); // 선공: 3장
-        cardSystem.DrawCard(firstPlayerID);
-        cardSystem.DrawCard(firstPlayerID);
+        // 1. UI에 선공/후공 표시
+        string turnInfo = currentPlayerID == 0 ? "당신은 선공입니다." : "당신은 후공입니다.";
+        UIManager.Instance.ShowTurnOrder(turnInfo); // ← UIManager는 예시입니다.
 
-        cardSystem.DrawCard(secondPlayerID); // 후공: 4장
-        cardSystem.DrawCard(secondPlayerID);
-        cardSystem.DrawCard(secondPlayerID);
-        cardSystem.DrawCard(secondPlayerID);
+        StartCoroutine(DrawInitialCards());
+    }
 
-        Invoke(nameof(EnterKingPlacement), 1f);
+    private IEnumerator DrawInitialCards()
+    {
+        // 선공 3장
+        for (int i = 0; i < 3; i++)
+        {
+            cardSystem.DrawCard(firstPlayerID);
+            yield return new WaitForSeconds(0.4f);
+        }
+
+        // 후공 4장
+        for (int i = 0; i < 4; i++)
+        {
+            cardSystem.DrawCard(secondPlayerID);
+            yield return new WaitForSeconds(0.4f);
+        }
+
+        // 3. 왕 배치로 진입
+        EnterKingPlacement();
     }
 
     // 왕 배치 흐름 (선공 → 후공 순서)
@@ -70,11 +85,22 @@ public class GameFlowManager : MonoBehaviour
         {
             Debug.Log($"선공 플레이어({firstPlayerID}) 왕 배치");
             cardSystem.SummonKing(cardSystem.GetPlayerKing(firstPlayerID));
+
+            // 🔽 선공이 본인이면 "왕을 배치해주세요", 아니면 "상대가 왕을 배치 중입니다"
+            if (firstPlayerID == 0)
+                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
+            else
+                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
         }
         else if (!isSecondPlayerKingPlaced)
         {
             Debug.Log($"후공 플레이어({secondPlayerID}) 왕 배치");
             cardSystem.SummonKing(cardSystem.GetPlayerKing(secondPlayerID));
+
+            if (secondPlayerID == 0)
+                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
+            else
+                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
         }
     }
 
@@ -98,6 +124,7 @@ public class GameFlowManager : MonoBehaviour
     {
         currentState = TurnState.PlayerTurn;
 
+        UIManager.Instance.HideTurnMessage();
         // 항상 드로우 1장
         cardSystem.DrawCard(currentPlayerID);
 
@@ -107,12 +134,18 @@ public class GameFlowManager : MonoBehaviour
         actionPoint = 2;
 
         Debug.Log($"Player {currentPlayerID}의 턴 시작. 행동력: {actionPoint}");
+
+        bool isMyTurn = currentPlayerID == 0;
+        TurnUIManager.Instance.UpdateTurnOwner(isMyTurn);
+        TurnUIManager.Instance.UpdateActionPoint(actionPoint);
     }
 
     // 행동 1회 수행 시 호출 (소환/이동/공격 등)
     public void OnActionPerformed()
     {
         actionPoint--;
+
+        TurnUIManager.Instance.UpdateActionPoint(actionPoint);
 
         if (actionPoint <= 0)
             EndTurn(); // 행동력이 0이 되면 턴 종료
