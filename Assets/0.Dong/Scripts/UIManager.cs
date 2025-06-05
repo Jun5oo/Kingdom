@@ -28,4 +28,14 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(2f);
         turnOrderText.gameObject.SetActive(false);
     }
+    public void ShowTurnMessage(string message)
+    {
+        turnOrderText.text = message;
+        turnOrderText.gameObject.SetActive(true);
+    }
+
+    public void HideTurnMessage()
+    {
+        turnOrderText.gameObject.SetActive(false);
+    }
 }

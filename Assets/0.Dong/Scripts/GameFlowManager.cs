@@ -54,8 +54,6 @@ public class GameFlowManager : MonoBehaviour
         UIManager.Instance.ShowTurnOrder(turnInfo); // ← UIManager는 예시입니다.
 
         StartCoroutine(DrawInitialCards());
-
-        Invoke(nameof(EnterKingPlacement), 1f);
     }
 
     private IEnumerator DrawInitialCards()
@@ -87,11 +85,22 @@ public class GameFlowManager : MonoBehaviour
         {
             Debug.Log($"선공 플레이어({firstPlayerID}) 왕 배치");
             cardSystem.SummonKing(cardSystem.GetPlayerKing(firstPlayerID));
+
+            // 🔽 선공이 본인이면 "왕을 배치해주세요", 아니면 "상대가 왕을 배치 중입니다"
+            if (firstPlayerID == 0)
+                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
+            else
+                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
         }
         else if (!isSecondPlayerKingPlaced)
         {
             Debug.Log($"후공 플레이어({secondPlayerID}) 왕 배치");
             cardSystem.SummonKing(cardSystem.GetPlayerKing(secondPlayerID));
+
+            if (secondPlayerID == 0)
+                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
+            else
+                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
         }
     }
 
@@ -115,6 +124,7 @@ public class GameFlowManager : MonoBehaviour
     {
         currentState = TurnState.PlayerTurn;
 
+        UIManager.Instance.HideTurnMessage();
         // 항상 드로우 1장
         cardSystem.DrawCard(currentPlayerID);
 
