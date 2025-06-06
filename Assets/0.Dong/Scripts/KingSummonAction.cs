@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// 왕 소환(배치) 전용 액션 클래스
 public class KingSummonAction : IAction
 {
     private IGridSystem gridSystem;
@@ -9,6 +10,7 @@ public class KingSummonAction : IAction
     private ActionType actionType = ActionType.KingSummon;
     public ActionType ActionType => actionType;
 
+    // 생성자: 필요한 시스템 및 대상 카드를 주입
     public KingSummonAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
     {
         this.gridSystem = gridSystem;
@@ -16,6 +18,7 @@ public class KingSummonAction : IAction
         this.card = card; 
     }
 
+    // 액션 진입 시 호출됨: 유효 위치 하이라이팅 + 셀 클릭 대기
     public void Enter()
     {
         Exit();
@@ -28,12 +31,15 @@ public class KingSummonAction : IAction
         gridSystem.OnActionOccured += PlaceKing;
     }
 
+    // 액션 종료 시 호출: 셀 하이라이트 해제 및 이벤트 제거
     public void Exit()
     {
         gridSystem.UnhighlightGridCells();
         gridSystem.OnActionOccured -= PlaceKing;
     }
 
+
+    // 이 액션이 현재 상황에서 유효한지 여부 (항상 왕은 가능)
     public bool IsValid()
     {
         Card card = this.card; 
@@ -46,6 +52,7 @@ public class KingSummonAction : IAction
         return card.CardState == CardState.Hand;
     }
 
+    // 왕을 실제로 배치하는 함수 (셀 클릭 시 호출됨)
     private void PlaceKing(Vector2Int pos)
     {
         Exit();
@@ -72,6 +79,7 @@ public class KingSummonAction : IAction
         });
     }
 
+    // 왕이 배치 가능한 셀인지 여부 판별
     private bool IsValidKingPosition(Vector2Int pos)
     {
         Card card = this.card; 
