@@ -26,7 +26,6 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
     // OnSelected PRS 
     Vector3 selectedOffset;
     Vector3 selectedScale;
-    Quaternion selectedRotation;
 
     [SerializeField] bool isHoverable = false;
     [SerializeField] bool isSelected = false;
@@ -56,7 +55,6 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
 
         selectedOffset = Vector3.up * 0.5f + Vector3.forward * 0.5f;
         selectedScale = originScale * 1.3f;
-        selectedRotation = card.IsMyCard ? Quaternion.Euler(0f, 0f, -180f) : Quaternion.Euler(0f, 180f, 0f);
     }
 
     #region Hover 
@@ -96,7 +94,7 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         uiSystem?.DisplayUI(card);
 
         Vector3 targetPosition = originPos + selectedOffset;
-        Quaternion targetRotation = card.CardState == CardState.Hand ? selectedRotation : originRotation;
+        Quaternion targetRotation = originRotation; 
         Vector3 targetScale = card.CardState == CardState.Hand ? selectedScale : originScale * 1.1f; 
 
         // 카드가 클릭된 것처럼 보이게 카드의 scale과 높이를 조정, 이후 카드가 선택되었음을 이벤트로 전달 

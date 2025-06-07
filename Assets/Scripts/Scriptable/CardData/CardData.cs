@@ -22,5 +22,5 @@ public class CardData : ScriptableObject
 
     public Sprite sprite;
 
-    public List<ActionType> actions; 
+    public List<ActionType> actions;
 }

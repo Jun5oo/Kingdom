@@ -61,8 +61,9 @@ public class SummonAction : IAction
 
         // 수치가 하드코딩됨 나중에 
         Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.2f);
-        Vector3 eulerAngles = card.IsMyCard ? new Vector3(0f, 0f, 180f) : new Vector3(0f, 180f, 180f);
+        Vector3 eulerAngles = card.IsMyCard ? new Vector3(90f, 0f, 0f) : new Vector3(90f, 0f, 180f);
         Quaternion quaternion = Quaternion.Euler(eulerAngles); 
+        
         PRS prs = new PRS(targetPos, quaternion, Vector3.one);
 
         CardMovement cardMovement = card.GetComponent<CardMovement>();

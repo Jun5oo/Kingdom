@@ -53,8 +53,9 @@ public class CardMovement : MonoBehaviour
 
         Sequence sequence = DOTween.Sequence();
 
-        Vector3 distance = target - from.position;
-        Quaternion quaternion = Quaternion.LookRotation(distance, Vector3.down);
+        Vector3 distance = (target - from.position).normalized;
+
+        Quaternion quaternion = Quaternion.LookRotation(-Vector3.up, distance);
 
         sequence.Append(transform.DORotateQuaternion(quaternion, 0.5f));
         sequence.Join(transform.DOMove(from.position + Vector3.up * 5, 0.5f));

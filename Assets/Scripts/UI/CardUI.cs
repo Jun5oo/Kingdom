@@ -13,6 +13,7 @@ public class CardUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI description;
     [SerializeField] TextMeshProUGUI level;
     [SerializeField] TextMeshProUGUI cp;
+    [SerializeField] TextMeshProUGUI movement; 
 
     public void OnUpdate(Card card)
     {
@@ -21,5 +22,6 @@ public class CardUI : MonoBehaviour
         description.text = card.Description;
         level.text = card.Level.ToString();
         cp.text = card.CP.ToString(); 
+        movement.text = card.Movement.ToString();
     }
 }

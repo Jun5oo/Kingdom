@@ -8,20 +8,18 @@ using UnityEngine;
 public class CardView : MonoBehaviour
 {
     IUISystem uiSystem; 
-    Card card; 
+    Card card;
 
-    [SerializeField] Renderer rd; 
-    [SerializeField] TextMeshPro nameTMP;
-    [SerializeField] TextMeshPro descriptionTMP;
+    [SerializeField] SpriteRenderer sr; 
+    // [SerializeField] TextMeshPro nameTMP;
 
     public void Init(IUISystem uiSystem, Card card)
     {
         this.uiSystem = uiSystem;
-        this.card = card; 
+        this.card = card;
 
-        rd.material.mainTexture = card.Image.texture;
-        nameTMP.text = card.Name;
-        descriptionTMP.text = card.Description; 
+        sr.sprite = card.Image; 
+        // nameTMP.text = card.Name;
     }
 
     [SerializeField] GameObject cardStatusUI;

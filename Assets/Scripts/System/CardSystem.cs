@@ -169,9 +169,11 @@ public class CardSystem : MonoBehaviour, ICardSystem
             float posY = hand.transform.position.y + (heightBuffer) * i;
             float posZ = hand.transform.position.z + EvaluateCurveValue(height, cardObjLerpX[i]);
 
-            float rotationX = handList[i].gameObject.transform.rotation.x;
+            // float rotationX = handList[i].gameObject.transform.rotation.x;
+            float rotationX = playerID == 0 ? 90f : -90f;
             float rotationY = Mathf.LerpAngle(left.eulerAngles.y, right.eulerAngles.y, cardObjLerpX[i]);
-            float rotationZ = playerID == 0 ? 180f : 0f; 
+            // float rotationZ = playerID == 0 ? 180f : 0f; 
+            float rotationZ = playerID == 0 ? 0f : 180f; 
             Quaternion rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
 
             Vector3 scale = playerID == 0 ? Vector3.one : Vector3.one * 2; 
