@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 /// <summary>
@@ -47,7 +48,14 @@ public class Grid
         {
             for (int j = 0; j < width; j++)
             {
-                GameObject gridObject = GameObject.Instantiate(prefab, GetWorldPosition(new Vector2Int(j, i)), Quaternion.Euler(90, 0, 0));
+                GameObject gridObject = null;
+
+                if (NetworkManager.Singleton.IsServer)
+                {
+                    gridObject = GameObject.Instantiate(prefab, GetWorldPosition(new Vector2Int(j, i)), Quaternion.Euler(90, 0, 0));
+                    //gridObject.GetComponent<NetworkObject>().SpawnWithOwnership(clientid);
+                }
+                gridObject = GameObject.Instantiate(prefab, GetWorldPosition(new Vector2Int(j, i)), Quaternion.Euler(90, 0, 0));
                 gridObject.name = $"{j},{i}";
                 gridObject.transform.parent = gridParent.transform;
 
