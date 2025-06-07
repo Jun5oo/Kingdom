@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 public class GameManager : MonoBehaviour
 {
     [SerializeField] CardSystem cardSystem;
@@ -19,6 +20,7 @@ public class GameManager : MonoBehaviour
         Invoke("StartGameDelayed", 4f);
     }
 
+    // 게임 시작을 일정 시간 뒤에 실행 (ex. 오프닝 UI 이후)
     void StartGameDelayed()
     {
         gameFlowManager.StartGame();
