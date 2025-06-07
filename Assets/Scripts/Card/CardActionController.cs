@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 카드 액션을 처리하는 클래스.
+/// 실행 가능한 액션을 UI로 표시 및 전달 
+/// </summary>
+
 public class CardActionController : MonoBehaviour
 {
     IUISystem uiSystem;
@@ -18,66 +23,70 @@ public class CardActionController : MonoBehaviour
     {
         this.uiSystem = uiSystem; 
         this.actionSystem = actionSystem;
-        
-        // CardData로부터 Action을 받아올 예정 
-        SummonAction summonAction = new SummonAction(gridSystem, actionSystem, card);
-        MoveAction moveAction = new MoveAction(gridSystem, actionSystem, card);
-        AttackAction attackAction = new AttackAction(gridSystem, actionSystem, card);
-        // KingSummonAction kingSummonAction = new KingSummonAction(gridSystem, actionSystem, card);
 
         actions = new List<IAction>();
         actionUIList = new List<ActionUI>();
 
-        actions.Add(summonAction);
-        actions.Add(moveAction);
-        actions.Add(attackAction);
-        // actions.Add(kingSummonAction);
+        foreach (ActionType actionType in card.Actions)
+        {
+            // 카드 데이터에 작성된 행동가능한 Action을 생성, 리스트에 저장 
+            IAction action = actionSystem?.Create(gridSystem, card, actionType);
+            actions.Add(action); 
+        }
 
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
-
         cardHover.OnCardSelected += ShowEnableActions;
         cardHover.OnCardDeselected += HideEnableActions; 
     }
 
+    /// <summary>
+    /// 현재 사용가능한 Action을 UI로 표시 
+    /// </summary>
     public void ShowEnableActions()
     {
         Transform uiLayout = uiSystem.GetActionUIParent();
         uiLayout.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
-        foreach(IAction action in actions)
+        GameFlowManager gameFlowManager = GameObject.FindAnyObjectByType<GameFlowManager>();
+        if (!gameFlowManager.IsMyTurn(card.IsMyCard))
+            return;
+
+        foreach (IAction action in actions)
         {
             if (!action.IsValid())
                 continue;
 
-            // 왕 카드이면 UI를 생성하지 않음
-            if (card != null && card.IsKing)
-                continue;
-
-            // Temp 
             GameObject obj = uiSystem.Pop<ActionUI>(); 
             ActionUI actionUI = obj.GetComponent<ActionUI>();
 
             actionUI.Init(action);
 
-            actionUI.OnUIClicked -= ActionUiClicked;
-            actionUI.OnUIClicked += ActionUiClicked;
+            actionUI.OnUIClicked -= ActionUIClicked;
+            actionUI.OnUIClicked += ActionUIClicked;
 
             actionUIList.Add(actionUI);
         }
     }
+
+    /// <summary>
+    /// 표시된 Action UI를 숨김 
+    /// </summary>
     public void HideEnableActions()
     {
         foreach(ActionUI actionUI in actionUIList)
         {
-            actionUI.OnUIClicked -= ActionUiClicked;
+            actionUI.OnUIClicked -= ActionUIClicked;
             uiSystem.Push<ActionUI>(actionUI.gameObject); 
         }
 
         actionUIList.Clear(); 
     }
-    public void ActionUiClicked(IAction action) => actionSystem?.EnterAction(action);
-    public bool IsActionValid() => true;
+    /// <summary>
+    /// Action UI가 클릭되었을 때 ActionSystem에 해당 Action을 전달 
+    /// </summary>
+    /// <param name="action"></param> 전달할 Action 
+    public void ActionUIClicked(IAction action) => actionSystem?.EnterAction(action);
 
     public void OnDestroy()
     {

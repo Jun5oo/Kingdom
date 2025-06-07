@@ -16,7 +16,7 @@ MonoBehaviour:
   level: 1
   cp: 4
   isKing: 0
-  description: Melee
+  description: Ranged
   moveRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}
@@ -36,4 +36,5 @@ MonoBehaviour:
   - {x: 0, y: -2}
   - {x: 0, y: -3}
   movement: 1
-  sprite: {fileID: 21300000, guid: 92399e4d6b6f3894dbd0c723aa53f699, type: 3}
+  sprite: {fileID: 21300000, guid: 25558dcba0116e84a95267ecc46418f1, type: 3}
+  actions: 000000000100000002000000

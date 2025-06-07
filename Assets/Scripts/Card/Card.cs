@@ -1,5 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
+
+/// <summary>
+/// 카드 데이터 컨테이너 클래스
+/// </summary>
 
 public class Card : MonoBehaviour
 {
@@ -11,24 +15,28 @@ public class Card : MonoBehaviour
     [SerializeField] private Sprite cardImage; 
     [SerializeField] private string cardDescription;
     [SerializeField] private int level;
-    [SerializeField] private int currentCp;
-    // Temp 
-    [SerializeField] private int movement; 
-    // 
+    [SerializeField] private int currentCP;
+
+    [SerializeField] private List<Vector2Int> attackRange; 
+    [SerializeField] private List<ActionType> actionTypes;
+
+    // Temp, CardDisplay UI를 나타내기 위한 데이터 
+    [SerializeField] private int movement;
 
     [Header("Card State")]
     [SerializeField] CardState cardState;
 
-    public bool isMyCard;
+    private bool isMyCard;
+    private bool isKing;
+    public bool IsKing => isKing;
+    public bool IsMyCard => isMyCard; 
 
     [Header("Components")]
     [SerializeField] CardView cardView; 
     [SerializeField] CardHover cardHover;
     [SerializeField] CardMovement cardMovement;
     [SerializeField] CardActionController cardActionController;
-    [SerializeField] private bool isKing; 
-
-    public bool IsKing => isKing;
+    [SerializeField] CardDamageController cardDamageController;
 
     public CardState CardState 
     {   get { return cardState; }
@@ -39,27 +47,47 @@ public class Card : MonoBehaviour
     public Sprite Image { get { return cardImage; } }
     public string Description { get {  return cardDescription; } }
     public int Level { get { return level; } }
-    public int Cp { get {  return currentCp; } }
+    public int CP { get {  return currentCP; } private set { currentCP = value; } }
 
     public int Movement { get { return movement; } }
 
+    public List<Vector2Int> AttackRange { get { return attackRange; } }
+    public List<ActionType> Actions { get { return actionTypes; } }
+
     public void Init(IUISystem uiSystem, IGridSystem gridSystem, IActionSystem actionSystem, bool isMyCard, CardData cardData)
     {
+        // 카드가 생성될 때 초기화 
         this.cardData = cardData;
 
         this.cardName = cardData.cardName;
         this.cardImage = cardData.sprite; 
         this.cardDescription = cardData.description;
         this.level = cardData.level;
-        this.currentCp = cardData.cp;
-        this.movement = cardData.movement; 
+        this.currentCP = cardData.cp;
+
+        this.attackRange = cardData.attackRange;
+        this.actionTypes = cardData.actions;
+        this.movement = cardData.movement;
 
         this.cardState = CardState.Hand;
         this.isMyCard = isMyCard;
+        this.isKing = cardData.isKing;
 
-        if(cardData != null) this.isKing = cardData.isKing;
-        cardView?.Init(this); 
+        if (IsKing)
+            this.gameObject.tag = "King"; 
+        
         cardHover?.Init(uiSystem);
-        cardActionController?.Init(uiSystem, actionSystem, gridSystem); 
+        cardView?.Init(uiSystem, this);
+        cardDamageController?.Init(uiSystem, this);
+        cardActionController?.Init(uiSystem, actionSystem, gridSystem);
+
+        cardDamageController.OnDamaged -= OnCPChanged; 
+        cardDamageController.OnDamaged += OnCPChanged;
+    }
+
+    public void OnCPChanged(int damage)
+    {
+        CP -= damage;
+        cardView.UpdateStatusUI();
     }
 }

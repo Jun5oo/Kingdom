@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 풀링 데이터 클래스 
+/// </summary>
+
 public class PoolInfo 
 {
     public GameObject prefab;

@@ -1,6 +1,10 @@
 using System;
 using UnityEngine;
 
+/// <summary>
+/// Grid를 관리하는 System 클래스 
+/// </summary>
+
 public class GridSystem : MonoBehaviour, IGridSystem
 {
     const int HEIGHT = 8; 
@@ -23,14 +27,25 @@ public class GridSystem : MonoBehaviour, IGridSystem
     }
 
     #region Action 
+    /// <summary>
+    /// 액션이 선택되었을 때 
+    /// </summary>
     public event Action<Vector2Int> OnActionOccured;
+    
+    /// <summary>
+    /// 선택된 GridCell로 액션을 수행. 
+    /// </summary>
+    /// <param name="gridCell">선택된 GridCell</param>
     public void HandleGridCell(GridCell gridCell)
     {
         Vector2Int gridPosition = gridCell.GetGridPosition();
 
         if (!gridCell.isHighlighted)
+        {
+            GameObject.FindAnyObjectByType<ActionSystem>()?.CancelAction();
             return; 
-
+        }
+        
         OnActionOccured?.Invoke(gridPosition);
     }
     #endregion 
@@ -103,13 +118,13 @@ public class GridSystem : MonoBehaviour, IGridSystem
 
         return -Vector2Int.one; 
     }
-    public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition); 
-    #endregion
-
+    public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition);
     public Vector2Int GetGridPosition(Vector3 worldPosition)
     {
         return grid.GetGridPosition(worldPosition);
     }
+    #endregion
+
     public bool IsValidPosition(Vector2Int pos)
     {
         return pos.x >= 0 && pos.x < WIDTH && pos.y >= 0 && pos.y < HEIGHT;

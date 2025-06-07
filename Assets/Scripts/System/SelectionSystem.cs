@@ -4,6 +4,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// 선택을 관리하는 System 클래스.
+/// </summary>
+
 public class SelectionSystem : MonoBehaviour, ISelectionSystem
 {
     ISelectable currentSelectable = null;
@@ -16,11 +20,10 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     {
         this.gridSystem = gridSystem;
         this.actionSystem = actionSystem;
-
-        this.actionSystem.OnCancelOccured += OnExitSelected; 
     }
     void Update()
     {
+        
         if (currentSelectable != null)
             currentSelectableName = currentSelectable.ToString();
         else
@@ -43,6 +46,12 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
 
             if (Physics.Raycast(ray, out hit, 100f))
             {
+                if (actionSystem.IsActionInProgress())
+                {
+                    IAction current = (actionSystem as ActionSystem)?.GetCurrentAction();
+                    if (current != null && current.GetType().Name == "KingSummonAction")
+                        return;
+                }
                 ISelectable selectable;
                 GridCell gridCell;
 
@@ -75,10 +84,11 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     #region Selection
     public void OnEnterSelected(ISelectable selectable)
     {
+        OnExitSelected();
+
         if (!selectable.IsSelectable())
             return;
 
-        OnExitSelected(); 
         currentSelectable = selectable;
         currentSelectable?.OnSelected();
     }
@@ -86,7 +96,7 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     {
         if (actionSystem.IsActionInProgress())
             actionSystem?.CancelAction();
-
+ 
         currentSelectable?.OnDeselected();
         currentSelectable = null; 
     }

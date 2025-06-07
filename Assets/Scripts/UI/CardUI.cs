@@ -2,6 +2,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 카드 UI 클래스 (클릭했을 때 보이는 Display UI) 
+/// </summary>
+
 public class CardUI : MonoBehaviour
 {
     [SerializeField] RawImage image;
@@ -9,6 +13,7 @@ public class CardUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI description;
     [SerializeField] TextMeshProUGUI level;
     [SerializeField] TextMeshProUGUI cp;
+    [SerializeField] TextMeshProUGUI movement; 
 
     public void OnUpdate(Card card)
     {
@@ -16,6 +21,7 @@ public class CardUI : MonoBehaviour
         cardName.text = card.Name;
         description.text = card.Description;
         level.text = card.Level.ToString();
-        cp.text = card.Cp.ToString(); 
+        cp.text = card.CP.ToString(); 
+        movement.text = card.Movement.ToString();
     }
 }

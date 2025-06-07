@@ -1,36 +1,34 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
+
+/// <summary>
+/// 카드 오브젝트의 View를 처리하는 클래스
+/// </summary>
 
 public class CardView : MonoBehaviour
 {
-    Card card; 
+    IUISystem uiSystem; 
+    Card card;
 
-    [SerializeField] Renderer rd; 
-    [SerializeField] TextMeshPro nameTMP;
-    [SerializeField] TextMeshPro descriptionTMP;
+    [SerializeField] SpriteRenderer sr; 
+    // [SerializeField] TextMeshPro nameTMP;
 
-    public void Init(Card card)
+    public void Init(IUISystem uiSystem, Card card)
     {
-        this.card = card; 
+        this.uiSystem = uiSystem;
+        this.card = card;
 
-        rd.material.mainTexture = card.Image.texture;
-        nameTMP.text = card.Name;
-        descriptionTMP.text = card.Description; 
+        sr.sprite = card.Image; 
+        // nameTMP.text = card.Name;
     }
 
     [SerializeField] GameObject cardStatusUI;
 
     public void DisplayStatusUI()
     {
-        Debug.Log("DisplayStatusUI"); 
-        // Temp 
-        UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         cardStatusUI = uiSystem.Pop<CardStatusUI>();
-        cardStatusUI.GetComponent<CardStatusUI>().OnUpdate(card.Cp, card.Movement); 
-        cardStatusUI.SetActive(true); 
+        cardStatusUI.GetComponent<CardStatusUI>().OnUpdate(card.CP, card.Movement); 
         cardStatusUI.transform.position = Camera.main.WorldToScreenPoint(transform.position);
-        // 
     }
 
     public void HideStatusUI()
@@ -38,15 +36,13 @@ public class CardView : MonoBehaviour
         if (cardStatusUI == null)
             return; 
 
-        cardStatusUI.SetActive(true);
-        UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
         uiSystem.Push<CardStatusUI>(cardStatusUI);
         cardStatusUI = null; 
-        // 
     }
+
     public void UpdateStatusUI()
     {
-        if (cardStatusUI == null)
-            return;
+        if(cardStatusUI != null)
+            cardStatusUI.GetComponent<CardStatusUI>().OnUpdate(card.CP, card.Movement); 
     }
 }

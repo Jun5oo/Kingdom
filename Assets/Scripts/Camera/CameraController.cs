@@ -2,6 +2,9 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
+/// <summary>
+/// 카메라 조작
+/// </summary>
 public class CameraController : MonoBehaviour
 {
     [SerializeField] CinemachineCamera startCamera;
@@ -19,6 +22,7 @@ public class CameraController : MonoBehaviour
         StartCoroutine(CameraTransitionCoroutine()); 
     }
 
+    // Cinemachine 카메라 이동 코루틴 
     IEnumerator CameraTransitionCoroutine()
     {
         yield return waitTime;

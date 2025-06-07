@@ -57,17 +57,19 @@ public class KingSummonAction : IAction
 
         gridSystem.PlaceObjectTo(card.gameObject, pos);
 
-        Vector3 worldPos = gridSystem.GetWorldPosition(pos);
-        Quaternion rot = Quaternion.Euler(0, 0, -180);
+        Vector3 worldPos = gridSystem.GetWorldPosition(pos) + (Vector3.up * 0.2f);
+        Vector3 eulerAngles = card.IsMyCard ? new Vector3(90f, 0f, 0f) : new Vector3(90f, 0f, 180f);
+        Quaternion rot = Quaternion.Euler(eulerAngles);
         Vector3 scale = Vector3.one;
 
         card.gameObject.SetActive(true); 
         var cardMove = card.gameObject.GetComponent<CardMovement>();
         cardMove.MoveTransform(new PRS(worldPos, rot, scale), 0.5f, false, () =>
         {
+            card.CardState = CardState.Field;
             actionSystem?.CancelAction();
             // Temp 
-            card.GetComponent<CardView>().DisplayStatusUI(); 
+            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnKingPlaced();
             //
         });
     }
@@ -75,8 +77,8 @@ public class KingSummonAction : IAction
     private bool IsValidKingPosition(Vector2Int pos)
     {
         Card card = this.card; 
-        if (card.isMyCard)
-        {
+        if (card.IsMyCard)
+        {   
             // 내 왕은 아래쪽 (y < 3)
             return pos.y < 3;
         }
