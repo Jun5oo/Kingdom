@@ -26,7 +26,7 @@ public class KingSummonAction : IAction
         gridSystem.HighlightGridCells((Vector2Int pos) =>
         {
             return IsValidKingPosition(pos) && !gridSystem.IsObjectOnGridPosition(pos);
-        });
+        }, HighlightType.ValidSummon, HighlightLayer.Outline);
 
         gridSystem.OnActionOccured += PlaceKing;
     }
@@ -34,7 +34,7 @@ public class KingSummonAction : IAction
     // 액션 종료 시 호출: 셀 하이라이트 해제 및 이벤트 제거
     public void Exit()
     {
-        gridSystem.UnhighlightGridCells();
+        gridSystem.UnhighlightGridCells(HighlightLayer.Outline);
         gridSystem.OnActionOccured -= PlaceKing;
     }
 

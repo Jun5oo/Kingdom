@@ -3,8 +3,8 @@ using UnityEngine;
 
 public interface IGridSystem
 {
-    public void HighlightGridCells(Predicate<Vector2Int> predicate);
-    public void UnhighlightGridCells();
+    public void HighlightGridCells(Predicate<Vector2Int> predicate, HighlightType type, HighlightLayer layer);
+    public void UnhighlightGridCells(HighlightLayer layer);
     public event Action<Vector2Int> OnActionOccured; 
     public bool IsObjectOnGridPosition(Vector2Int position);
     public void PlaceObjectTo(GameObject go, Vector2Int gridPosition);
@@ -16,4 +16,5 @@ public interface IGridSystem
 
     public Vector2Int GetGridPosition(Vector3 worldPosition);
     public bool IsValidPosition(Vector2Int pos);
+
 }

@@ -8,7 +8,6 @@ using UnityEngine.EventSystems;
 public class HoverSystem : MonoBehaviour, IHoverSystem
 {
     private IHoverable currentHoverable = null;
-
     void Update()
     {
         // UI가 있는 경우 
@@ -31,11 +30,14 @@ public class HoverSystem : MonoBehaviour, IHoverSystem
                 if (hoverable != currentHoverable)
                 {
                     // 기존의 IHoverable Exit
-                    ExitHover(); 
+                    ExitHover();
 
                     // 새로 찾은 IHoverable 오브젝트가 hoverable한 경우 (카드의 경우, 선택되었거나, 카드가 움직이고 있거나, 액션을 하는 도중에는 onHover 상태가 되어서는 안됨) 
-                    if(hoverable.IsHoverable())
+                    if (hoverable.IsHoverable())
+                    {
                         EnterHover(hoverable);
+                    }
+
                 }
             }
         }

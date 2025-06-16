@@ -5,25 +5,45 @@ using UnityEngine;
 /// Grid를 관리하는 System 클래스 
 /// </summary>
 
+public enum HighlightLayer
+{
+    Action = 0, 
+    Hover = 1, 
+    Outline = 2 
+}
+
+public enum HighlightType
+{
+    ValidSummon, 
+    ValidMove, 
+    ValidAttack, 
+    EnemyAttackRange
+}
+
 public class GridSystem : MonoBehaviour, IGridSystem
 {
-    const int HEIGHT = 8; 
-    const int WIDTH = 8; 
+    const int HEIGHT = 7; 
+    const int WIDTH = 7; 
 
     Grid grid;
 
     [SerializeField] GameObject gridPrefab;
 
-    void Awake()
+    private GridCellHandler gridCellHandler; 
+
+    public void Init(GridCellHandler gridCellHandler)
     {
+        this.gridCellHandler = gridCellHandler;
+
         float gridSize = gridPrefab.GetComponent<BoxCollider>().size.x;
 
-        grid = new Grid(HEIGHT, WIDTH, gridSize, Vector3.zero, gridPrefab);
-       
+        grid = new Grid(HEIGHT, WIDTH, gridSize, Vector3.zero, gridPrefab, gridCellHandler);
+
         grid.CreateGridMap(this.transform);
-        
-        foreach(GridCell gridCell in grid.GetAllCells())
-            gridCell.OnClicked += HandleGridCell; 
+
+        foreach (GridCell gridCell in grid.GetAllCells())
+            gridCell.OnClicked += HandleGridCell;
+
     }
 
     #region Action 
@@ -51,16 +71,16 @@ public class GridSystem : MonoBehaviour, IGridSystem
     #endregion 
 
     #region Highlight
-    public void HighlightGridCells(Predicate<Vector2Int> predicate)
+    public void HighlightGridCells(Predicate<Vector2Int> predicate, HighlightType type, HighlightLayer layer)
     {
         // Predicate는 delegate의 일종으로 bool type을 리턴값으로 가진다. 
         foreach(GridCell gridCell in grid.GetAllCells())
         {
             if (predicate(gridCell.GetGridPosition()))
-                gridCell.Highlight(); 
+                gridCell.Highlight(type, layer);
         }
     }
-    public void UnhighlightGridCells()
+    public void UnhighlightGridCells(HighlightLayer layer)
     {
         for (int i = 0; i < HEIGHT; i++)
         {
@@ -68,10 +88,11 @@ public class GridSystem : MonoBehaviour, IGridSystem
             {
                 Vector2Int pos = new Vector2Int(j, i);
                 GridCell gridCell = grid.GetGridCell(pos);
-                gridCell.Unhighlight(); 
+                gridCell.Unhighlight(layer); 
             }
         }
     }
+    
     #endregion
 
     #region Grid Placement 

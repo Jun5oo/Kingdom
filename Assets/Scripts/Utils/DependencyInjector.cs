@@ -14,8 +14,13 @@ public class DependencyInjector : MonoBehaviour
     [SerializeField] SelectionSystem selectionSystem; // Inject gridSystem, actionSystem
     [SerializeField] CardSystem cardSystem; // Inject gridSystem, uiSystem, selectionSystem, actionSystem
 
+    GridCellHandler gridCellHandler; 
+
     void Start()
     {
+        gridCellHandler = new GridCellHandler(actionSystem, gridSystem);
+        gridSystem.Init(gridCellHandler); 
+
         selectionSystem.Init(gridSystem, actionSystem);
         cardSystem.Init(gridSystem, uiSystem, selectionSystem, actionSystem); 
     }

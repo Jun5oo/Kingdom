@@ -20,16 +20,20 @@ public class Grid
     Dictionary<Vector2Int, GameObject> objectOnGrid;
     #endregion 
 
-    List<GridCell> cellList; 
+    List<GridCell> cellList;
+
+    GridCellHandler gridCellHandler; 
 
     #region Constructor 
-    public Grid(int width, int height, float cellSize, Vector3 originPos, GameObject prefab)
+    public Grid(int width, int height, float cellSize, Vector3 originPos, GameObject prefab, GridCellHandler gridCellHandler)
     {
         this.width = width; 
         this.height = height;
         this.cellSize = cellSize;
         this.originPos = originPos; 
-        this.prefab = prefab; 
+        this.prefab = prefab;
+
+        this.gridCellHandler = gridCellHandler; 
     }
     #endregion 
 
@@ -55,6 +59,9 @@ public class Grid
 
                 GridCell gridCell = gridObject.GetComponent<GridCell>();
                 gridCell.Init(gridPos);
+
+                gridCell.OnCellHovered += gridCellHandler.OnGridHovered;
+                gridCell.OnCellUnhovered += gridCellHandler.OnGridUnHovered; 
 
                 gridCell.OnClicked += HandleGridCellClicked; 
 

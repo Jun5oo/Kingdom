@@ -57,7 +57,7 @@ public class AttackAction : IAction
             }
 
             return false; 
-        });
+        }, HighlightType.ValidAttack, HighlightLayer.Action);
 
     }
 
@@ -66,7 +66,8 @@ public class AttackAction : IAction
         // 기존에 구독되어있던 이벤트를 해제 
         gridSystem.OnActionOccured -= Attack;
         // 모든 GridCell을 원래 상태로 되돌리기 
-        gridSystem?.UnhighlightGridCells(); 
+        gridSystem?.UnhighlightGridCells(HighlightLayer.Action);
+        gridSystem?.UnhighlightGridCells(HighlightLayer.Hover); 
     }
 
     public void Attack(Vector2Int gridPosition)

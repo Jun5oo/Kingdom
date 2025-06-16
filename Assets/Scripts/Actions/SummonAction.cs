@@ -30,14 +30,14 @@ public class SummonAction : IAction
         gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
         {
             return CanSummonAt(gridPosition); 
-        });
+        }, HighlightType.ValidSummon, HighlightLayer.Outline);
 
         gridSystem.OnActionOccured += SummonCard;
     }
 
     public void Exit()
     {
-        gridSystem?.UnhighlightGridCells();
+        gridSystem?.UnhighlightGridCells(HighlightLayer.Outline);
         gridSystem.OnActionOccured -= SummonCard;
     }
 
@@ -60,7 +60,7 @@ public class SummonAction : IAction
             cardSystem.RemoveCardFromHand(1, card); 
 
         // 수치가 하드코딩됨 나중에 
-        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.2f);
+        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.1f);
         Vector3 eulerAngles = card.IsMyCard ? new Vector3(90f, 0f, 0f) : new Vector3(90f, 0f, 180f);
         Quaternion quaternion = Quaternion.Euler(eulerAngles); 
         

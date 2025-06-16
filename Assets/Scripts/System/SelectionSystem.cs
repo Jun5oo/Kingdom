@@ -23,7 +23,6 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
     }
     void Update()
     {
-        
         if (currentSelectable != null)
             currentSelectableName = currentSelectable.ToString();
         else
@@ -44,23 +43,27 @@ public class SelectionSystem : MonoBehaviour, ISelectionSystem
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
+            if (actionSystem.IsActionInProgress())
+            {
+                IAction current = (actionSystem as ActionSystem)?.GetCurrentAction();
+                if (current != null && current.GetType().Name == "KingSummonAction")
+                    return;
+
+                if(current.ActionType == ActionType.Attack)
+                {
+                    OnExitSelected();
+                    return;
+                }
+            }
+
             if (Physics.Raycast(ray, out hit, 100f))
             {
-                if (actionSystem.IsActionInProgress())
-                {
-                    IAction current = (actionSystem as ActionSystem)?.GetCurrentAction();
-                    if (current != null && current.GetType().Name == "KingSummonAction")
-                        return;
-                }
-                ISelectable selectable;
-                GridCell gridCell;
-
                 // 카드를 직접 클릭한 경우 (패에 위치해있을 때) 
-                if (hit.transform.gameObject.TryGetComponent<ISelectable>(out selectable))
+                if (hit.transform.gameObject.TryGetComponent<ISelectable>(out ISelectable selectable))
                     OnEnterSelected(selectable);
 
                 // 간접으로 클릭한 경우 (필드위에 있을 때) 
-                else if (hit.transform.gameObject.TryGetComponent<GridCell>(out gridCell))
+                else if (hit.transform.gameObject.TryGetComponent<GridCell>(out GridCell gridCell))
                 {
                     Vector2Int gridPosition = gridCell.GetGridPosition();
 

@@ -49,6 +49,7 @@ public class CardActionController : MonoBehaviour
         uiLayout.position = Camera.main.WorldToScreenPoint(actionUIPoisition.position);
 
         GameFlowManager gameFlowManager = GameObject.FindAnyObjectByType<GameFlowManager>();
+        
         if (!gameFlowManager.IsMyTurn(card.IsMyCard))
             return;
 

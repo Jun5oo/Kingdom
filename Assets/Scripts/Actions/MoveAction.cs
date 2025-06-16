@@ -45,13 +45,13 @@ public class MoveAction : IAction
             }
 
             return false; 
-        });
+        }, HighlightType.ValidMove, HighlightLayer.Action);
 
         gridSystem.OnActionOccured += MoveToCell; 
     }
     public void Exit()
     {
-        gridSystem.UnhighlightGridCells(); 
+        gridSystem.UnhighlightGridCells(HighlightLayer.Action); 
         gridSystem.OnActionOccured -= MoveToCell; 
     }
     public bool IsValid()
@@ -72,7 +72,7 @@ public class MoveAction : IAction
 
         Vector2Int currentPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
 
-        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition);
+        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + Vector3.up * 0.1f;
         PRS prs = new PRS(targetPos, card.gameObject.transform.rotation, Vector3.one); 
 
         CardMovement cardMovement = card.gameObject.GetComponent<CardMovement>();

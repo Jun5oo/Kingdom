@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// 카드의 Hover와 Selection(마우스 Interaction)을 처리하는 클래스. 
@@ -90,8 +91,36 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         if (!IsSelectable())
             return;
 
+        isSelected = true;
+
         // 선택된 카드를 UI로 표시 
         uiSystem?.DisplayUI(card);
+   
+        GridSystem gridSystem = FindAnyObjectByType<GridSystem>();
+
+        if (card.CardState == CardState.Field && !card.IsMyCard)
+        {
+            if (gridSystem == null)
+            {
+                Debug.Log("GridSystem in null"); 
+            }
+            gridSystem?.HighlightGridCells((Vector2Int gridPosition) =>
+            {
+                // 현재 카드의 위치 
+                Vector2Int currentPosition = gridSystem.GetGridPositionOfGameObject(this.gameObject);
+
+                foreach (Vector2Int position in card.AttackRange)
+                {
+                    // 현재 카드위치에서 공격범위를 더해 해당 값이 gridPosition과 같다면 highlight 
+                    Vector2Int availablePosition = currentPosition + position;
+                    if (gridPosition == availablePosition)
+                        return true;
+                }
+
+                return false;
+            }, HighlightType.EnemyAttackRange, HighlightLayer.Action);
+            //
+        }
 
         Vector3 targetPosition = originPos + selectedOffset;
         Quaternion targetRotation = originRotation; 
@@ -102,11 +131,17 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         { 
             OnCardSelected?.Invoke();
         });
-        isSelected = true;
+
     }
     public void OnDeselected()
     {
         uiSystem?.CloseUI(); 
+
+        if(card.CardState == CardState.Field && !card.IsMyCard)
+        {
+            GridSystem gridSystem = FindAnyObjectByType<GridSystem>();
+            gridSystem?.UnhighlightGridCells(HighlightLayer.Action); 
+        }
 
         if(!cardMovement.IsMoving())
             cardMovement.MoveTransform(new PRS(originPos, originRotation, originScale), 0.2f, true);
