@@ -15,8 +15,25 @@ public class CardDamageController : MonoBehaviour, IDamageable
         this.card = card; 
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, bool isDirect = false)
     {
+        if (card.IsKing)
+        {
+            if (isDirect)
+                damage *= 2; 
+        }
+        
+        else
+        {
+            //Temp 
+            CardSystem cardSystem = FindAnyObjectByType<CardSystem>();
+
+            int playerID = this.card.IsMyCard ? 0 : 1; 
+
+            Card King = cardSystem.GetPlayerKing(playerID);
+            King.GetComponent<CardDamageController>()?.TakeDamage(damage, false); 
+        }
+
         OnDamaged?.Invoke(damage);
 
         GameObject obj = uiSystem.Pop<DamagePopupUI>();
@@ -26,5 +43,10 @@ public class CardDamageController : MonoBehaviour, IDamageable
         obj.GetComponent<DamagePopupUI>().SetupDamage(damage);
     }
 
-    public bool IsAlies() => card.IsMyCard; 
+    public bool IsAlies() => card.IsMyCard;
+
+    public void OnDestroy()
+    {
+        OnDamaged = null; 
+    }
 }

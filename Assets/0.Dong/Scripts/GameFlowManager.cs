@@ -125,6 +125,10 @@ public class GameFlowManager : MonoBehaviour
 
         UIManager.Instance.HideTurnMessage();
 
+        // Temp
+        UISystem uiSystem = FindAnyObjectByType<UISystem>();
+        uiSystem.SetHUD(); 
+
         cardSystem.DrawCard(currentPlayerID); // 매 턴 드로우 1장
 
         if (isFirstTurn)

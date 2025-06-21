@@ -172,6 +172,14 @@ public class CardHover : MonoBehaviour, IHoverable, ISelectable
         }
     }
 
-    public void OnHoverEnable() => isHoverable = true; 
+    public void OnHoverEnable() => isHoverable = true;
 
+    public void OnDestroy()
+    {
+        OnCardSelected = null;
+        OnCardDeselected = null;
+
+        cardMovement.OnCardMoved -= OnPRSUpdate;
+        cardMovement.OnCardMovedComplete -= OnHoverEnable;
+    }
 }

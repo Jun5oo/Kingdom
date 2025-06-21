@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -81,13 +82,34 @@ public class Card : MonoBehaviour
         cardDamageController?.Init(uiSystem, this);
         cardActionController?.Init(uiSystem, actionSystem, gridSystem);
 
-        cardDamageController.OnDamaged -= OnCPChanged; 
-        cardDamageController.OnDamaged += OnCPChanged;
+        cardDamageController.OnDamaged -= OnCPUpdate; 
+        cardDamageController.OnDamaged += OnCPUpdate;
     }
 
-    public void OnCPChanged(int damage)
+    public Action<int, int> OnCPChanged; 
+
+    public void OnCPUpdate(int damage)
     {
-        CP -= damage;
+        CP -= damage; 
+
         cardView.UpdateStatusUI();
+
+        int playerID = isMyCard ? 0 : 1; 
+        OnCPChanged?.Invoke(playerID, CP);
+
+        if (CP <= 0)
+        {
+            //Temp 
+            GridSystem gridSystem = FindAnyObjectByType<GridSystem>();
+            Vector2Int gridPosition = gridSystem.GetGridPositionOfGameObject(this.gameObject);
+            gridSystem.RemoveObjectFrom(this.gameObject, gridPosition);
+
+            Destroy(this.gameObject);
+        }   
+    }
+
+    public void OnDestroy()
+    {
+        cardDamageController.OnDamaged -= OnCPUpdate; 
     }
 }

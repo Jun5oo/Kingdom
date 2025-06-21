@@ -91,6 +91,8 @@ public class CardActionController : MonoBehaviour
 
     public void OnDestroy()
     {
+        HideEnableActions(); 
+
         cardHover.OnCardSelected -= ShowEnableActions;
         cardHover.OnCardDeselected -= HideEnableActions;
     }

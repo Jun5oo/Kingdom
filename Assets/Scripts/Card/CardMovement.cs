@@ -27,15 +27,16 @@ public class CardMovement : MonoBehaviour
     bool isMoving = false;
     public bool IsMoving() => isMoving;
 
+    Sequence sequence; 
+
     public void MoveTransform(PRS targetPRS, float duration, bool isHover = false, Action callback = null)
     {
         if (!isHover)
             PRS = targetPRS;
 
-        isMoving = true; 
+        isMoving = true;
 
-        Sequence sequence = DOTween.Sequence();
-
+        sequence = DOTween.Sequence(); 
         sequence.Append(transform.DOMove(targetPRS.position, duration));
         sequence.Join(transform.DORotateQuaternion(targetPRS.rotation, duration));
         sequence.Join(transform.DOScale(targetPRS.scale, duration));
@@ -73,6 +74,14 @@ public class CardMovement : MonoBehaviour
             onCompleteCallback?.Invoke();
             OnCardMovedComplete?.Invoke();
         });
+    }
 
+    public void OnDestory()
+    {
+        if(sequence != null && sequence.IsActive())
+            sequence.Kill(); 
+
+        OnCardMoved = null;
+        OnCardMovedComplete = null;
     }
 }

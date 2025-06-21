@@ -17,7 +17,8 @@ public class CardSystem : MonoBehaviour, ICardSystem
     List<Card> enemyHandList;
 
     // Test 
-    [SerializeField] List<CardData> deckList;
+    [SerializeField] List<CardData> undeadDeckList;
+    [SerializeField] List<CardData> angelDeckList; 
 
     Dictionary<int, PlayerData> players; 
 
@@ -60,6 +61,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
         handList = new List<Card>();
        
+        // TODO: 현재는 CardSystem에서 PlayerData를 생성하지만, 추후에 따로 Player 데이터를 생성하고 이를 적용하는 스크립트를 작성할 필요있음 
         players = new Dictionary<int, PlayerData>();
 
         PlayerData player = new PlayerData(playerID, hand, handLeftTransform, handRightTransform, deckTransform, cardParent);
@@ -87,8 +89,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
 
     public GameObject CreateCard(int playerID)
     {
-        // 현재는 테스트 용으로 deckList에 세 가지 종류의 카드만을 넣고 랜덤 생성. 나중에는 자신이 구성한 덱의 카드 데이터들을 가지고 순차적으로 생성예정 (셔플 함수도 구현예정) 
-        CardData cardData = deckList[Random.Range(0, deckList.Count)]; 
+        CardData cardData = playerID == 0 ? undeadDeckList[Random.Range(0, undeadDeckList.Count)] : angelDeckList[0]; 
 
         if (!players.ContainsKey(playerID))
         {
@@ -106,6 +107,7 @@ public class CardSystem : MonoBehaviour, ICardSystem
        
         Card card = cardObject?.GetComponent<Card>();
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, cardData);
+
 
         return cardObject; 
     }
@@ -210,6 +212,8 @@ public class CardSystem : MonoBehaviour, ICardSystem
         bool isMyCard = playerID == 0;
 
         card.Init(uiSystem, gridSystem, actionSystem, isMyCard, kingData);
+        
+        card.OnCPChanged += uiSystem.OnUpdateHUD; 
 
         return card;
     }

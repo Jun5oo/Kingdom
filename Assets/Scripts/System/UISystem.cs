@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -23,7 +24,11 @@ public class UISystem : MonoBehaviour, IUISystem
 
     [Header("Damage Popup UI")]
     [SerializeField] GameObject damagePopupUI;
-    [SerializeField] Transform damagePopupParent; 
+    [SerializeField] Transform damagePopupParent;
+
+    [Header("PlayerHUD")]
+    [SerializeField] PlayerHUD player1HUD;
+    [SerializeField] PlayerHUD player2HUD; 
 
     void Awake()
     {
@@ -90,4 +95,24 @@ public class UISystem : MonoBehaviour, IUISystem
             Debug.LogError($"No pool registered for type {typeof(T)}"); 
     }
     #endregion 
+
+    public void SetHUD()
+    {
+        // Temp 
+        CardSystem cardSystem = FindAnyObjectByType<CardSystem>();
+        Card player1King = cardSystem.GetPlayerKing(0); 
+        Card player2King = cardSystem.GetPlayerKing(1);
+
+        player1HUD.Init(true, player1King.CP);
+        player2HUD.Init(false, player2King.CP);
+
+        player1HUD.gameObject.SetActive(true);
+        player2HUD.gameObject.SetActive(true); 
+    }
+
+    public void OnUpdateHUD(int playerID, int damage)
+    {
+        PlayerHUD hud = playerID == 0 ? player1HUD: player2HUD;
+        hud.OnUpdateCP(damage);
+    }
 }

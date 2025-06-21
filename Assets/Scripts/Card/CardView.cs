@@ -45,4 +45,9 @@ public class CardView : MonoBehaviour
         if(cardStatusUI != null)
             cardStatusUI.GetComponent<CardStatusUI>().OnUpdate(card.CP, card.Movement); 
     }
+
+    public void OnDestroy()
+    {
+        HideStatusUI(); 
+    }
 }

@@ -101,7 +101,7 @@ public class AttackAction : IAction
 
                         int counterDamage = onHitCard.CP; 
 
-                        damageable?.TakeDamage(card.CP);
+                        damageable?.TakeDamage(card.CP, true);
                         Vector2Int attackerPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
                         
                         foreach(Vector2Int pos in onHitCard.AttackRange)

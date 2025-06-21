@@ -7,4 +7,5 @@ public interface IUISystem
     public GameObject Pop<T>() where T : MonoBehaviour, IPoolable;
     public void Push<T>(GameObject gameObject) where T : MonoBehaviour, IPoolable;
     public Transform GetActionUIParent();
+    public void OnUpdateHUD(int playerID, int cp);
 }
