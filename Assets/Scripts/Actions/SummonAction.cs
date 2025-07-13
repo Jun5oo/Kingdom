@@ -1,119 +1,177 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
-
-/// <summary>
-/// 소환액션 클래스
-/// </summary>
 
 public class SummonAction : IAction
 {
-    private ActionType actionType; 
+    private ActionType actionType;
+    private HighlightLayer highlightLayer;
+    private HighlightType highlightType;
+   
     public ActionType ActionType { get { return actionType; } }
+    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
+    public HighlightType HighlightType { get { return highlightType; } }
+    public ActionPerformer Performer { get { return performer; } }
 
-    IGridSystem gridSystem;
-    IActionSystem actionSystem;
+    // References 
+    GridManager gridManager;
+    CardManager cardManager;
+    TokenManager tokenManager;
+    TokenFactory tokenFactory; 
+    
+    Card card;
+    Token token;
+    ActionPerformer performer;
 
-    Card card; 
+    Vector2Int targetPosition;
+    List<Vector2Int> validPositions;
 
-    public SummonAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
+    public event Action OnActionComplete;
+    public event Action OnActionCanceled;
+
+    public SummonAction(GridManager gridManager, CardManager cardManager, TokenManager tokenManager, TokenFactory tokenFactory, Card card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
+        highlightLayer = HighlightLayer.Action; 
+        highlightType = HighlightType.SummonHighlight;
 
-        this.gridSystem = gridSystem; 
-        this.actionSystem = actionSystem;
+        this.gridManager = gridManager;
+        this.cardManager = cardManager;
+        this.tokenManager = tokenManager;
+        this.tokenFactory = tokenFactory;
+        
         this.card = card;
-    }
+        this.token = null;
 
+        this.performer = performer;
+
+        validPositions = new List<Vector2Int>
+        {
+            new Vector2Int(1, 1),
+            new Vector2Int(1, 0),
+            new Vector2Int(1, -1),
+            new Vector2Int(-1, 1),
+            new Vector2Int(-1, 0),
+            new Vector2Int(-1, -1),
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1)
+        }; 
+    }
     public void Enter()
     {
-        Exit();
-
-        gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
+        if(card == null)
         {
-            return CanSummonAt(gridPosition); 
-        }, HighlightType.ValidSummon, HighlightLayer.Outline);
+            Debug.LogError("The subject of the action is not exits");
+            return; 
+        }
 
-        gridSystem.OnActionOccured += SummonCard;
+        gridManager?.HighlightGridCells((Vector2Int gridPosition) => CanSummonAt(gridPosition), highlightType, highlightLayer); 
     }
-
-    public void Exit()
+    public void Execute(Vector2Int targetPosition)
     {
-        gridSystem?.UnhighlightGridCells(HighlightLayer.Outline);
-        gridSystem.OnActionOccured -= SummonCard;
+        this.targetPosition = targetPosition;
+        Transition(SummonState.Prepare); 
     }
-
-    public bool IsValid()
+    public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
+    public bool IsValid() => true; 
+    void Transition(SummonState state)
     {
-        // 추후에는 다른 플레이어의 왕 카드 또는 카드는 소환할 수 없어야 함 
-        // if(!card.IsMyCard) return false; 
-
-        return card.CardState == CardState.Hand; 
-    }
-
-    public void SummonCard(Vector2Int gridPosition)
+        switch (state)
+        {
+            case SummonState.Prepare:
+                Prepare(); 
+                break;
+            case SummonState.Animation:
+                Summon(); 
+                break;
+            case SummonState.Placing:
+                Placing(); 
+                break;
+            case SummonState.Done:
+                Done(); 
+                break; 
+        }
+    } 
+    void Prepare()
     {
         Exit();
-        // Temp 
-        CardSystem cardSystem = GameObject.FindAnyObjectByType<CardSystem>();
-        if (card.IsMyCard)
-            cardSystem.RemoveCardFromHand(0, card);
-        else
-            cardSystem.RemoveCardFromHand(1, card); 
 
-        // 수치가 하드코딩됨 나중에 
-        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + (Vector3.up * 0.1f);
-        Vector3 eulerAngles = card.IsMyCard ? new Vector3(90f, 0f, 0f) : new Vector3(90f, 0f, 180f);
-        Quaternion quaternion = Quaternion.Euler(eulerAngles); 
+        int playerID = card.OwnerPlayerID; 
         
-        PRS prs = new PRS(targetPos, quaternion, Vector3.one);
+        cardManager?.RemoveCardFromHand(playerID, card);
+        
+        CardMovement cardMovement = card.GetComponent<CardMovement>();  
+        PRS prs = cardMovement.PRS;
+        prs.position += Vector3.forward * 2f;
 
-        CardMovement cardMovement = card.GetComponent<CardMovement>();
-        cardMovement.MoveTransform(prs, 0.5f, false, ()=> {
-            gridSystem.PlaceObjectTo(card.gameObject, gridPosition);
-            card.CardState = CardState.Field;
-            actionSystem?.CancelAction();
-            card.GetComponent<CardView>().DisplayStatusUI();
-            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
+        cardMovement.MoveTransform(prs, 0.5f, false, () => 
+        { 
+            Transition(SummonState.Animation);
+            card.gameObject.SetActive(false);
         });
     }
+    void Summon()
+    {
+        Vector3 worldPosition = gridManager.GetWorldPosition(targetPosition); 
 
+        Vector3 targetPos = worldPosition + (Vector3.up * 0.1f);
+        Vector3 eulerAngles = new Vector3(90f, 0f, 0f);
+        Quaternion quaternion = Quaternion.Euler(eulerAngles);
+        Vector3 scale = Vector3.one;
+
+        PRS prs = new PRS(targetPos, quaternion, scale);
+
+        Token token = tokenFactory.CreateToken(card.cardData, card.OwnerPlayerID);
+        token.transform.position = targetPos + (Vector3.up * 10); 
+        this.token = token;
+    
+        if (token.IsKing)
+            tokenManager.AddKingToken(card.OwnerPlayerID, token); 
+
+        TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
+        tokenMovement.MoveTransform(prs, 1f, false, () => { Transition(SummonState.Placing); }); 
+    }
+    void Placing()
+    {
+        tokenManager.PlaceTokenTo(token, targetPosition); 
+        Transition(SummonState.Done); 
+    }
+    void Done()
+    {
+        OnActionComplete?.Invoke();
+    }
     private bool CanSummonAt(Vector2Int pos)
     {
-        if (gridSystem.IsObjectOnGridPosition(pos))
-            return false;
-
         if (card.IsKing)
         {
-            if (card.IsMyCard)
-                return pos.y < 3;
+            if(cardManager.IsMyCard(card))
+                return pos.y < 1;
             else
-                return pos.y >= 5; 
+                return pos.y >= 6; 
         }
-    
-        Vector2Int center = GetKingPosition();
-        // 추후 GetKingPosition 다시 작성 
 
-        if (center == -Vector2Int.one)
-            return false;
+        int playerID = card.OwnerPlayerID;
 
-        int distanceX = Mathf.Abs(center.x - pos.x);
-        int distanceY = Mathf.Abs(center.y - pos.y); 
-
-        return distanceX <= 1 && distanceY <= 1;
-    }
-
-    private Vector2Int GetKingPosition()
-    {
-        GameObject[] kings = GameObject.FindGameObjectsWithTag("King");
-
-        foreach (GameObject kingObj in kings)
+        if (tokenManager.TryGetKingTokenFrom(playerID, out Token kingToken))
         {
-            Card kingCard = kingObj.GetComponent<Card>();
-            if (kingCard != null && kingCard.IsMyCard == card.IsMyCard)
+            Vector2Int gridPos = tokenManager.GetGridPositionOfToken(kingToken);
+
+            foreach (var validPos in validPositions)
             {
-                return gridSystem.GetGridPositionOfGameObject(kingObj);
+                Vector2Int availablePos = gridPos + validPos; 
+                if (!tokenManager.IsTokenAtGridPosition(availablePos) && availablePos == pos)
+                    return true;
             }
+
+            return false; 
         }
 
-        return -Vector2Int.one;
+        else
+        {
+            Debug.LogError("왕 토큰이 존재하지 않습니다!");
+            Exit();
+            OnActionCanceled?.Invoke(); 
+            return false;
+        }
     }
 }

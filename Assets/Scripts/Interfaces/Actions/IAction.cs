@@ -1,13 +1,19 @@
+using System;
 using UnityEngine;
 
 public interface IAction
 {
-    /// <summary>
-    /// 액션 인터페이스 
-    /// </summary>
-    
+    // 행동 인터페이스 
     public ActionType ActionType { get; }
+    public HighlightLayer HighlightLayer { get; }
+    public HighlightType HighlightType { get; }
+    public ActionPerformer Performer { get; }
+
     public void Enter();
     public void Exit();
-    public bool IsValid(); 
+    public void Execute(Vector2Int targetPosition); 
+    public bool IsValid();
+
+    public event Action OnActionCanceled;
+    public event Action OnActionComplete; 
 }

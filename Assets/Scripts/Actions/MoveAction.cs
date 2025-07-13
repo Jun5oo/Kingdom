@@ -1,88 +1,134 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-
-/// <summary>
-/// 이동액션 클래스 
-/// </summary>
 
 public class MoveAction : IAction
 {
     ActionType actionType;
+    HighlightLayer highlightLayer;
+    HighlightType highlightType;
+
     public ActionType ActionType { get { return actionType; } }
+    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
+    public HighlightType HighlightType { get { return highlightType; } }
+    public ActionPerformer Performer { get { return performer; } }
 
-    IGridSystem gridSystem;
-    IActionSystem actionSystem;
-
-    Card card; 
+    GridManager gridManager;
+    TokenManager tokenManager; 
+    Token token;
+    ActionPerformer performer;
 
     List<Vector2Int> moveablePositions;
 
-    public MoveAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
+    Vector2Int targetPosition; 
+
+    public event Action OnActionComplete;
+    public event Action OnActionCanceled;
+
+    public MoveAction(GridManager gridManager, TokenManager tokenManager, Token token, ActionPerformer performer)
     {
         // 이동액션 초기화 
         actionType = ActionType.Move;
+        highlightLayer = HighlightLayer.Action;
+        highlightType = HighlightType.MoveHighlight;
 
-        this.gridSystem = gridSystem;
-        this.actionSystem = actionSystem;
+        this.gridManager = gridManager;
+        this.tokenManager = tokenManager;
+        this.performer = performer;
 
-        this.card = card;
-        this.moveablePositions = card.cardData.moveRange; 
+        this.token = token;
+        this.moveablePositions = token.MoveRange;
     }
 
     public void Enter()
     {
         Exit();
 
-        gridSystem.HighlightGridCells((Vector2Int gridPosition) =>
+        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            Vector2Int currentGridPosition = gridSystem.GetGridPositionOfGameObject(card.gameObject); 
+            Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token); 
 
             foreach(Vector2Int position in moveablePositions)
             {
                 Vector2Int availablePosition = currentGridPosition + position; 
-                if (availablePosition == gridPosition && !gridSystem.IsObjectOnGridPosition(gridPosition))
+                if (availablePosition == gridPosition && !tokenManager.IsTokenAtGridPosition(gridPosition))
                     return true; 
             }
 
             return false; 
-        }, HighlightType.ValidMove, HighlightLayer.Action);
+        }, HighlightType.MoveHighlight, HighlightLayer.Action);
 
-        gridSystem.OnActionOccured += MoveToCell; 
+    }
+    public void Execute(Vector2Int gridPosition)
+    {
+        if(token == null)
+        {
+            OnActionCanceled?.Invoke();
+            return; 
+        }
+
+        targetPosition = gridPosition; 
+        Transition(MoveState.Prepare); 
     }
     public void Exit()
     {
-        gridSystem.UnhighlightGridCells(HighlightLayer.Action); 
-        gridSystem.OnActionOccured -= MoveToCell; 
+        gridManager.UnhighlightGridCells(HighlightLayer.Action); 
     }
+
     public bool IsValid()
     {
-        if (card.CardState != CardState.Hand)
-            return true;
-
-        return false; 
+        return true; 
     }
 
-    public void MoveToCell(Vector2Int gridPosition)
+    void Transition(MoveState state)
     {
-        Exit();
+        switch (state)
+        {
+            case MoveState.Prepare:
+                Prepare();
+                break;
+            case MoveState.Animation:
+                Move(); 
+                break;
+            case MoveState.Placing:
+                Placing(); 
+                break;
+            case MoveState.Done:
+                Done();
+                break;
+            default:
+                Debug.LogError("Undefined MoveState");
+                return; 
+        }
+    }
 
-        // Temp 
-        card.GetComponent<CardView>().HideStatusUI(); 
-        //
+    void Prepare()
+    {
+        Exit(); 
+        Transition(MoveState.Animation);
+    }
+    void Move()
+    {
+        TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
 
-        Vector2Int currentPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
+        Vector3 targetWorldPos = gridManager.GetWorldPosition(targetPosition);
+        Quaternion quaternion = tokenMovement.PRS.rotation;
+        Vector3 scale = tokenMovement.PRS.scale;
 
-        Vector3 targetPos = gridSystem.GetWorldPosition(gridPosition) + Vector3.up * 0.1f;
-        PRS prs = new PRS(targetPos, card.gameObject.transform.rotation, Vector3.one); 
+        tokenMovement.MoveTransform(new PRS(targetWorldPos, quaternion, scale), 0.5f, false, () =>
+        {
+            Transition(MoveState.Placing); 
+        }); 
+    }
+    void Placing()
+    {
+        tokenManager.MoveTokenTo(token, targetPosition); 
+        Transition(MoveState.Done);
+    }
 
-        CardMovement cardMovement = card.gameObject.GetComponent<CardMovement>();
-        cardMovement.MoveTransform(prs, 0.7f, false, () => 
-        { 
-            gridSystem.MoveObjectFrom(currentPos, gridPosition);
-            actionSystem?.CancelAction(); 
-            card.GetComponent<CardView>().DisplayStatusUI();
-            GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
-        });
+    void Done()
+    {
+        OnActionComplete?.Invoke(); 
     }
 
 }

@@ -1,39 +1,22 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-/// <summary>
-/// 플레이어 데이터 클래스 
-/// </summary>
-
 public class PlayerData
 {
-    public int playerID;
+    private int playerID;
+    private string playerName;
+    private Race race;
+    private bool isLocal;
 
-    public List<Card> handList;
-    public List<Card> deckList;
+    public Token kingToken; 
 
-    public Transform hand;
-    public Transform handLeft;
-    public Transform handRight;
-    public Transform deck;
+    public int PlayerID { get { return playerID; } }
+    public Race Race { get { return race; } }
+    public string PlayerName { get { return playerName; } } 
+    public bool IsLocal {  get { return isLocal; } }
 
-    public Transform cardParent;
-
-    public Vector2Int kingPos; 
-
-    public PlayerData(int playerID, Transform hand, Transform handLeft, Transform handRight, Transform deck, Transform cardParent)
+    public PlayerData(int playerID, Race race, string playerName, bool isLocal)
     {
         this.playerID = playerID;
-        this.hand = hand;
-        this.handLeft = handLeft;
-        this.handRight = handRight;
-        this.deck = deck;
-
-        this.cardParent = cardParent;
-
-        handList = new List<Card>();
-        deckList = new List<Card>();
-
-        kingPos = -Vector2Int.one; 
+        this.race = race;
+        this.playerName = playerName;
+        this.isLocal = isLocal;
     }
 }

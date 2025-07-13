@@ -1,172 +1,187 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
-// 게임 전체 흐름을 관리하는 클래스 (턴 순서, 드로우, 왕 배치 등)
 public class GameFlowManager : MonoBehaviour
 {
     // 게임 진행 상태 정의
-    enum TurnState
+    enum GameFlowState
     {
-        DecideFirstPlayer,  // 선공/후공 결정
-        InitialDraw,        // 시작 드로우
+        TurnSelection,  // 선공/후공 결정
+        KingDraw,        // 왕 카드 드로우
         KingPlacement,      // 왕 배치
-        PlayerTurn,         // 플레이어 턴
-        EndTurn             // 턴 종료
+        Draw,           // 시작 드로우 
+        Done 
     }
 
-    private TurnState currentState;
+    const int PLAYER_NUM = 2;
+    const int FIRST_PLAYER_DRAW = 3;
+    const int LAST_PLAYER_DRAW = 4;
+    const float DRAW_COOLTIME = 0.4f;
+    const float WAIT_TIME = 0.5f;
 
-    private int currentPlayerID; // 현재 턴의 플레이어 ID (0: 내 턴, 1: 적 턴)
-    private int actionPoint;     // 현재 턴의 남은 행동력 (최대 2)
+    // 현재 CurrentState의 경우 사용하지 않지만, 나중에 네트워크가 추가될 경우, 연결 끊김 등 다시 복구를 시도할 때 필요할 수도 있어서 구현 
+    private GameFlowState currentState;
 
-    [SerializeField] CardSystem cardSystem; // 카드 시스템 참조
+    PlayerManager playerManager;
+    UIManager uiManager;
+    TurnManager turnManager;
+    CardManager cardManager;
+    TokenManager tokenManager;
+    DamageManager damageManager;
+    ActionSystem actionSystem;
+    ActionFactory actionFactory;
 
-    private bool isFirstTurn = true; // 첫 턴인지 여부
-    private bool isFirstPlayerKingPlaced = false; // 선공 왕 배치 완료 여부
-    private bool isSecondPlayerKingPlaced = false; // 후공 왕 배치 완료 여부
+    int[] playerID; 
 
     private int firstPlayerID;
-    private int secondPlayerID;
+    private int lastPlayerID;
 
-    // 카드 시스템 의존성 주입 (초기화용)
-    public void Init(CardSystem cardSystem)
+    private Card firstPlayerCard; 
+    private Card lastPlayerCard;
+
+    WaitForSeconds waitTime;
+
+    // static 사용을 고려. (주입을 위한 파라미터가 너무 많다.) 
+    public void Init(PlayerManager playerManager, UIManager uiManager, TurnManager turnManager, CardManager cardManager, TokenManager tokenManager, DamageManager damageManager, ActionSystem actionSystem, ActionFactory actionFactory)
     {
-        this.cardSystem = cardSystem;
+        this.playerManager = playerManager;
+        this.uiManager = uiManager;
+        this.turnManager = turnManager;
+        this.cardManager = cardManager;
+        this.tokenManager = tokenManager;
+        this.damageManager = damageManager;
+        this.actionSystem = actionSystem; 
+        this.actionFactory = actionFactory;
+
+        playerID = new int[PLAYER_NUM];
+
+        playerID[0] = playerManager.LocalPlayerData.PlayerID; 
+        playerID[1] = playerManager.RemotePlayerData.PlayerID;
+
+        damageManager.OnKingDefeated -= EndGame;
+        damageManager.OnKingDefeated += EndGame;
+
+        waitTime = new WaitForSeconds(WAIT_TIME); 
+
+        Debug.Log($"{playerID[0]}, {playerID[1]}"); 
     }
 
-    // 게임 시작 트리거
-    public void StartGame()
+    public void GameStart()
     {
-        currentState = TurnState.DecideFirstPlayer;
-        DecideTurnOrder(); // 선공/후공 결정 및 초기 드로우
+        StartCoroutine(Initialization()); 
     }
 
-    // 선공/후공 무작위 결정 + 안내 메시지 출력 → 초기 드로우로 전환
-    private void DecideTurnOrder()
+    public void EndGame(int loserID)
     {
-        firstPlayerID = UnityEngine.Random.Range(0, 2);
-        secondPlayerID = 1 - firstPlayerID;
-        currentPlayerID = firstPlayerID;
+        Debug.Log($"End, {loserID} lose."); 
 
-        currentState = TurnState.InitialDraw;
-
-        // 선/후공 UI 메시지 출력
-        string turnInfo = currentPlayerID == 0 ? "당신은 선공입니다." : "당신은 후공입니다.";
-        UIManager.Instance.ShowTurnOrder(turnInfo);
-
-        StartCoroutine(DrawInitialCards());
+        if (loserID == playerManager.LocalPlayerData.PlayerID)
+            uiManager.OnNotification("Defeated");
+        else if (loserID == playerManager.RemotePlayerData.PlayerID)
+            uiManager.OnNotification("Victory");
+        else
+            uiManager.OnNotification("Draw"); 
     }
 
-    // 초기 카드 드로우를 일정 간격으로 순차 실행
-    private IEnumerator DrawInitialCards()
+    private IEnumerator Initialization()
     {
-        for (int i = 0; i < 3; i++)
+        yield return OnSelectTurnOrder();
+        yield return OnDrawKingCard();
+        yield return OnKingPlacement();
+        yield return OnDrawCards();
+
+        currentState = GameFlowState.Done; 
+
+        int[] playerOrder = {firstPlayerID, lastPlayerID};
+
+        turnManager.SetTurnOrder(playerOrder);
+        turnManager.BeginTurnLoop();
+    }
+    private IEnumerator OnSelectTurnOrder()
+    {
+        currentState = GameFlowState.TurnSelection;
+
+        int idx = UnityEngine.Random.Range(0, PLAYER_NUM);
+
+        firstPlayerID = playerID[idx];
+        lastPlayerID = playerID[PLAYER_NUM - idx - 1];
+
+        if (firstPlayerID == playerID[0])
+            uiManager.OnNotification("First");
+        else
+            uiManager.OnNotification("Second");
+
+        yield return waitTime; 
+    }
+    private IEnumerator OnDrawKingCard()
+    {
+        currentState = GameFlowState.KingDraw;
+
+        Card firstPlayerKing = cardManager?.DrawKingCard(firstPlayerID);
+        Card lastPlayerKing = cardManager?.DrawKingCard(lastPlayerID);
+
+        this.firstPlayerCard = firstPlayerKing;
+        this.lastPlayerCard = lastPlayerKing;
+
+        yield return waitTime; 
+    }
+    private IEnumerator OnKingPlacement()
+    {
+        currentState = GameFlowState.KingPlacement;
+
+        yield return OnPlacement(firstPlayerCard) ; 
+        yield return OnPlacement(lastPlayerCard);
+   
+        PlayerData localPlayer = playerManager.LocalPlayerData; 
+        PlayerData remotePlayer = playerManager.RemotePlayerData;
+
+        if(tokenManager.TryGetKingTokenFrom(localPlayer.PlayerID, out Token localToken))
+            uiManager.SetHUD(localPlayer, localToken);
+        else
+            Debug.LogError("로컬 플레이어의 왕이 소환되지 않았습니다.");
+
+        if (tokenManager.TryGetKingTokenFrom(lastPlayerID, out Token lastToken))
+            uiManager.SetHUD(remotePlayer, lastToken);
+        else
+            Debug.LogError("상대 플레이어의 왕이 소환되지 않았습니다.");
+
+        uiManager.OnActiveHUD();
+
+        yield return waitTime; 
+    }
+    private IEnumerator OnPlacement(Card card)
+    {
+        bool isDone = false;
+
+        Action onComplete = null;
+        onComplete = () => isDone = true; 
+   
+        IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System);
+        summon.OnActionComplete += onComplete; 
+   
+        actionSystem?.Enter(summon);
+        yield return new WaitUntil(() => isDone);
+
+        summon.OnActionComplete -= onComplete;
+    }
+    private IEnumerator OnDrawCards()
+    {
+        currentState = GameFlowState.Draw; 
+
+        for(int i=0; i<FIRST_PLAYER_DRAW; i++)
         {
-            cardSystem.DrawCard(firstPlayerID);
-            yield return new WaitForSeconds(0.4f);
+            cardManager?.DrawCard(firstPlayerID);
+            yield return new WaitForSeconds(DRAW_COOLTIME); 
         }
 
-        for (int i = 0; i < 4; i++)
+        for(int j=0; j<LAST_PLAYER_DRAW; j++)
         {
-            cardSystem.DrawCard(secondPlayerID);
-            yield return new WaitForSeconds(0.4f);
+            cardManager?.DrawCard(lastPlayerID);
+            yield return new WaitForSeconds(DRAW_COOLTIME);
         }
 
-        EnterKingPlacement(); // 왕 배치 단계로 전환
+        yield return waitTime; 
     }
 
-    // 현재 상태에 따라 선공/후공 순서로 왕 배치 시작
-    private void EnterKingPlacement()
-    {
-        currentState = TurnState.KingPlacement;
-
-        if (!isFirstPlayerKingPlaced)
-        {
-            Debug.Log($"선공 플레이어({firstPlayerID}) 왕 배치");
-            cardSystem.SummonKing(cardSystem.GetPlayerKing(firstPlayerID));
-
-            // 왕 배치 메시지 표시
-            if (firstPlayerID == 0)
-                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
-            else
-                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
-        }
-        else if (!isSecondPlayerKingPlaced)
-        {
-            Debug.Log($"후공 플레이어({secondPlayerID}) 왕 배치");
-            cardSystem.SummonKing(cardSystem.GetPlayerKing(secondPlayerID));
-
-            if (secondPlayerID == 0)
-                UIManager.Instance.ShowTurnMessage("왕을 배치해주세요");
-            else
-                UIManager.Instance.ShowTurnMessage("상대가 왕을 배치 중입니다...");
-        }
-    }
-
-    // 왕 배치가 끝났을 때 호출되는 콜백 (선공 → 후공 → 턴 시작 순)
-    public void OnKingPlaced()
-    {
-        if (!isFirstPlayerKingPlaced)
-        {
-            isFirstPlayerKingPlaced = true;
-            EnterKingPlacement(); // 후공으로 넘어감
-        }
-        else if (!isSecondPlayerKingPlaced)
-        {
-            isSecondPlayerKingPlaced = true;
-            StartTurn(); // 두 명 모두 왕 배치 완료 → 게임 시작
-        }
-    }
-
-    // 현재 플레이어의 턴 시작 처리
-    private void StartTurn()
-    {
-        currentState = TurnState.PlayerTurn;
-
-        UIManager.Instance.HideTurnMessage();
-
-        // Temp
-        UISystem uiSystem = FindAnyObjectByType<UISystem>();
-        uiSystem.SetHUD(); 
-
-        cardSystem.DrawCard(currentPlayerID); // 매 턴 드로우 1장
-
-        if (isFirstTurn)
-            isFirstTurn = false;
-
-        actionPoint = 2; // 행동력 초기화
-
-        Debug.Log($"Player {currentPlayerID}의 턴 시작. 행동력: {actionPoint}");
-
-        // UI 갱신
-        bool isMyTurn = currentPlayerID == 0;
-        TurnUIManager.Instance.UpdateTurnOwner(isMyTurn);
-        TurnUIManager.Instance.UpdateActionPoint(actionPoint);
-    }
-
-    // 한 번의 행동(소환, 이동 등) 후 호출
-    public void OnActionPerformed()
-    {
-        actionPoint--;
-        if (currentPlayerID == 0)
-            TurnUIManager.Instance.UpdateActionPoint(actionPoint);
-
-        if (actionPoint <= 0)
-            EndTurn(); // 행동력이 0이면 턴 종료
-    }
-
-    // 턴 종료 → 플레이어 전환 → 다음 턴 시작
-    private void EndTurn()
-    {
-        currentState = TurnState.EndTurn;
-
-        currentPlayerID = 1 - currentPlayerID;
-        StartTurn();
-    }
-
-    // 내 턴 여부 확인용 (카드에서 판단)
-    public bool IsMyTurn(bool isMyCard)
-    {
-        return currentPlayerID == (isMyCard ? 0 : 1);
-    }
 }

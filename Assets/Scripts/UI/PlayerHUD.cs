@@ -1,14 +1,10 @@
 using TMPro;
-using UnityEditorInternal;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour
 {
-    const int PLAYER_POS_X = 190;
-    const int ENEMY_POS_X = -190;
-    const int POS_Y = 0; 
-
     [SerializeField] RectTransform panel; 
 
     [SerializeField] Image playerImage;
@@ -18,26 +14,19 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] Sprite angel;
     [SerializeField] Sprite undead; 
 
-    public void Init(bool isLocal, int cp)
+    public void Init(PlayerData playerData, Token token)
     {
-        if (isLocal)
-        {
-            panel.anchoredPosition = new Vector2(PLAYER_POS_X, POS_Y);
-            playerName.text = "Player1";
-            playerImage.sprite = undead;  
-        }
+        token.OnCPUpdate -= OnUpdateCP; 
+        token.OnCPUpdate += OnUpdateCP;
 
-        else
-        {
-            panel.anchoredPosition = new Vector2(ENEMY_POS_X, POS_Y);
-            playerName.text = "Player2";
-            playerImage.sprite = angel;
-        }
+        // 나중에 종족별 King Image로 업데이트 
+        // playerImage.sprite = null;
 
-        playerCp.text = cp.ToString();
+        playerName.text = playerData.PlayerName;
+        playerCp.text = token.CP.ToString(); 
     }
 
-    public void OnUpdateCP(int cp)
+    void OnUpdateCP(int cp)
     {
         playerCp.text = cp.ToString(); 
     }

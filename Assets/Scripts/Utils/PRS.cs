@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// 위치, 회전, 크기
-/// </summary>
-
 public class PRS
 {
     public Vector3 position;

@@ -2,46 +2,34 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Grid를 처리하는 데이터 컨테이너 클래스. 
-/// </summary>
-
 public class Grid
 {
     private int height;
     private int width;
-    private float cellSize;
 
     private Vector3 originPos;
     private GameObject prefab;
+    private float prefabSize;
 
-    #region Dictionaries 
+    public Action<GridCell> OnGridCellClicked;
+
     Dictionary<Vector2Int,  GridCell> positionToCell;
-    Dictionary<Vector2Int, GameObject> objectOnGrid;
-    #endregion 
-
     List<GridCell> cellList;
 
-    GridCellHandler gridCellHandler; 
-
-    #region Constructor 
-    public Grid(int width, int height, float cellSize, Vector3 originPos, GameObject prefab, GridCellHandler gridCellHandler)
+    public void Init(int width, int height, Vector3 originPos, GameObject prefab)
     {
         this.width = width; 
         this.height = height;
-        this.cellSize = cellSize;
         this.originPos = originPos; 
         this.prefab = prefab;
 
-        this.gridCellHandler = gridCellHandler; 
+        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x; 
     }
-    #endregion 
 
     #region Create Grid 
-    public void CreateGridMap(Transform gridParent)
+    public void CreateGridMap(Transform gridParent, List<Sprite> sprites)
     {
         positionToCell = new Dictionary<Vector2Int, GridCell>(); 
-        objectOnGrid = new Dictionary<Vector2Int, GameObject>();
 
         cellList = new List<GridCell>(); 
 
@@ -58,21 +46,13 @@ public class Grid
                 Vector2Int gridPos = new Vector2Int(j, i); 
 
                 GridCell gridCell = gridObject.GetComponent<GridCell>();
-                gridCell.Init(gridPos);
 
-                gridCell.OnCellHovered += gridCellHandler.OnGridHovered;
-                gridCell.OnCellUnhovered += gridCellHandler.OnGridUnHovered; 
+                int idx = i * 7 + j; 
 
-                gridCell.OnClicked += HandleGridCellClicked; 
+                gridCell.Init(gridPos, sprites[idx]);
 
-                if (i < 3)
-                    gridCell.isMyCell = true; 
-                else 
-                    gridCell.isMyCell = false;
-
+                gridCell.OnClicked += OnClicked; 
                 positionToCell.Add(gridPos, gridCell);
-                objectOnGrid.Add(gridPos, null); 
-
                 cellList.Add(gridCell);
             }
         }
@@ -82,11 +62,11 @@ public class Grid
     #region GetFunctions 
     public Vector3 GetWorldPosition(Vector2Int gridPosition)
     {
-        float totalWidth = width * cellSize;
-        float totalHeight = height * cellSize;
+        float totalWidth = width * prefabSize;
+        float totalHeight = height * prefabSize;
 
-        float offsetX = -(totalWidth / 2) + (gridPosition.x * cellSize) + (cellSize / 2);
-        float offsetZ = -(totalHeight / 2) + (gridPosition.y * cellSize)  + (cellSize / 2); 
+        float offsetX = -(totalWidth / 2) + (gridPosition.x * prefabSize) + (prefabSize / 2);
+        float offsetZ = -(totalHeight / 2) + (gridPosition.y * prefabSize)  + (prefabSize / 2); 
 
         return new Vector3(offsetX + originPos.x, 0f, offsetZ + originPos.z);
     }
@@ -94,14 +74,14 @@ public class Grid
     {
         Vector3 relativePosition = worldPosition - originPos; 
 
-        float totalWidth = width * cellSize; 
-        float totalHeight = height * cellSize;
+        float totalWidth = width * prefabSize; 
+        float totalHeight = height * prefabSize;
 
         float normalizedX = relativePosition.x + (totalWidth / 2);
         float normalizedZ = relativePosition.z + (totalHeight / 2);
 
-        int gridX = Mathf.FloorToInt(normalizedX/cellSize);
-        int gridZ = Mathf.FloorToInt(normalizedZ/cellSize);
+        int gridX = Mathf.FloorToInt(normalizedX/prefabSize);
+        int gridZ = Mathf.FloorToInt(normalizedZ/prefabSize);
 
         bool isGridSelected = gridX >= 0 && gridZ >= 0 && gridX < width && gridZ < height;
 
@@ -117,37 +97,11 @@ public class Grid
         else
             return null; 
     }
-    public GameObject GetObjectOnGridCell(Vector2Int gridPosition)
-    {
-        return objectOnGrid[gridPosition]; 
-    }
     public List<GridCell> GetAllCells() => cellList; 
     #endregion
 
-    #region GridPlacement 
-    public void PlaceObjectTo(GameObject obj, Vector2Int gridPosition)
-    {
-        if (objectOnGrid.ContainsKey(gridPosition))
-            objectOnGrid[gridPosition] = obj; 
-    }
-    public void RemoveObjectFrom(GameObject obj, Vector2Int gridPosition)
-    {
-        if(objectOnGrid.TryGetValue(gridPosition, out GameObject gameObject))
-            objectOnGrid[gridPosition] = null; 
-    }
-    public void MoveObject(Vector2Int from, Vector2Int to)
-    {
-        GameObject gameObject = GetObjectOnGridCell(from);
-        RemoveObjectFrom(gameObject, from);
-        PlaceObjectTo(gameObject, to); 
-    }
-    #endregion
-
-    #region Actions 
-    public Action<GridCell> OnGridCellClicked;
-    public void HandleGridCellClicked(GridCell gridCell)
+    public void OnClicked(GridCell gridCell)
     {
         OnGridCellClicked?.Invoke(gridCell);
     }
-    #endregion 
 }

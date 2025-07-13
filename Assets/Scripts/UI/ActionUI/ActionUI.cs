@@ -3,41 +3,42 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-/// <summary>
-/// 행동 가능한 UI 오브젝트 클래스. 
-/// </summary>
-
 public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
-    [SerializeField] TextMeshProUGUI actionType; 
-    
-    IAction action;
-    public Action<IAction> OnUIClicked;
+    // 현재는 단순히 버튼에 Text를 입혔지만, 추후에는 행동 별 UI 이미지로 대체할 예정 
+    [SerializeField] TextMeshProUGUI cardActionInitial;
 
-    public void OnPointerDown(PointerEventData eventData) => OnUIClicked?.Invoke(action);
+    private IAction action;
+    public Action<IAction> OnSelected;
+
+    public void OnPointerDown(PointerEventData eventData) => OnSelected?.Invoke(action);
     public void OnPointerEnter(PointerEventData eventData) => transform.localScale = Vector3.one * 1.1f;
     public void OnPointerExit(PointerEventData eventData) => transform.localScale = Vector3.one; 
+    
     public void Init(IAction action)
     {
-        this.action = action; 
+        this.action = action;
 
+        transform.localScale = Vector3.one; 
+        OnUpdateText(action);
+    }
+
+    public void OnUpdateText(IAction action)
+    {
         switch (action.ActionType)
         {
             case ActionType.Summon:
-                actionType.text = "S"; 
+                cardActionInitial.text = "S";
                 break;
             case ActionType.Move:
-                actionType.text = "M"; 
+                cardActionInitial.text = "M";
                 break;
             case ActionType.Attack:
-                actionType.text = "A"; 
-                break;
-            case ActionType.Upgrade:
-                actionType.text = "U"; 
+                cardActionInitial.text = "A";
                 break;
             default:
-                actionType.text = "N";
-                break; 
+                cardActionInitial.text = "N";
+                break;
         }
     }
 }

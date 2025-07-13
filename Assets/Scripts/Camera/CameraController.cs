@@ -1,16 +1,14 @@
+using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
-/// <summary>
-/// 카메라 조작
-/// </summary>
 public class CameraController : MonoBehaviour
 {
     [SerializeField] CinemachineCamera startCamera;
     [SerializeField] CinemachineCamera endCamera;
 
-    WaitForSeconds waitTime; 
+    WaitForSeconds waitTime;
 
     void Awake()
     {
@@ -29,5 +27,10 @@ public class CameraController : MonoBehaviour
 
         startCamera.Priority = 0;
         endCamera.Priority = 10;
+    }
+
+    public void ShakeCamera()
+    {
+
     }
 }

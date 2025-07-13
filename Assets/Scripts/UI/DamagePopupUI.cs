@@ -5,22 +5,10 @@ using UnityEngine;
 
 public class DamagePopupUI : MonoBehaviour, IPoolable
 {
-    [SerializeField] TextMeshProUGUI text; 
-    public void SetupDamage(int damage)
-    {
-        text.text = damage.ToString();
-    }
+    [SerializeField] TextMeshProUGUI damage;
 
-    void OnEnable()
+    public void Init(int damage)
     {
-        StartCoroutine(HidePopupCoroutine()); 
-    }
-
-    IEnumerator HidePopupCoroutine()
-    {
-        yield return new WaitForSeconds(2f); 
-        
-        UISystem uiSystem = GameObject.FindAnyObjectByType<UISystem>();
-        uiSystem.Push<DamagePopupUI>(this.gameObject); 
+        this.damage.text = damage.ToString();
     }
 }

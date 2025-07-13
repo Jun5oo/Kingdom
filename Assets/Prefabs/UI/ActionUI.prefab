@@ -86,10 +86,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1152004354487428711}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c47fd61f7cde5af4fadb2c613d2298cd, type: 3}
+  m_Script: {fileID: 11500000, guid: 18a64762fdf879545aad4042488d2952, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionType: {fileID: 3996695114870757922}
+  cardActionInitial: {fileID: 3996695114870757922}
 --- !u!1 &5147019802377577306
 GameObject:
   m_ObjectHideFlags: 0

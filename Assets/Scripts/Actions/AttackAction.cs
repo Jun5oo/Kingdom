@@ -1,135 +1,165 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 공격액션 클래스 
-/// </summary>
-
 public class AttackAction : IAction
 {
-    ActionType actionType; 
+    ActionType actionType;
+    HighlightLayer highlightLayer;
+    HighlightType highlightType;
+
     public ActionType ActionType { get { return actionType; } }
+    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
+    public HighlightType HighlightType {  get { return highlightType; } }
+    public ActionPerformer Performer {  get {  return performer; } }
 
-    IGridSystem gridSystem;
-    IActionSystem actionSystem; 
+    GridManager gridManager;
+    TokenManager tokenManager;
+    DamageManager damageManager;
 
-    Card card;
+    Token token;
+    Token target;
+    ActionPerformer performer;
 
-    List<Vector2Int> positions;
+    Vector2Int targetPosition; 
 
-    GameObject particleObject; 
+    List<Vector2Int> attackablePositions;
 
-    public AttackAction(IGridSystem gridSystem, IActionSystem actionSystem, Card card)
+    public event Action OnActionComplete;
+    public event Action OnActionCanceled;
+
+    public AttackAction(GridManager gridManager, TokenManager tokenManager, DamageManager damageManager, Token token, ActionPerformer performer)
     {
-        // 공격 액션 초기화 
-        actionType = ActionType.Attack; 
+        actionType = ActionType.Attack;
+        highlightLayer = HighlightLayer.Action;
+        highlightType = HighlightType.AttackHighlight; 
 
-        this.gridSystem = gridSystem;
-        this.actionSystem = actionSystem;
+        this.gridManager = gridManager;
+        this.damageManager = damageManager;
+        this.tokenManager = tokenManager;
+        this.token = token;
+        this.performer = performer;
 
-        this.card = card;
-
-        // 카드데이터로부터 공격범위 가져옴 
-        positions = card.cardData.attackRange; 
-
-        // Temp 공격효과 
-        particleObject = Resources.Load<GameObject>("Particle");
-        // 
+        attackablePositions = token.AttackRange; 
     }
 
     public void Enter()
     {
-        gridSystem.OnActionOccured -= Attack;
-        gridSystem.OnActionOccured += Attack;
-
-        // gridPosition: gridSystem에서 검증할 gridCell의 position 
-        gridSystem?.HighlightGridCells((Vector2Int gridPosition) =>
+        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
         {
-            // 현재 카드의 위치 
-            Vector2Int currentPosition = gridSystem.GetGridPositionOfGameObject(card.gameObject);
-       
-            foreach(Vector2Int position in positions)
+            Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
+
+            if (currentGridPosition == -Vector2Int.one)
+                return false; 
+
+            foreach (Vector2Int position in attackablePositions)
             {
-                // 현재 카드위치에서 공격범위를 더해 해당 값이 gridPosition과 같다면 highlight 
-                Vector2Int availablePosition = currentPosition + position;
-                if (gridPosition == availablePosition)
-                    return true; 
+                Vector2Int availablePosition = currentGridPosition + position;
+                if (availablePosition == gridPosition)
+                    return true;
             }
 
-            return false; 
-        }, HighlightType.ValidAttack, HighlightLayer.Action);
+            return false;
 
+        }, HighlightType.AttackHighlight, HighlightLayer.Action);
+    }
+    public void Execute(Vector2Int targetPosition)
+    {
+        var target = tokenManager.GetTokenFrom(targetPosition);
+        this.target = target;
+        this.targetPosition = targetPosition; 
+
+        if(target == null)
+        {
+            Debug.Log("공격할 대상이 존재하지 않습니다!");
+            OnActionCanceled?.Invoke(); 
+            return; 
+        }
+
+        if(!target.TryGetComponent<IDamageable>(out IDamageable damageable))
+        {
+            Debug.Log("공격할 수 없는 대상입니다! (Non-IDamageable)");
+            OnActionCanceled?.Invoke();
+            return; 
+        }
+
+        if (damageable.IsAllies(token))
+        {
+            Debug.Log("아군을 공격할 수 없습니다!");
+            OnActionCanceled?.Invoke();
+            return; 
+        }
+
+        Transition(AttackState.Prepare); 
     }
 
     public void Exit()
     {
-        // 기존에 구독되어있던 이벤트를 해제 
-        gridSystem.OnActionOccured -= Attack;
-        // 모든 GridCell을 원래 상태로 되돌리기 
-        gridSystem?.UnhighlightGridCells(HighlightLayer.Action);
-        gridSystem?.UnhighlightGridCells(HighlightLayer.Hover); 
+        gridManager?.UnhighlightGridCells(HighlightLayer.Action);
+        gridManager?.UnhighlightGridCells(HighlightLayer.Hover); 
     }
 
-    public void Attack(Vector2Int gridPosition)
+    void Transition(AttackState state)
+    {
+        switch (state)
+        {
+            case AttackState.Prepare:
+                Prepare(); 
+                break;
+            case AttackState.Animation:
+                Attack(); 
+                break;
+            case AttackState.Placing:
+                Placing(); 
+                break;
+            case AttackState.Done:
+                Done(); 
+                break;
+        }
+    }
+
+    void Prepare()
     {
         Exit();
+        Transition(AttackState.Animation); 
+    }
+    
+    void Attack()
+    {
+        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition); 
 
-        GameObject obj = gridSystem?.GetGameObjectOnGrid(gridPosition);
+        TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
+        PRS prs = tokenMovement.PRS;
 
-        if (obj == null)
+        int counterDamage = target.CP; 
+
+        tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
         {
-            actionSystem?.CancelAction();
-            return; 
-        }
-
-        if (obj != null)
+            damageManager.ProcessCombat(token, target); 
+        },
+        onCompleteCallback: () =>
         {
-            if (obj.TryGetComponent<IDamageable>(out IDamageable damageable))
-            {
-                if (damageable.IsAlies())
-                    return; 
+            damageManager.TryProcessCounterAttack(target, token, counterDamage);
+            damageManager.TryDestroyToken(token);
+            damageManager.TryDestroyToken(target); 
+            damageManager.CheckForKingDefeat(); 
+            Transition(AttackState.Placing); 
+        });
+    }
 
-                Vector3 position = gridSystem.GetWorldPosition(gridPosition);
-                PRS cardPRS = card.GetComponent<CardMovement>().PRS;
+    void Placing()
+    {
+        Debug.Log("Done"); 
+        Transition(AttackState.Done); 
+    }
 
-                card.GetComponent<CardMovement>().AttackTargetFrom(
-                    position,
-                    cardPRS,
-                    onHitCallback: () =>
-                    {
-                        Card onHitCard = obj.GetComponent<Card>();
-
-                        int counterDamage = onHitCard.CP; 
-
-                        damageable?.TakeDamage(card.CP, true);
-                        Vector2Int attackerPos = gridSystem.GetGridPositionOfGameObject(card.gameObject);
-                        
-                        foreach(Vector2Int pos in onHitCard.AttackRange)
-                        {
-                            if(gridPosition + pos == attackerPos)
-                            {
-                                card?.GetComponent<IDamageable>().TakeDamage(counterDamage);
-                                break; 
-                            }
-                        }
-
-                    },
-                    onCompleteCallback: () =>
-                    {
-                        actionSystem?.CancelAction();
-                        GameObject.FindAnyObjectByType<GameFlowManager>()?.OnActionPerformed();
-                    }
-                );
-            }
-        }
+    void Done()
+    {
+        OnActionComplete?.Invoke(); 
     }
 
     public bool IsValid()
     {
-        // 카드가 필드에 위치한 것이 아니라면 공격 불가능 
-        if (card.CardState == CardState.Field)
-            return true; 
-
-        return false;
+        return true; 
     }
 }
