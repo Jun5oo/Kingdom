@@ -1,8 +1,7 @@
 using System;
-using System.Net.NetworkInformation;
 using UnityEngine;
 
-public enum TokenState
+public enum TokenViewState
 {
     Idle,
     Hover,
@@ -14,7 +13,7 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 {
     [SerializeField] Token token;
     [SerializeField] TokenMovement tokenMovement;
-    [SerializeField] TokenState tokenState;
+    [SerializeField] TokenViewState viewState;
 
     public Entity Entity { get { return token; } }
 
@@ -38,7 +37,7 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
         tokenMovement.OnTokenMoveComplete -= OnTokenMoveComplete;
         tokenMovement.OnTokenMoveComplete += OnTokenMoveComplete; 
 
-        tokenState = TokenState.Idle;
+        viewState = TokenViewState.Idle;
 
         originPos = tokenMovement.PRS.position;
         originRotation = tokenMovement.PRS.rotation; 
@@ -50,18 +49,18 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
         if (!IsHoverable())
             return; 
 
-        tokenState = TokenState.Hover; 
+        viewState = TokenViewState.Hover; 
     }
     public void OffHover()
     {
-        if (tokenState != TokenState.Hover)
+        if (viewState != TokenViewState.Hover)
             return; 
 
-        tokenState = TokenState.Idle; 
+        viewState = TokenViewState.Idle; 
     }
     public bool IsHoverable()
     {
-        return tokenState == TokenState.Idle; 
+        return viewState == TokenViewState.Idle; 
     }
 
     // TODO
@@ -79,14 +78,14 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 
         tokenMovement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
         {
-            tokenState = TokenState.Selected;
+            viewState = TokenViewState.Selected;
             OnTokenSelected?.Invoke(token); 
             OnSelectedComplete?.Invoke(); 
         }); 
     }
     public void OnDeselected()
     {
-        if (tokenState != TokenState.Selected)
+        if (viewState != TokenViewState.Selected)
             return;
 
         Vector3 position = originPos;
@@ -95,19 +94,19 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 
         tokenMovement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
         {
-            tokenState = TokenState.Idle;
+            viewState = TokenViewState.Idle;
             OnTokenDeselected?.Invoke(); 
         });
     }
 
     public bool IsSelectable()
     {
-        return tokenState == TokenState.Idle || tokenState == TokenState.Hover; 
+        return viewState == TokenViewState.Idle || viewState == TokenViewState.Hover; 
     }
 
     public void OnUpdatePRS()
     {
-        tokenState = TokenState.Moving; 
+        viewState = TokenViewState.Moving; 
 
         PRS prs = tokenMovement.PRS; 
 
@@ -118,7 +117,7 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 
     void OnTokenMoveComplete()
     {
-        if (tokenState == TokenState.Moving)
-            tokenState = TokenState.Idle; 
+        if (viewState == TokenViewState.Moving)
+            viewState = TokenViewState.Idle; 
     }
 }

@@ -11,17 +11,17 @@ public class TokenFactory
         this.kingTokenPrefab = kingTokenPrefab;
     }
 
-    public Token CreateToken(CardData cardData, int playerID)
+    public Token CreateToken(UnitCardData unitData, int playerID)
     {
         GameObject prefab = tokenPrefab;
 
-        if (cardData.IsKing)
+        if (unitData.IsKing)
             prefab = kingTokenPrefab;
 
         GameObject tokenObject = GameObject.Instantiate(prefab); 
         Token token = tokenObject.GetComponent<Token>();
         
-        token.Init(cardData, playerID); 
+        token.Init(unitData, playerID); 
         
         return token; 
     }

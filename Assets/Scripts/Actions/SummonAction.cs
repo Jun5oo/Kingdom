@@ -19,7 +19,7 @@ public class SummonAction : IAction
     TokenManager tokenManager;
     TokenFactory tokenFactory; 
     
-    Card card;
+    UnitCard card;
     Token token;
     ActionPerformer performer;
 
@@ -29,7 +29,7 @@ public class SummonAction : IAction
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
 
-    public SummonAction(GridManager gridManager, CardManager cardManager, TokenManager tokenManager, TokenFactory tokenFactory, Card card, ActionPerformer performer)
+    public SummonAction(GridManager gridManager, CardManager cardManager, TokenManager tokenManager, TokenFactory tokenFactory, UnitCard card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
         highlightLayer = HighlightLayer.Action; 
@@ -121,7 +121,7 @@ public class SummonAction : IAction
 
         PRS prs = new PRS(targetPos, quaternion, scale);
 
-        Token token = tokenFactory.CreateToken(card.cardData, card.OwnerPlayerID);
+        Token token = tokenFactory.CreateToken(card.UnitCardData, card.OwnerPlayerID);
         token.transform.position = targetPos + (Vector3.up * 10); 
         this.token = token;
     

@@ -41,7 +41,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CardArtTexture:
-        m_Texture: {fileID: 2800000, guid: 2c020d93f5925d64baef7cd2353d6ecb, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0043c459b54fb464c955dc23f3a951a2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CardFrameTexture:

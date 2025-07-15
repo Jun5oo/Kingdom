@@ -1,66 +1,64 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
-public class Token : Entity, IDamageable
+public enum TokenState
 {
-    [SerializeField] CardData cardData; 
+    Alive = 0, 
+    Graveyard = 1, 
+    Dead = 2
+}
 
-    [SerializeField] string tokenName;
-    [SerializeField] Sprite tokenSprite;
-    [SerializeField] string tokenDescription;
-    [SerializeField] List<ActionType> actions; 
+public class Token : Entity, IUnit, IDamageable
+{
+    [SerializeField] UnitCardData unitData;
 
-    [SerializeField] int tokenLevel;
     [SerializeField] int currentTokenCP;
-    [SerializeField] int currentTokenMovement;
-
-    [SerializeField] int ownerPlayerID; 
-
-    [SerializeField] bool isKing; 
-
-    [SerializeField] List<Vector2Int> attackRange;
-    [SerializeField] List<Vector2Int> moveRange;
+    [SerializeField] int ownerPlayerID;
 
     [SerializeField] TokenMovement tokenMovement;
-    [SerializeField] TokenHover tokenHover; 
+    [SerializeField] TokenHover tokenHover;
     [SerializeField] TokenView tokenView;
 
-    public override string Name { get { return tokenName; } } 
-    public override Sprite Sprite { get { return tokenSprite;} }
-    public override string Description { get { return tokenDescription; } }
-    public override List<ActionType> Actions { get { return actions; } }
-    public override int Level { get { return tokenLevel; } } 
-    public override int CP { get { return currentTokenCP; } }
-    public override int Movement { get { return currentTokenMovement; } }
-    public bool IsKing { get { return isKing; } }
+    TokenState tokenState;
+    IDeathBehaviour deathBehaviour;
 
-    public List<Vector2Int> MoveRange {  get { return moveRange; } }
-    public List<Vector2Int> AttackRange { get { return attackRange; } }
-
+    public override string Name { get { return unitData.Name; } }
+    public override Sprite Sprite { get { return unitData.Sprite; } }
+    public override string Description { get { return unitData.Description; } }
     public override int OwnerPlayerID { get { return ownerPlayerID; } }
+    public override List<ActionType> Actions { get { return unitData.Actions; } }
 
-    public void Init(CardData cardData, int playerID)
+    public int CP { get { return currentTokenCP; } }
+    public int Movement { get { return unitData.Movement; } }
+    public Race Race { get { return unitData.Race; } }
+    public bool IsKing { get { return unitData.IsKing; } }
+    public List<Vector2Int> MoveRange { get { return unitData.MoveRange; } }
+    public List<Vector2Int> AttackRange { get { return unitData.AttackRange; } }
+    public TokenState TokenState {  get { return tokenState; } }
+    public IDeathBehaviour DeathBehaviour { get {  return deathBehaviour; } }
+
+    public void Init(UnitCardData unitData, int playerID)
     {
-        this.cardData = cardData;
+        this.unitData = unitData; 
+        this.currentTokenCP = unitData.CP;
+        this.ownerPlayerID = playerID;
 
-        this.tokenName = cardData.Name; 
-        this.tokenSprite = cardData.Sprite;
-        this.tokenLevel = cardData.Level;
-        this.tokenDescription = cardData.Description;
-        this.currentTokenCP = cardData.CP;
-        this.currentTokenMovement = cardData.Movement;
-        this.isKing = cardData.IsKing;
-        this.actions = cardData.Actions;
-        this.moveRange = cardData.MoveRange;
-        this.attackRange = cardData.AttackRange;
-
-        this.ownerPlayerID = playerID; 
+        this.tokenState = TokenState.Alive; 
 
         tokenMovement.Init();
         tokenHover.Init(); 
         tokenView.Init(Sprite, CP, Movement);
+
+        switch (Race)
+        {
+            case Race.Undead:
+                deathBehaviour = new UndeadDeathBehaviour();
+                break;
+            default:
+                deathBehaviour = new DefaultDeathBehaviour();
+                break; 
+        }
     }
     public bool IsAllies(Token token)
     {
@@ -68,7 +66,6 @@ public class Token : Entity, IDamageable
     }
 
     public Action<int> OnCPUpdate; 
-
     public void TakeDamage(int damage, bool isDirect = false)
     {
         if (isDirect && IsKing)
@@ -78,10 +75,22 @@ public class Token : Entity, IDamageable
         tokenView.OnUpdateCP(currentTokenCP);
         OnCPUpdate?.Invoke(currentTokenCP);
     }
+    public bool TryEnterGraveyard()
+    {
+        if (TokenState != TokenState.Alive)
+            return false; 
 
+        if (Race != Race.Undead || IsKing)
+        {
+            tokenState = TokenState.Dead; 
+            return false;
+        }
+
+        tokenState = TokenState.Graveyard;
+        return true; 
+    }
     void OnDestroy()
     {
-        // HUD와의 연결해제 필요. 
         OnCPUpdate = null; 
     }
 }

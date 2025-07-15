@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    Dictionary<Type, PoolInfo> poolDictionary;
+    Dictionary<Type, PoolData> poolDictionary;
 
     [Header("Card UI")]
     [SerializeField] PreviewUI previewUI;
@@ -30,7 +30,7 @@ public class UIManager : MonoBehaviour
 
     void Awake()
     {
-        poolDictionary = new Dictionary<Type, PoolInfo>();
+        poolDictionary = new Dictionary<Type, PoolData>();
 
         RegisterPool<ActionUI>(actionUIPrefab, actionUILayout);
         RegisterPool<DamagePopupUI>(damagePopupUI, damagePopupParent);
@@ -48,11 +48,11 @@ public class UIManager : MonoBehaviour
     #region Pooling 
     public void RegisterPool<T>(GameObject prefab, Transform parent) where T: MonoBehaviour, IPoolable
     {
-        poolDictionary[typeof(T)] = new PoolInfo(prefab, parent); 
+        poolDictionary[typeof(T)] = new PoolData(prefab, parent); 
     }
     public GameObject Pop<T>() where T: MonoBehaviour, IPoolable
     {
-        if (poolDictionary.TryGetValue(typeof(T), out PoolInfo poolInfo))
+        if (poolDictionary.TryGetValue(typeof(T), out PoolData poolInfo))
         {
             GameObject obj = null; 
 
@@ -72,7 +72,7 @@ public class UIManager : MonoBehaviour
     }
     public void Push<T>(GameObject gameObject) where T: MonoBehaviour, IPoolable
     {
-        if(poolDictionary.TryGetValue(typeof(T), out PoolInfo poolInfo))
+        if(poolDictionary.TryGetValue(typeof(T), out PoolData poolInfo))
         {
             gameObject.SetActive(false);
             poolInfo.pool.Enqueue(gameObject); 

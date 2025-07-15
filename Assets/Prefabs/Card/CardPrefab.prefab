@@ -521,7 +521,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 737745280013626022}
-  - component: {fileID: 8525114437872047521}
+  - component: {fileID: 3672521192377316503}
   - component: {fileID: 6241690863987695480}
   - component: {fileID: 2316113336188390161}
   - component: {fileID: 697535933810969939}
@@ -553,7 +553,7 @@ Transform:
   - {fileID: 8684442375169512439}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8525114437872047521
+--- !u!114 &3672521192377316503
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -562,19 +562,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 8321222381386312124}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0c8559ffe87fe9468f2dce4f284ff76, type: 3}
+  m_Script: {fileID: 11500000, guid: 461b5f22dd06bda4c9cba627869d85e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardData: {fileID: 0}
-  cardName: 
-  cardSprite: {fileID: 0}
-  cardDescription: 
-  level: 0
   currentCP: 0
-  attackRange: []
-  moveRange: []
-  actionTypes: 
-  movement: 0
   cardView: {fileID: 6241690863987695480}
   cardHover: {fileID: 2316113336188390161}
   cardMovement: {fileID: 697535933810969939}
@@ -604,7 +595,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc9ee59fe5445ef41aa7a4f624d4ad8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  card: {fileID: 8525114437872047521}
+  card: {fileID: 3672521192377316503}
   cardMovement: {fileID: 697535933810969939}
   originPos: {x: 0, y: 0, z: 0}
   originRotation: {x: 0, y: 0, z: 0, w: 0}

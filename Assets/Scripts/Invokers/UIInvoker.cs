@@ -23,13 +23,14 @@ public class UIInvoker
     }
 
     public void DisplayPreviewUI(Entity entity) => uiSystem?.DisplayUI(entity);
-    public void ClosePreviewUI() => uiSystem?.CloseUI(); 
+    public void ClosePreviewUI() => uiSystem?.CloseUI();
     public void DisplayActionUI(Entity entity, Transform transform)
     {
         // 이 경우, 카드가 선택되었을 경우이므로 기존에 선택되어 보여지는 CardUI와 CardActionUI들은 모두 비활성화 시켜줘야한다. 
         ClearActionUI();
 
         var actionTypes = entity.Actions;
+        Debug.Log(actionTypes.Count); 
         var sorted = actionTypes.OrderBy(a => (int)a).ToList();
 
         foreach (var actionType in sorted)

@@ -104,7 +104,7 @@ public class CardManager : MonoBehaviour
         }
 
         Race race = playerManager.PlayerDict[playerID].Race;
-        CardData cardData = RaceDecks[race][Random.Range(0, 2)]; 
+        CardData cardData = RaceDecks[race][Random.Range(0, RaceDecks[race].Count)]; 
         Card card = cardFactory.CreateCard(cardData, playerID);
 
         return card; 

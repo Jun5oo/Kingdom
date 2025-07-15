@@ -2,27 +2,19 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "CardData", menuName = "Card Scriptable")]
-public class CardData : ScriptableObject
+public abstract class CardData : ScriptableObject
 {
     [SerializeField] string cardName;
-    [SerializeField] int level;
     [SerializeField] Sprite sprite;
-    [SerializeField] int cp;
-    [SerializeField] int movement;
     [SerializeField] string description;
-    [SerializeField] bool isKing;
-    [SerializeField] List<ActionType> actions;
-    [SerializeField] List<Vector2Int> moveRange;
-    [SerializeField] List<Vector2Int> attackRange;
+
+    // CardArt의 경우 CardShader에서 사용. (추후에는 Addressable asset에 등록시켜줄 예정, CardData에는 CardID, Name, Description만 저장할 예정) 
+    // 또는 Texture만을 CardData에 저장하고 Sprite로 변환 후 사용할 예정. 
+    [SerializeField] Texture2D cardArt;
 
     public string Name {  get { return cardName; } }
-    public int Level { get { return level; } }
-    public int CP {  get { return cp; } }
-    public int Movement { get { return movement; } }
     public Sprite Sprite { get { return sprite; } }
     public string Description { get { return description; } }
-    public bool IsKing { get {  return isKing; } }
-    public List<ActionType> Actions { get {  return actions; } }
-    public List<Vector2Int> MoveRange { get {  return moveRange; } }
-    public List<Vector2Int> AttackRange { get { return attackRange; } }
+    public Texture2D CardArt { get {  return cardArt; } }
+
 }

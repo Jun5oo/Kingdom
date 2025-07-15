@@ -69,10 +69,7 @@ public class GridManager : MonoBehaviour
 
     #region Get Functions 
     public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
-    public Vector2Int GetGridPosition(Vector3 worldPosition)
-    {
-        return grid.GetGridPosition(worldPosition);
-    }
+    public Vector2Int GetGridPosition(Vector3 worldPosition) => grid.GetGridPosition(worldPosition);
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition);
     #endregion
 }

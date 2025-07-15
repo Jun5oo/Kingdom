@@ -7,7 +7,6 @@ public class PreviewUI : MonoBehaviour
     [SerializeField] Image image;
     [SerializeField] TextMeshProUGUI cardName;
     [SerializeField] TextMeshProUGUI description;
-    [SerializeField] TextMeshProUGUI level;
     [SerializeField] TextMeshProUGUI cp;
     [SerializeField] TextMeshProUGUI movement; 
 
@@ -16,8 +15,11 @@ public class PreviewUI : MonoBehaviour
         image.sprite = entity.Sprite;
         cardName.text = entity.Name;
         description.text = entity.Description;
-        level.text = entity.Level.ToString();
-        cp.text = entity.CP.ToString(); 
-        movement.text = entity.Movement.ToString();
+
+        if(entity is IUnit unit)
+        {
+            movement.text = unit.Movement.ToString();
+            cp.text = unit.CP.ToString();
+        }
     }
 }

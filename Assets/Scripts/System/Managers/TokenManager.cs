@@ -21,6 +21,9 @@ public class TokenManager
 
     public void PlaceTokenTo(Token token, Vector2Int to)
     {
+        if (IsTokenAtGridPosition(to))
+            Debug.LogError("해당 위치에는 토큰이 존재합니다."); 
+
         AddToken(to, token);
     }
     public void MoveTokenTo(Token token, Vector2Int to)
@@ -42,6 +45,11 @@ public class TokenManager
         Vector2Int gridPosition = TokenToGrid[token]; 
         GridToToken.Remove(gridPosition);
         TokenToGrid.Remove(token);
+    }
+    public void DestroyToken(Token token)
+    {
+        GameObject.Destroy(token.gameObject);
+        RemoveToken(token);
     }
     public Token GetTokenFrom(Vector2Int gridPosition)
     {
@@ -84,10 +92,5 @@ public class TokenManager
     public bool IsMyToken(Token token)
     {
         return token.OwnerPlayerID == playerManager.LocalPlayerData.PlayerID;
-    }
-    public void DestroyToken(Token token)
-    {
-        RemoveToken(token);
-        GameObject.Destroy(token.gameObject); 
     }
 }

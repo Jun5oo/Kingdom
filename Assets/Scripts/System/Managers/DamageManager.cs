@@ -109,7 +109,10 @@ public class DamageManager
     }
     public void TryDestroyToken(Token token)
     {
-        if (token.CP <= 0)
-            tokenManager.DestroyToken(token);
+        if (token.CP > 0)
+            return;
+
+        IDeathBehaviour deathBehaviour = token.DeathBehaviour;
+        deathBehaviour.OnDeath(token, tokenManager); 
     }
 }

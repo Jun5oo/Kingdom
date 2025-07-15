@@ -26,7 +26,7 @@ public class ActionFactory
         switch (actionType)
         {
             case ActionType.Summon:
-                if(entity is Card card)
+                if(entity is UnitCard card)
                     action = new SummonAction(gridSystem, cardSystem, tokenManager, tokenFactory, card, performer); 
                 break;
             case ActionType.Move:
