@@ -94,12 +94,12 @@ public class HoverSystem : MonoBehaviour
         
         if(tokenManager.TryGetTokenFrom(gridPosition, out Token token))
         {
-            if (token.AttackRange == null || token.AttackRange.Count <= 0)
+            if (token.CurrentAttackRange == null || token.CurrentAttackRange.Count <= 0)
                 return; 
 
             gridManager.HighlightGridCells((Vector2Int gridPos) =>
             {
-                foreach (var pos in token.AttackRange)
+                foreach (var pos in token.CurrentAttackRange)
                 {
                     if (gridPos == (gridPosition + pos))
                         return true;

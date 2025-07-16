@@ -8,7 +8,7 @@ public class TokenManager
     Dictionary<Vector2Int, Token> GridToToken;
     Dictionary<Token, Vector2Int> TokenToGrid; 
 
-    Dictionary<int, Token> PlayerIDToKingToken; 
+    Dictionary<int, Token> PlayerIDToKingToken;
 
     public void Init(PlayerManager playerManager)
     {
@@ -16,6 +16,7 @@ public class TokenManager
 
         GridToToken = new Dictionary<Vector2Int, Token>();
         TokenToGrid = new Dictionary<Token, Vector2Int>();
+
         PlayerIDToKingToken = new Dictionary<int, Token>();
     }
 

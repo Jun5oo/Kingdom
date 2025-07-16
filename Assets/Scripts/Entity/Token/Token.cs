@@ -14,6 +14,9 @@ public class Token : Entity, IUnit, IDamageable
     [SerializeField] UnitCardData unitData;
 
     [SerializeField] int currentTokenCP;
+    [SerializeField] int movement;
+    [SerializeField] List<Vector2Int> attackRange;
+    [SerializeField] List<Vector2Int> movementRange; 
     [SerializeField] int ownerPlayerID;
 
     [SerializeField] TokenMovement tokenMovement;
@@ -30,25 +33,33 @@ public class Token : Entity, IUnit, IDamageable
     public override List<ActionType> Actions { get { return unitData.Actions; } }
 
     public int CP { get { return currentTokenCP; } }
+    public int MAXCP { get { return unitData.CP; } }
     public int Movement { get { return unitData.Movement; } }
+    public int CurrentMovement { get { return movement; } }
+    public Texture2D Texture { get { return unitData.CardArt; } }
     public Race Race { get { return unitData.Race; } }
     public bool IsKing { get { return unitData.IsKing; } }
     public List<Vector2Int> MoveRange { get { return unitData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return unitData.AttackRange; } }
+    public List<Vector2Int> CurrentMoveRange { get { return movementRange; } }
+    public List<Vector2Int> CurrentAttackRange { get { return attackRange; } }
     public TokenState TokenState {  get { return tokenState; } }
     public IDeathBehaviour DeathBehaviour { get {  return deathBehaviour; } }
 
     public void Init(UnitCardData unitData, int playerID)
     {
         this.unitData = unitData; 
-        this.currentTokenCP = unitData.CP;
+        this.currentTokenCP = MAXCP;
+        this.movement = Movement; 
+        this.attackRange = AttackRange;
+        this.movementRange = MoveRange; 
         this.ownerPlayerID = playerID;
 
         this.tokenState = TokenState.Alive; 
 
         tokenMovement.Init();
         tokenHover.Init(); 
-        tokenView.Init(Sprite, CP, Movement);
+        tokenView.Init(unitData.CardArt, CP, CurrentMovement);
 
         switch (Race)
         {
@@ -60,9 +71,9 @@ public class Token : Entity, IUnit, IDamageable
                 break; 
         }
     }
-    public bool IsAllies(Token token)
+    public bool IsAllies(int playerID)
     {
-        return OwnerPlayerID == token.ownerPlayerID; 
+        return OwnerPlayerID == playerID; 
     }
 
     public Action<int> OnCPUpdate; 
@@ -88,6 +99,25 @@ public class Token : Entity, IUnit, IDamageable
 
         tokenState = TokenState.Graveyard;
         return true; 
+    }
+    public void SetTokenStatus(int cp, int movement, List<Vector2Int> moveRange, List<Vector2Int> attackRange)
+    {
+        this.currentTokenCP = cp;
+        this.movement = movement;
+        this.movementRange = moveRange; 
+        this.attackRange = attackRange;
+
+        tokenView?.OnUpdateCP(currentTokenCP);
+        tokenView?.OnUpdateMovement(movement); 
+    }
+    public void Revive()
+    {
+        if (TokenState != TokenState.Graveyard)
+            return;
+
+        tokenState = TokenState.Alive;
+        tokenView.SetTokenArt(Texture); 
+        SetTokenStatus(MAXCP, Movement, MoveRange, AttackRange);
     }
     void OnDestroy()
     {

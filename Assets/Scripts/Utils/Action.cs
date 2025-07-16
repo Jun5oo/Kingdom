@@ -3,6 +3,7 @@ public enum ActionType
     Summon, 
     Move, 
     Attack,
+    Resurrection
 }
 
 public enum ActionPerformer

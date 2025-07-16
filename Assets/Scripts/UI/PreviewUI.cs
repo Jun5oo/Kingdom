@@ -18,7 +18,7 @@ public class PreviewUI : MonoBehaviour
 
         if(entity is IUnit unit)
         {
-            movement.text = unit.Movement.ToString();
+            movement.text = unit.CurrentMovement.ToString();
             cp.text = unit.CP.ToString();
         }
     }

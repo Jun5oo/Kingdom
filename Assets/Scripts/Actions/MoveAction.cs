@@ -37,7 +37,7 @@ public class MoveAction : IAction
         this.performer = performer;
 
         this.token = token;
-        this.moveablePositions = token.MoveRange;
+        this.moveablePositions = token.CurrentMoveRange;
     }
 
     public void Enter()
@@ -77,6 +77,9 @@ public class MoveAction : IAction
 
     public bool IsValid()
     {
+        if(moveablePositions.Count == 0) 
+            return false;
+        
         return true; 
     }
 

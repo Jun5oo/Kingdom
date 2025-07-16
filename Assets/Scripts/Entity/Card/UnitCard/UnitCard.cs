@@ -21,7 +21,7 @@ public class UnitCard : Card, IUnit
     public UnitCardData UnitCardData { get { return unitCardData; } }
 
     public int CP { get { return currentCP; } }
-    public int Movement { get { return UnitCardData.Movement; } }
+    public int CurrentMovement { get { return UnitCardData.Movement; } }
     public bool IsKing { get { return UnitCardData.IsKing; } }
     public List<Vector2Int> MoveableRange { get { return UnitCardData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return UnitCardData.AttackRange; } }

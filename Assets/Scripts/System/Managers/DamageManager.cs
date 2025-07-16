@@ -48,7 +48,7 @@ public class DamageManager
             return;
         }
 
-        if (defender.AttackRange == null || defender.AttackRange.Count == 0)
+        if (defender.CurrentAttackRange == null || defender.CurrentAttackRange.Count == 0)
         {
             Debug.Log("이 유닛은 반격이 불가능합니다.");
             return;
@@ -63,7 +63,7 @@ public class DamageManager
             return;
         }
 
-        foreach (var position in defender.AttackRange)
+        foreach (var position in defender.CurrentAttackRange)
         {
             if (defenderPos + position == attackerPos)
             {

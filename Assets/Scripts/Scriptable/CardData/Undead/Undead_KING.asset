@@ -20,7 +20,7 @@ MonoBehaviour:
   movement: 1
   race: 1
   isKing: 1
-  actions: 01000000
+  actions: 0100000003000000
   moveRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}

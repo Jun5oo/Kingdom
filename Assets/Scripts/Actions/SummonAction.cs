@@ -122,7 +122,8 @@ public class SummonAction : IAction
         PRS prs = new PRS(targetPos, quaternion, scale);
 
         Token token = tokenFactory.CreateToken(card.UnitCardData, card.OwnerPlayerID);
-        token.transform.position = targetPos + (Vector3.up * 10); 
+        token.transform.position = targetPos + (Vector3.up * 10);
+        token.transform.rotation = quaternion; 
         this.token = token;
     
         if (token.IsKing)

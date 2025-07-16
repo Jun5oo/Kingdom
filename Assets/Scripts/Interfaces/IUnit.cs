@@ -3,5 +3,5 @@ using UnityEngine;
 public interface IUnit 
 {
     int CP { get; }
-    int Movement { get; }
+    int CurrentMovement { get; }
 }

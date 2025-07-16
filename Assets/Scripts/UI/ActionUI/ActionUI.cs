@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
     // 현재는 단순히 버튼에 Text를 입혔지만, 추후에는 행동 별 UI 이미지로 대체할 예정 
-    [SerializeField] TextMeshProUGUI cardActionInitial;
+    [SerializeField] TextMeshProUGUI actionInitial;
 
     private IAction action;
     public Action<IAction> OnSelected;
@@ -28,16 +28,19 @@ public class ActionUI : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
         switch (action.ActionType)
         {
             case ActionType.Summon:
-                cardActionInitial.text = "S";
+                actionInitial.text = "S";
                 break;
             case ActionType.Move:
-                cardActionInitial.text = "M";
+                actionInitial.text = "M";
                 break;
             case ActionType.Attack:
-                cardActionInitial.text = "A";
+                actionInitial.text = "A";
                 break;
+            case ActionType.Resurrection:
+                actionInitial.text = "R";
+                break; 
             default:
-                cardActionInitial.text = "N";
+                actionInitial.text = "N";
                 break;
         }
     }

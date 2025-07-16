@@ -3,34 +3,96 @@ using UnityEngine;
 
 public class Resurrection : IAction
 {
-    public ActionType ActionType => throw new NotImplementedException();
+    ActionType actionType;
+    HighlightLayer highlightLayer; 
+    HighlightType highlightType;
+    ActionPerformer performer;
 
-    public HighlightLayer HighlightLayer => throw new NotImplementedException();
+    public ActionType ActionType {get { return actionType;}}
 
-    public HighlightType HighlightType => throw new NotImplementedException();
+    public HighlightLayer HighlightLayer { get { return highlightLayer;}}   
 
-    public ActionPerformer Performer => throw new NotImplementedException();
+    public HighlightType HighlightType {  get { return highlightType;}}
+
+    public ActionPerformer Performer {  get { return performer;}}
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
+    GridManager gridManager;
+    TokenManager tokenManager;
+
+    Token kingToken;
+
+    Vector2Int targetPosition;
+
+    public Resurrection(GridManager gridManager, TokenManager tokenManager, Token kingToken, ActionPerformer performer)
+    {
+        actionType = ActionType.Resurrection;
+        highlightLayer = HighlightLayer.Action;
+        highlightType = HighlightType.SummonHighlight;
+        this.performer = performer;
+
+        this.gridManager = gridManager;
+        this.tokenManager = tokenManager;
+
+        this.kingToken = kingToken; 
+    }
+
     public void Enter()
     {
-        throw new NotImplementedException();
+        gridManager.HighlightGridCells((Vector2Int gridPosition) => 
+        {
+            if (!tokenManager.IsTokenAtGridPosition(gridPosition))
+                return false;
+            
+            Token token = tokenManager.GetTokenFrom(gridPosition); 
+            
+            if(token != null)
+            {
+                if (!token.IsAllies(kingToken.OwnerPlayerID))
+                    return false; 
+                if (token.TokenState == TokenState.Graveyard)
+                    return true; 
+            }
+
+            return false; 
+
+        }, HighlightType, HighlightLayer);
+
     }
 
     public void Execute(Vector2Int targetPosition)
     {
-        throw new NotImplementedException();
+        this.targetPosition = targetPosition;
+        Revive(); 
     }
 
-    public void Exit()
+    public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer); 
+    
+    public void Revive()
     {
-        throw new NotImplementedException();
-    }
+        Exit(); 
 
+        if (!tokenManager.IsTokenAtGridPosition(targetPosition))
+        {
+            OnActionCanceled?.Invoke();
+            return; 
+        }
+
+        Token targetToken = tokenManager.GetTokenFrom(targetPosition);
+        TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
+        
+        tokenMovement.PlayerSpinToss(() =>
+        {
+            targetToken.Revive(); 
+        }, () => { OnActionComplete?.Invoke(); });
+    }
+    
+    
     public bool IsValid()
     {
-        throw new NotImplementedException();
+        // TODO: Graveyard가 있는지 확인을 해야함 
+        return true; 
     }
 }

@@ -173,19 +173,17 @@ public class CardManager : MonoBehaviour
         }
         
         float height = playerID == 0 ? 0.5f : -0.5f;
-        float heightBuffer = playerID == 0 ? 0.3f : 0.1f; 
 
         for (int i = 0; i < cardCount; i++)
         {
             float posX = Mathf.Lerp(left.position.x, right.position.x, cardObjLerpX[i]);
-            float posY = hand.transform.position.y + (heightBuffer) * i;
+            float posY = hand.transform.position.y + 0.01f * i;
             float posZ = hand.transform.position.z + EvaluateCurveValue(height, cardObjLerpX[i]);
 
             float rotationX = playerID == playerManager.LocalPlayerData.PlayerID ? 90f : -90f;
             float rotationY = Mathf.LerpAngle(left.eulerAngles.y, right.eulerAngles.y, cardObjLerpX[i]);
             float rotationZ = playerID == playerManager.LocalPlayerData.PlayerID ? 0f : 180f; 
             Quaternion rotation = Quaternion.Euler(rotationX, rotationY, rotationZ);
-            //Vector3 scale = playerID == playerManager.LocalPlayerData.PlayerID ? Vector3.one : Vector3.one * 2; 
             Vector3 scale = Vector3.one;
             handList[i].gameObject.GetComponent<CardMovement>().MoveTransform(new PRS(new Vector3(posX, posY, posZ), rotation, scale), 0.5f);
         }

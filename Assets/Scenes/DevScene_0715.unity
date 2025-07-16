@@ -171,8 +171,8 @@ MonoBehaviour:
   hoverSystem: {fileID: 852600076}
   selectionSystem: {fileID: 2126896486}
   cardPrefab: {fileID: 1288629786031619872, guid: 414cf8f478c49464e95a6853df65cb60, type: 3}
-  tokenPrefab: {fileID: 2243036743012797234, guid: becf1d8c0d318d44e9e19bd72bcee92c, type: 3}
-  kingTokenPrefab: {fileID: 2215683095897598397, guid: c81f0c534a9852b489aa5a0ad871fbd4, type: 3}
+  tokenPrefab: {fileID: 8454641024595709411, guid: 665ba653c305b4a4294e646b7171e7f4, type: 3}
+  kingTokenPrefab: {fileID: 3690148131980119303, guid: 854f1e18c102d534c9ac94861b51a3b5, type: 3}
 --- !u!1 &73905968
 GameObject:
   m_ObjectHideFlags: 0

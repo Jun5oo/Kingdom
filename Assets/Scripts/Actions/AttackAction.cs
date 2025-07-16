@@ -40,7 +40,7 @@ public class AttackAction : IAction
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.AttackRange; 
+        attackablePositions = token.CurrentAttackRange; 
     }
 
     public void Enter()
@@ -83,7 +83,7 @@ public class AttackAction : IAction
             return; 
         }
 
-        if (damageable.IsAllies(token))
+        if (damageable.IsAllies(token.OwnerPlayerID))
         {
             Debug.Log("아군을 공격할 수 없습니다!");
             OnActionCanceled?.Invoke();
@@ -160,6 +160,9 @@ public class AttackAction : IAction
 
     public bool IsValid()
     {
+        if(attackablePositions.Count == 0) 
+            return false;
+
         return true; 
     }
 }

@@ -1,18 +1,15 @@
-using System.Collections;
-using UnityEngine;
-
 public class ActionFactory
 {
-    GridManager gridSystem;
-    CardManager cardSystem;
+    GridManager gridManager;
+    CardManager cardManager;
     TokenManager tokenManager;
     DamageManager damageManager;
     TokenFactory tokenFactory;
 
     public void Init(GridManager gridManager, CardManager cardManager, TokenManager tokenManager, DamageManager damageManager, TokenFactory tokenFactory)
     {
-        this.gridSystem = gridManager;
-        this.cardSystem = cardManager;
+        this.gridManager = gridManager;
+        this.cardManager = cardManager;
         this.tokenManager = tokenManager;
         this.damageManager = damageManager;
         this.tokenFactory = tokenFactory;
@@ -27,15 +24,22 @@ public class ActionFactory
         {
             case ActionType.Summon:
                 if(entity is UnitCard card)
-                    action = new SummonAction(gridSystem, cardSystem, tokenManager, tokenFactory, card, performer); 
+                    action = new SummonAction(gridManager, cardManager, tokenManager, tokenFactory, card, performer); 
                 break;
             case ActionType.Move:
                 if(entity is Token moveableToken)
-                    action = new MoveAction(gridSystem, tokenManager, moveableToken, performer);
+                    action = new MoveAction(gridManager, tokenManager, moveableToken, performer);
                 break;
             case ActionType.Attack:
                 if(entity is Token attackableToken)
-                action = new AttackAction(gridSystem, tokenManager, damageManager,  attackableToken, performer); 
+                    action = new AttackAction(gridManager, tokenManager, damageManager,  attackableToken, performer); 
+                break;
+            case ActionType.Resurrection: 
+                if(entity is Token kingToken)
+                {
+                    if (kingToken.IsKing)
+                        action = new Resurrection(gridManager, tokenManager, kingToken, performer);
+                }
                 break; 
         }
 
