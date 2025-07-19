@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class SelectionSystem : MonoBehaviour
+public class SelectionSystem : MonoBehaviour, IGameSystem
 {
     TurnManager turnManager;
     TokenManager tokenManager;
@@ -10,12 +10,14 @@ public class SelectionSystem : MonoBehaviour
 
     ISelectable currentSelectable;
 
-    public void Init(TurnManager turnManager, TokenManager tokenManager, ActionSystem actionSystem, UIInvoker uiInvoker)
+    public void Init()
     {
-        this.turnManager = turnManager;
-        this.tokenManager = tokenManager;
-        this.actionSystem = actionSystem;
-        this.uiInvoker = uiInvoker;
+        this.turnManager = ServiceLocator.Get<TurnManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>();
+        this.actionSystem = ServiceLocator.Get<ActionSystem>(); 
+        this.uiInvoker = ServiceLocator.Get<UIInvoker>();
+
+        DisableSystem(); 
 
         uiInvoker.OnActionUISelected -= OnExitSelected;
         uiInvoker.OnActionUISelected += OnExitSelected;
@@ -80,9 +82,6 @@ public class SelectionSystem : MonoBehaviour
     {
         OnExitSelected();
 
-        if (actionSystem.IsExecuted())
-            return;
-
         if (selectable.Entity != null)
             uiInvoker.DisplayPreviewUI(selectable.Entity);
 
@@ -123,4 +122,12 @@ public class SelectionSystem : MonoBehaviour
     }
     public ISelectable GetCurrentSelectable() => currentSelectable;
 
+    public void EnableSystem()
+    {
+        this.enabled = true; 
+    }
+    public void DisableSystem()
+    {
+        this.enabled = false; 
+    }
 }

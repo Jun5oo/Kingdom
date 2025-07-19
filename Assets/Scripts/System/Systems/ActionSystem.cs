@@ -1,27 +1,25 @@
 using System;
 using UnityEngine;
 
-public class ActionSystem : MonoBehaviour
+public class ActionSystem : MonoBehaviour, IGameSystem
 {
     GridManager gridManager; 
     IAction currentAction;
 
-    bool isExecuted; 
-
-    [SerializeField] int actionCount = 2;
+    [SerializeField] int actionCount = 2; 
 
     public event Action OnActionDepleted; 
 
-    public void Init(GridManager gridManager)
+    public void Init()
     {
-        this.gridManager = gridManager;
+        DisableSystem(); 
+
+        this.gridManager = ServiceLocator.Get<GridManager>();
 
         this.currentAction = null; 
 
         gridManager.OnGridCellSelected -= Execute; 
         gridManager.OnGridCellSelected += Execute;
-
-        isExecuted = false; 
     }
 
     void Update()
@@ -32,6 +30,8 @@ public class ActionSystem : MonoBehaviour
                 Exit();
         }
 
+        if (currentAction != null)
+            Debug.Log(currentAction);
     }
 
     public void Enter(IAction action)
@@ -42,7 +42,6 @@ public class ActionSystem : MonoBehaviour
         currentAction.OnActionCanceled -= OnActionCanceled;
         currentAction.OnActionCanceled += OnActionCanceled;
     }
-
     public void Execute(Vector2Int gridPosition)
     {
         if(currentAction != null)
@@ -53,10 +52,8 @@ public class ActionSystem : MonoBehaviour
             currentAction.OnActionComplete += OnActionComplete;
 
             currentAction?.Execute(gridPosition);
-            isExecuted = true; 
         }
     }
-
     public void Exit()
     {
         if(currentAction != null)
@@ -65,10 +62,8 @@ public class ActionSystem : MonoBehaviour
             currentAction.OnActionComplete -= OnActionComplete;
             currentAction?.Exit();
             currentAction = null;
-            isExecuted = false; 
         }
     }
-
     public bool IsActionInProgress() => currentAction != null;
     public IAction GetCurrentAction() => currentAction;
 
@@ -77,23 +72,36 @@ public class ActionSystem : MonoBehaviour
         Debug.Log("Invalid action target");
         Exit(); 
     }
-
     void OnActionComplete()
     {
-        if (currentAction?.Performer != ActionPerformer.System)
-            actionCount--;
+        if (currentAction?.Performer == ActionPerformer.System)
+        {
+            Exit();
+            return; 
+        }
+
+        actionCount -= currentAction.Cost; 
 
         Exit();
 
         if (actionCount <= 0)
-        {
             OnActionDepleted?.Invoke();
-            actionCount = 2; 
-        }
+    }
+    public int GetCurrentActionCount()
+    {
+        return actionCount; 
+    }
+    public void ResetActionCount()
+    {
+        actionCount = 2; 
     }
 
-    public bool IsExecuted()
+    public void EnableSystem()
     {
-        return isExecuted; 
+        this.enabled = true; 
+    }
+    public void DisableSystem()
+    {
+        this.enabled = false; 
     }
 }

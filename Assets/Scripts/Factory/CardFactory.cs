@@ -10,7 +10,10 @@ public class CardFactory
     } 
     public Card CreateCard(CardData cardData, int playerID)
     {
-        GameObject cardObject = GameObject.Instantiate(cardPrefab); 
+        // 카드를 생성 
+        GameObject cardObject = GameObject.Instantiate(cardPrefab);
+        cardObject.gameObject.SetActive(false); 
+
         Card card = cardObject.GetComponent<Card>();
         card.Init(cardData, playerID); 
         

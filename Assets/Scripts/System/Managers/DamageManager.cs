@@ -9,11 +9,11 @@ public class DamageManager
 
     public Action<int> OnKingDefeated; 
      
-    public void Init(PlayerManager playerManager, TokenManager tokenManager, UIManager uiManager)
+    public void Init()
     {
-        this.playerManager = playerManager;
-        this.tokenManager = tokenManager;
-        this.uiManager = uiManager; 
+        this.playerManager = ServiceLocator.Get<PlayerManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>();
+        this.uiManager = ServiceLocator.Get<UIManager>(); 
     }
 
     public void ProcessCombat(Token attacker, Token defender)
@@ -79,8 +79,8 @@ public class DamageManager
     }
     public void CheckForKingDefeat()
     {
-        tokenManager.TryGetKingTokenFrom(playerManager.LocalPlayerData.PlayerID, out Token local); 
-        tokenManager.TryGetKingTokenFrom(playerManager.RemotePlayerData.PlayerID, out Token remote);
+        tokenManager.TryGetKingTokenFrom(playerManager.Local.PlayerID, out Token local); 
+        tokenManager.TryGetKingTokenFrom(playerManager.Remote.PlayerID, out Token remote);
 
         if (local == null)
         {

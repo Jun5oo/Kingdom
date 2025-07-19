@@ -25,19 +25,24 @@ public class MoveAction : IAction
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
 
-    public MoveAction(GridManager gridManager, TokenManager tokenManager, Token token, ActionPerformer performer)
+    int currentCost;
+    public int Cost { get { return currentCost; } }
+
+    public MoveAction(Token token, ActionPerformer performer)
     {
         // 이동액션 초기화 
         actionType = ActionType.Move;
         highlightLayer = HighlightLayer.Action;
         highlightType = HighlightType.MoveHighlight;
 
-        this.gridManager = gridManager;
-        this.tokenManager = tokenManager;
+        this.gridManager = ServiceLocator.Get<GridManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>(); 
         this.performer = performer;
 
         this.token = token;
         this.moveablePositions = token.CurrentMoveRange;
+
+        currentCost = 1;
     }
 
     public void Enter()
@@ -79,8 +84,8 @@ public class MoveAction : IAction
     {
         if(moveablePositions.Count == 0) 
             return false;
-        
-        return true; 
+
+        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
     void Transition(MoveState state)

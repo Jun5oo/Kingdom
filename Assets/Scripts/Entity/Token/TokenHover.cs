@@ -1,76 +1,51 @@
 using System;
 using UnityEngine;
 
-public enum TokenViewState
-{
-    Idle,
-    Hover,
-    Selected,
-    Moving
-}
-
-public class TokenHover : MonoBehaviour, IHoverable, ISelectable
+public class TokenHover : EntityHover
 {
     [SerializeField] Token token;
     [SerializeField] TokenMovement tokenMovement;
-    [SerializeField] TokenViewState viewState;
 
-    public Entity Entity { get { return token; } }
-
-    public event Action<Token> OnTokenSelected; 
-
-    public event Action OnSelectedComplete;
-    public event Action OnTokenDeselected; 
-
-    Vector3 originPos;
-    Quaternion originRotation;
-    Vector3 originScale; 
+    public override Entity Entity { get { return token; } }
+    
+    public Action<Token> OnTokenSelected;
+    public Action OnTokenDeselected; 
 
     float selectOffsetY = 0.5f; 
 
-
-    public void Init()
+    public override void Init()
     {
-        tokenMovement.OnTokenMoved -= OnUpdatePRS;
-        tokenMovement.OnTokenMoved += OnUpdatePRS;
+        base.Init(); 
 
-        tokenMovement.OnTokenMoveComplete -= OnTokenMoveComplete;
-        tokenMovement.OnTokenMoveComplete += OnTokenMoveComplete; 
+        tokenMovement.OnMoved -= OnUpdatePRS;
+        tokenMovement.OnMoved += OnUpdatePRS;
 
-        viewState = TokenViewState.Idle;
+        tokenMovement.OnMovedComplete -= OnMoveComplete;
+        tokenMovement.OnMovedComplete += OnMoveComplete; 
 
         originPos = tokenMovement.PRS.position;
         originRotation = tokenMovement.PRS.rotation; 
         originScale = tokenMovement.PRS.scale;
     }
 
-    public void OnHover()
+    public override void OnHover()
     {
         if (!IsHoverable())
-            return; 
+            return;
 
-        viewState = TokenViewState.Hover; 
+        hoverState = HoverState.Hover;
     }
-    public void OffHover()
+    public override void OffHover()
     {
-        if (viewState != TokenViewState.Hover)
-            return; 
+        if (hoverState != HoverState.Hover)
+            return;
 
-        viewState = TokenViewState.Idle; 
+        hoverState = HoverState.Idle; 
     }
-    public bool IsHoverable()
-    {
-        return viewState == TokenViewState.Idle; 
-    }
-
-    // TODO
-    // Card와 Token의 경우 구조가 비슷함. 따라서 Entity에서 중복되는 부분을 작성하고 상속받는 식으로 구현하는 부분에 대해 고려. 
-    // Hover, Movement, View 또한 EntityHover, EntityMovement, EntityView로 상속받아 공통되는 부분을 줄일 예정. 
-
-    public void OnSelected()
+    public override void OnSelected()
     {
         if (!IsSelectable())
-            return; 
+            return;
 
         Vector3 position = originPos + (Vector3.up * selectOffsetY); 
         Quaternion rotation = originRotation;
@@ -78,14 +53,14 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 
         tokenMovement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
         {
-            viewState = TokenViewState.Selected;
-            OnTokenSelected?.Invoke(token); 
-            OnSelectedComplete?.Invoke(); 
+            hoverState = HoverState.Selected;
+            OnTokenSelected?.Invoke(token);
+            OnSelectionComplete(); 
         }); 
     }
-    public void OnDeselected()
+    public override void OnDeselected()
     {
-        if (viewState != TokenViewState.Selected)
+        if (hoverState != HoverState.Selected)
             return;
 
         Vector3 position = originPos;
@@ -94,19 +69,13 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
 
         tokenMovement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
         {
-            viewState = TokenViewState.Idle;
+            hoverState = HoverState.Idle;
             OnTokenDeselected?.Invoke(); 
         });
     }
-
-    public bool IsSelectable()
+    public override void OnUpdatePRS()
     {
-        return viewState == TokenViewState.Idle || viewState == TokenViewState.Hover; 
-    }
-
-    public void OnUpdatePRS()
-    {
-        viewState = TokenViewState.Moving; 
+        base.OnUpdatePRS(); 
 
         PRS prs = tokenMovement.PRS; 
 
@@ -114,10 +83,13 @@ public class TokenHover : MonoBehaviour, IHoverable, ISelectable
         originRotation = prs.rotation;
         originScale = prs.scale;
     }
-
-    void OnTokenMoveComplete()
+    void OnDestroy()
     {
-        if (viewState == TokenViewState.Moving)
-            viewState = TokenViewState.Idle; 
+        UnSubscribe();
+
+        tokenMovement.OnMoved -= OnUpdatePRS;
+        tokenMovement.OnMovedComplete -= OnMoveComplete;
+        OnTokenSelected = null;
+        OnTokenDeselected = null;
     }
 }

@@ -9,11 +9,8 @@ public class Resurrection : IAction
     ActionPerformer performer;
 
     public ActionType ActionType {get { return actionType;}}
-
     public HighlightLayer HighlightLayer { get { return highlightLayer;}}   
-
     public HighlightType HighlightType {  get { return highlightType;}}
-
     public ActionPerformer Performer {  get { return performer;}}
 
     public event Action OnActionCanceled;
@@ -26,17 +23,22 @@ public class Resurrection : IAction
 
     Vector2Int targetPosition;
 
-    public Resurrection(GridManager gridManager, TokenManager tokenManager, Token kingToken, ActionPerformer performer)
+    int currentCost; 
+    public int Cost { get { return currentCost;}}
+
+    public Resurrection(Token kingToken, ActionPerformer performer)
     {
         actionType = ActionType.Resurrection;
         highlightLayer = HighlightLayer.Action;
         highlightType = HighlightType.SummonHighlight;
         this.performer = performer;
 
-        this.gridManager = gridManager;
-        this.tokenManager = tokenManager;
+        this.gridManager = ServiceLocator.Get<GridManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>(); 
 
-        this.kingToken = kingToken; 
+        this.kingToken = kingToken;
+
+        currentCost = 2; 
     }
 
     public void Enter()
@@ -68,8 +70,12 @@ public class Resurrection : IAction
         Revive(); 
     }
 
-    public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer); 
-    
+    public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer);
+    public bool IsValid()
+    {
+        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+    }
+
     public void Revive()
     {
         Exit(); 
@@ -87,12 +93,5 @@ public class Resurrection : IAction
         {
             targetToken.Revive(); 
         }, () => { OnActionComplete?.Invoke(); });
-    }
-    
-    
-    public bool IsValid()
-    {
-        // TODO: Graveyard가 있는지 확인을 해야함 
-        return true; 
     }
 }

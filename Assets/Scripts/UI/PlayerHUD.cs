@@ -14,7 +14,7 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] Sprite angel;
     [SerializeField] Sprite undead; 
 
-    public void Init(PlayerData playerData, Token token)
+    public void Init(Player playerData, Token token)
     {
         token.OnCPUpdate -= OnUpdateCP; 
         token.OnCPUpdate += OnUpdateCP;

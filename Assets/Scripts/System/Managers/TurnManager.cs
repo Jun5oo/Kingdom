@@ -1,49 +1,79 @@
-using Unity.VisualScripting;
-using UnityEngine.Rendering;
+using System;
 
-public class TurnManager
+public enum TurnState
+{
+    Unable, 
+    PlayerTurn, 
+    EnemyTurn, 
+    Waiting, 
+    EndTurn, 
+    GameOver 
+}
+public class TurnManager : IGameSystem
 {
     PlayerManager playerManager;
     UIManager uiManager;
-    CardManager cardSystem;
+    PlayerHandManager handManager;
+    DrawManager drawManager; 
     ActionSystem actionSystem;
 
+    TurnState currentTurnState; 
+    public TurnState TurnState { get { return currentTurnState; } }
+
     int[] playerID;
-    int currentPlayerID; 
+    int currentPlayerID;
 
-    public void Init(PlayerManager playerManager, UIManager uiManager, CardManager cardSystem, ActionSystem actionSystem)
+    public Action OnTurnStarted; 
+    public Action OnTurnEnded;
+
+    public void Init()
     {
-        this.playerManager = playerManager;
-        this.uiManager = uiManager;
-        this.cardSystem = cardSystem;
-        this.actionSystem = actionSystem;
-    }
+        this.playerManager = ServiceLocator.Get<PlayerManager>();
+        this.drawManager = ServiceLocator.Get<DrawManager>();
+        this.uiManager = ServiceLocator.Get<UIManager>();
+        this.handManager = ServiceLocator.Get<PlayerHandManager>(); 
+        this.actionSystem = ServiceLocator.Get<ActionSystem>();
 
+        DisableSystem(); 
+    }
     public void SetTurnOrder(int[] playerID)
     {
         this.playerID = playerID;
         currentPlayerID = playerID[0];
 
-        actionSystem.OnActionDepleted -= EndTurn;
-        actionSystem.OnActionDepleted += EndTurn;
+        actionSystem.OnActionDepleted -= Wait;  
+        actionSystem.OnActionDepleted += Wait;
     }
-
     public void BeginTurnLoop()
     {
         StartTurn(); 
     }
     public void StartTurn()
     {
-        cardSystem.DrawCard(currentPlayerID);
+        actionSystem.ResetActionCount(); 
 
-        if (playerManager.LocalPlayerData.PlayerID == currentPlayerID)
-            uiManager.OnNotification("My Turn!");
+        if (playerManager.Local.PlayerID == currentPlayerID)
+            uiManager.OnNotification("My Turn!", () => 
+            { 
+                currentTurnState = TurnState.PlayerTurn;
+                OnTurnStarted?.Invoke(); 
+            });
+
         else
-            uiManager.OnNotification("Enemy Turn!"); 
-    }
+            uiManager.OnNotification("Enemy Turn!", () => 
+            { 
+                currentTurnState = TurnState.EnemyTurn;
+                OnTurnStarted?.Invoke(); 
+            });
 
+        Card card = drawManager.Draw(currentPlayerID);
+        handManager.AddCardToHand(currentPlayerID, card); 
+    }
     public void EndTurn()
     {
+        currentTurnState = TurnState.EndTurn;
+        OnTurnEnded?.Invoke(); 
+
         foreach(var _playerID in playerID) 
         {
             if (currentPlayerID != _playerID)
@@ -51,18 +81,29 @@ public class TurnManager
                 currentPlayerID = _playerID;
                 break; 
             }
-
         }
 
         StartTurn(); 
     }
-
+    public void Wait()
+    {
+        currentTurnState = TurnState.Waiting; 
+    }
     public int GetCurrentTurnPlayerID()
     {
         return currentPlayerID;
     }
     public bool IsMyTurn()
     {
-        return currentPlayerID == playerManager.LocalPlayerData.PlayerID;
+        return currentPlayerID == playerManager.Local.PlayerID;
+    }
+
+    public void EnableSystem()
+    {
+        BeginTurnLoop(); 
+    }
+    public void DisableSystem()
+    {
+        currentTurnState = TurnState.Unable; 
     }
 }

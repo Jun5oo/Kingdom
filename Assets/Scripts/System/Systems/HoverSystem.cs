@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems; 
 
-public class HoverSystem : MonoBehaviour
+public class HoverSystem : MonoBehaviour, IGameSystem
 {
     private IHoverable currentHoverable = null;
 
@@ -11,11 +11,11 @@ public class HoverSystem : MonoBehaviour
 
     float hoverStartTime; 
 
-    public void Init(GridManager gridManager, TokenManager tokenManager, ActionSystem actionSystem)
+    public void Init()
     {
-        this.gridManager = gridManager;
-        this.tokenManager = tokenManager;
-        this.actionSystem = actionSystem;
+        this.gridManager = ServiceLocator.Get<GridManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>();
+        this.actionSystem = ServiceLocator.Get<ActionSystem>(); 
     }
 
     void Update()
@@ -111,4 +111,13 @@ public class HoverSystem : MonoBehaviour
         }
     }
 
+    public void EnableSystem()
+    {
+        this.enabled = true; 
+    }
+
+    public void DisableSystem()
+    {
+        this.enabled = true;
+    }
 }

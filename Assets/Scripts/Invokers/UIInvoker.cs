@@ -13,11 +13,11 @@ public class UIInvoker
 
     public Action OnActionUISelected; 
 
-    public void Init(UIManager uiSystem, ActionSystem actionSystem, ActionFactory actionFactory)
+    public void Init()
     {
-        this.uiSystem = uiSystem;
-        this.actionSystem = actionSystem;
-        this.actionFactory = actionFactory;
+        this.uiSystem = ServiceLocator.Get<UIManager>();
+        this.actionSystem = ServiceLocator.Get<ActionSystem>();
+        this.actionFactory = ServiceLocator.Get<ActionFactory>(); 
 
         pooledActionUI = new List<ActionUI>();
     }

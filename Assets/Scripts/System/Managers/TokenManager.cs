@@ -10,9 +10,9 @@ public class TokenManager
 
     Dictionary<int, Token> PlayerIDToKingToken;
 
-    public void Init(PlayerManager playerManager)
+    public void Init()
     {
-        this.playerManager = playerManager;
+        this.playerManager = ServiceLocator.Get<PlayerManager>();
 
         GridToToken = new Dictionary<Vector2Int, Token>();
         TokenToGrid = new Dictionary<Token, Vector2Int>();
@@ -92,6 +92,6 @@ public class TokenManager
     }
     public bool IsMyToken(Token token)
     {
-        return token.OwnerPlayerID == playerManager.LocalPlayerData.PlayerID;
+        return token.OwnerPlayerID == playerManager.Local.PlayerID;
     }
 }

@@ -103,7 +103,7 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region HUD 
-    public void SetHUD(PlayerData playerData, Token kingToken)
+    public void SetHUD(Player playerData, Token kingToken)
     {
         PlayerHUD hud = null;
 
@@ -125,7 +125,7 @@ public class UIManager : MonoBehaviour
     #region Notification
     Coroutine notificationRoutine; 
     
-    public void OnNotification(string message)
+    public void OnNotification(string message, Action callback = null)
     {
         if (notificationRoutine != null)
         {
@@ -133,10 +133,10 @@ public class UIManager : MonoBehaviour
             notificationRoutine = null;
         }
 
-        notificationRoutine = StartCoroutine(NotificationRoutine(message)); 
+        notificationRoutine = StartCoroutine(NotificationRoutine(message, callback)); 
     }
 
-    IEnumerator NotificationRoutine(string message)
+    IEnumerator NotificationRoutine(string message, Action callback = null)
     {
         float fadeDuration = 0.3f;
         float displayDuration = 1.5f;
@@ -150,7 +150,8 @@ public class UIManager : MonoBehaviour
         yield return new WaitForSeconds(displayDuration);
         yield return FadeCanvasGroup(notificationPanel, 1f, 0f, fadeDuration);
         
-        notificationPanel.gameObject.SetActive(false); 
+        notificationPanel.gameObject.SetActive(false);
+        callback?.Invoke(); 
     }
     #endregion
 

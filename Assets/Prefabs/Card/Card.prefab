@@ -66,14 +66,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc9ee59fe5445ef41aa7a4f624d4ad8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entity: {fileID: 2353214916810408593}
+  movement: {fileID: 6250172426435667192}
   card: {fileID: 2353214916810408593}
   cardMovement: {fileID: 6250172426435667192}
-  originPos: {x: 0, y: 0, z: 0}
-  originRotation: {x: 0, y: 0, z: 0, w: 0}
-  originScale: {x: 0, y: 0, z: 0}
-  hoverOffset: {x: 0, y: 0, z: 0}
-  hoverScale: {x: 0, y: 0, z: 0}
-  cardState: 0
 --- !u!114 &6250172426435667192
 MonoBehaviour:
   m_ObjectHideFlags: 0

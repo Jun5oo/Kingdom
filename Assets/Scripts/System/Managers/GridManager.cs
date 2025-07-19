@@ -14,7 +14,7 @@ public class GridManager : MonoBehaviour
 
     Dictionary<HighlightLayer, List<GridCell>> highlightLayerToGridCells; 
 
-    public void Init(TokenManager tokenManager)
+    public void Init()
     {
         grid = new Grid();
         grid.Init(HEIGHT, WIDTH, Vector3.zero, gridPrefab);
@@ -28,9 +28,8 @@ public class GridManager : MonoBehaviour
         foreach (HighlightLayer layer in Enum.GetValues(typeof(HighlightLayer)))
             highlightLayerToGridCells[layer] = new List<GridCell>();
     }
-
-    public event Action<Vector2Int> OnGridCellSelected;
     
+    public event Action<Vector2Int> OnGridCellSelected;
     public void TrySelectGridCell(GridCell gridCell)
     {
         List<GridCell> highlightedCells = highlightLayerToGridCells[HighlightLayer.Action]; 
@@ -42,7 +41,7 @@ public class GridManager : MonoBehaviour
         
         OnGridCellSelected?.Invoke(gridPosition);
     }
-
+    
     #region Highlight
     public void HighlightGridCells(Predicate<Vector2Int> predicate, HighlightType type, HighlightLayer layer)
     {

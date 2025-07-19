@@ -15,7 +15,7 @@ public class SummonAction : IAction
 
     // References 
     GridManager gridManager;
-    CardManager cardManager;
+    PlayerHandManager handManager;
     TokenManager tokenManager;
     TokenFactory tokenFactory; 
     
@@ -29,16 +29,19 @@ public class SummonAction : IAction
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
 
-    public SummonAction(GridManager gridManager, CardManager cardManager, TokenManager tokenManager, TokenFactory tokenFactory, UnitCard card, ActionPerformer performer)
+    int currentCost; 
+    public int Cost { get { return currentCost; } }
+
+    public SummonAction(UnitCard card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
         highlightLayer = HighlightLayer.Action; 
         highlightType = HighlightType.SummonHighlight;
 
-        this.gridManager = gridManager;
-        this.cardManager = cardManager;
-        this.tokenManager = tokenManager;
-        this.tokenFactory = tokenFactory;
+        this.gridManager = ServiceLocator.Get<GridManager>();
+        this.handManager = ServiceLocator.Get<PlayerHandManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>();
+        this.tokenFactory = ServiceLocator.Get<TokenFactory>(); 
         
         this.card = card;
         this.token = null;
@@ -55,7 +58,9 @@ public class SummonAction : IAction
             new Vector2Int(-1, -1),
             new Vector2Int(0, 1),
             new Vector2Int(0, -1)
-        }; 
+        };
+
+        currentCost = 1; 
     }
     public void Enter()
     {
@@ -73,7 +78,10 @@ public class SummonAction : IAction
         Transition(SummonState.Prepare); 
     }
     public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
-    public bool IsValid() => true; 
+    public bool IsValid()
+    {
+        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
+    }
     void Transition(SummonState state)
     {
         switch (state)
@@ -98,7 +106,7 @@ public class SummonAction : IAction
 
         int playerID = card.OwnerPlayerID; 
         
-        cardManager?.RemoveCardFromHand(playerID, card);
+        handManager.RemoveCardFromHand(playerID, card);
         
         CardMovement cardMovement = card.GetComponent<CardMovement>();  
         PRS prs = cardMovement.PRS;
@@ -145,7 +153,7 @@ public class SummonAction : IAction
     {
         if (card.IsKing)
         {
-            if(cardManager.IsMyCard(card))
+            if(handManager.IsMyCard(card))
                 return pos.y < 1;
             else
                 return pos.y >= 6; 

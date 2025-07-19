@@ -28,19 +28,24 @@ public class AttackAction : IAction
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
 
-    public AttackAction(GridManager gridManager, TokenManager tokenManager, DamageManager damageManager, Token token, ActionPerformer performer)
+    int currentCost; 
+    public int Cost { get { return currentCost; } }
+
+    public AttackAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.Attack;
         highlightLayer = HighlightLayer.Action;
-        highlightType = HighlightType.AttackHighlight; 
+        highlightType = HighlightType.AttackHighlight;
 
-        this.gridManager = gridManager;
-        this.damageManager = damageManager;
-        this.tokenManager = tokenManager;
+        this.gridManager = ServiceLocator.Get<GridManager>(); 
+        this.damageManager = ServiceLocator.Get<DamageManager>();
+        this.tokenManager = ServiceLocator.Get<TokenManager>(); 
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.CurrentAttackRange; 
+        attackablePositions = token.CurrentAttackRange;
+
+        currentCost = 1; 
     }
 
     public void Enter()
@@ -163,6 +168,6 @@ public class AttackAction : IAction
         if(attackablePositions.Count == 0) 
             return false;
 
-        return true; 
+        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 }

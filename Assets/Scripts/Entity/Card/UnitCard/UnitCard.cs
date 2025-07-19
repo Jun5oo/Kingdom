@@ -37,5 +37,6 @@ public class UnitCard : Card, IUnit
 
         cardView.Init(UnitCardData.CardArt);
         cardHover?.Init();
+        cardMovement.Init();
     }
 }

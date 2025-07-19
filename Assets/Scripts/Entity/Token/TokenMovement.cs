@@ -2,27 +2,11 @@ using DG.Tweening;
 using System;
 using UnityEngine;
 
-public class TokenMovement : MonoBehaviour
+public class TokenMovement : EntityMovement
 {
     const int HEIGHT = 5; 
 
-    PRS prs;
-    public PRS PRS
-    {
-        get { return prs; }
-        set 
-        { 
-            prs = value;
-            OnTokenMoved?.Invoke(); 
-        } 
-    }
-
-    public Action OnTokenMoved;
-    public Action OnTokenMoveComplete; 
-
-    Sequence sequence;
-
-    public void Init()
+    public override void Init()
     {
         Vector3 position = Vector3.zero;
         Vector3 eulerAngles = new Vector3(90f, 0f, 0f);
@@ -32,22 +16,6 @@ public class TokenMovement : MonoBehaviour
         PRS = new PRS(position, quaternion, scale); 
     }
 
-    public void MoveTransform(PRS targetPRS, float duration, bool isHover = false, Action callback = null)
-    {
-        if(!isHover)
-            PRS = targetPRS;
-
-        sequence = DOTween.Sequence();
-        sequence.Append(transform.DOMove(targetPRS.position, duration));
-        sequence.Join(transform.DORotateQuaternion(targetPRS.rotation, duration));
-        sequence.Join(transform.DOScale(targetPRS.scale, duration));
-
-        sequence.OnComplete(() =>
-        {
-            callback?.Invoke();
-            OnTokenMoveComplete?.Invoke(); 
-        });
-    }
     public void AttackTargetFrom(Vector3 target, PRS from, Action onHitCallback = null, Action onCompleteCallback = null)
     {
         Sequence sequence = DOTween.Sequence();

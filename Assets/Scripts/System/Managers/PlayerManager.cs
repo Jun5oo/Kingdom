@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 public class PlayerManager
@@ -6,37 +5,40 @@ public class PlayerManager
     int localPlayerID;
     int remotePlayerID;
 
-    PlayerData localPlayerData;
-    PlayerData remotePlayerData;
-    Dictionary<int, PlayerData> playerDict;
+    Player localPlayer;
+    Player remotePlayer;
+    Dictionary<int, Player> playerDict;
 
-    public PlayerData LocalPlayerData {  get { return localPlayerData; } }
-    public PlayerData RemotePlayerData { get { return remotePlayerData; } }
-    public Dictionary<int, PlayerData> PlayerDict { get {  return playerDict; } }
+    public Player Local {  get { return localPlayer; } }
+    public Player Remote { get { return remotePlayer; } }
+    public Dictionary<int, Player> PlayerDict { get {  return playerDict; } }
 
-    public void Init(PlayerData[] playerData)
+    public void Init()
     {
-        if(playerData.Length != 2)
-            throw new ArgumentException("Invalid PlayerData");
+        Player[] players = new Player[2];
 
-        foreach (var player in playerData)
+        players[0] = new Player(0, Race.Undead, "Local", true);
+        players[1] = new Player(1, Race.Celestial, "Remote", false);
+
+
+        foreach (var player in players)
         {
             if (player.IsLocal)
             {
-                this.localPlayerData = player;
+                this.localPlayer = player;
                 this.localPlayerID = player.PlayerID; 
             }
 
             else
             {
-                this.remotePlayerData = player;
+                this.remotePlayer = player;
                 this.remotePlayerID = player.PlayerID;
             }
         }
 
-        playerDict = new Dictionary<int, PlayerData>();
+        playerDict = new Dictionary<int, Player>();
 
-        playerDict[localPlayerID] = localPlayerData;
-        playerDict[remotePlayerID] = remotePlayerData;
+        playerDict[localPlayerID] = localPlayer;
+        playerDict[remotePlayerID] = remotePlayer;
     }
 }

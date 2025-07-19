@@ -16,4 +16,6 @@ public interface IAction
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete; 
+
+    public int Cost { get; }
 }
