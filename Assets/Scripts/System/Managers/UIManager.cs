@@ -84,7 +84,7 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region DamagePopup
-    public void ShowDamagePopup(int damage, Vector3 position)
+    public void ShowDamagePopup(int damage, Vector3 position, bool flag = false)
     {
         StartCoroutine(DamagePopup(damage, position)); 
     }

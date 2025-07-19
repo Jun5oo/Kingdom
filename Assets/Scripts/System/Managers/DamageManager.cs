@@ -22,7 +22,7 @@ public class DamageManager
 
         if (defender.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            damageable.TakeDamage(attackerCP);
+            damageable.TakeDamage(attackerCP, true);
             uiManager.ShowDamagePopup(attackerCP, defender.transform.position);
         }
 
