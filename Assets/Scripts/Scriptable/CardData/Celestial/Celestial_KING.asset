@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Celestial_KING
   m_EditorClassIdentifier: 
   cardName: Celestial
-  sprite: {fileID: 21300000, guid: 08c7c2f138563684bb8881ca3bc318f6, type: 3}
+  sprite: {fileID: 21300000, guid: 116501bcc4d34b646b255b9ea17f7bfa, type: 3}
   description: Celestial KING
-  cardArt: {fileID: 2800000, guid: 20c84f93f48d24b43942a7f0b8e9f4f8, type: 3}
+  cardArt: {fileID: 2800000, guid: 856da0262f2a76c4ab6b8f0d57940629, type: 3}
   cp: 40
   movement: 1
   race: 0

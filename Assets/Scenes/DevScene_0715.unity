@@ -371,6 +371,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1632704842}
     m_Modifications:
+    - target: {fileID: 4210086076744694889, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 25558dcba0116e84a95267ecc46418f1, type: 3}
     - target: {fileID: 4512124852960113047, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -451,6 +455,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
+      propertyPath: angel
+      value: 
+      objectReference: {fileID: 21300000, guid: 116501bcc4d34b646b255b9ea17f7bfa, type: 3}
+    - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
+      propertyPath: undead
+      value: 
+      objectReference: {fileID: 21300000, guid: 25558dcba0116e84a95267ecc46418f1, type: 3}
     - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -1760,7 +1772,7 @@ PrefabInstance:
     - target: {fileID: 4210086076744694889, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 08c7c2f138563684bb8881ca3bc318f6, type: 3}
+      objectReference: {fileID: 21300000, guid: 116501bcc4d34b646b255b9ea17f7bfa, type: 3}
     - target: {fileID: 4512124852960113047, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1845,6 +1857,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
+      propertyPath: angel
+      value: 
+      objectReference: {fileID: 21300000, guid: 116501bcc4d34b646b255b9ea17f7bfa, type: 3}
+    - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
+      propertyPath: undead
+      value: 
+      objectReference: {fileID: 21300000, guid: 25558dcba0116e84a95267ecc46418f1, type: 3}
     - target: {fileID: 8273707558990278053, guid: a6167f1599bf77b44be7102178b526e9, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -3082,13 +3102,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   undeadDeck:
   - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
+  - {fileID: 11400000, guid: 32bb5dc7c17dca44caf342a62e391dac, type: 2}
   - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
+  - {fileID: 11400000, guid: 32bb5dc7c17dca44caf342a62e391dac, type: 2}
   - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
+  - {fileID: 11400000, guid: 32bb5dc7c17dca44caf342a62e391dac, type: 2}
   - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
-  - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
-  - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
-  - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
-  - {fileID: 11400000, guid: a536d7f36b7ccd149ba52fd759f25b89, type: 2}
+  - {fileID: 11400000, guid: 32bb5dc7c17dca44caf342a62e391dac, type: 2}
   celestialDeck:
   - {fileID: 11400000, guid: 337d5764fb6f77446babdcbbdee4b288, type: 2}
   - {fileID: 11400000, guid: 337d5764fb6f77446babdcbbdee4b288, type: 2}
