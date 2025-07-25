@@ -1,22 +1,15 @@
-using System.Collections;
-using UnityEngine;
+using Cysharp.Threading.Tasks;
 
 public class GameOver : IGameState
 {
-    HoverSystem hoverSystem;
-    SelectionSystem selectionSystem;
-
-    public GameOver()
+    public UniTask Enter()
     {
-        hoverSystem = ServiceLocator.Get<HoverSystem>(); 
-        selectionSystem = ServiceLocator.Get<SelectionSystem>();
-    }
+        HoverSystem hoverSystem = ServiceLocator.Get<HoverSystem>();
+        SelectionSystem selectionSystem = ServiceLocator.Get<SelectionSystem>();
 
-    public IEnumerator Enter()
-    {
         hoverSystem.DisableSystem(); 
         selectionSystem.DisableSystem();
 
-        yield return null; 
+        return UniTask.CompletedTask; 
     }
 }

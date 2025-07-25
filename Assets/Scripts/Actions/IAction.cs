@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ public interface IAction
 
     public void Enter();
     public void Exit();
-    public void Execute(Vector2Int targetPosition); 
+    public UniTask Execute(Vector2Int targetPosition); 
     public bool IsValid();
 
     public event Action OnActionCanceled;

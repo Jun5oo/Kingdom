@@ -5,7 +5,10 @@ using UnityEngine;
 public class GridManager : MonoBehaviour
 {
     const int HEIGHT = 7; 
-    const int WIDTH = 7; 
+    const int WIDTH = 7;
+
+    Vector3 originPos = Vector3.zero; 
+    // Vector3 originPos = Vector3.left * 8; 
 
     Grid grid;
 
@@ -17,7 +20,7 @@ public class GridManager : MonoBehaviour
     public void Init()
     {
         grid = new Grid();
-        grid.Init(HEIGHT, WIDTH, Vector3.zero, gridPrefab);
+        grid.Init(HEIGHT, WIDTH, originPos, gridPrefab);
         grid.CreateGridMap(transform, gridCellSprite);
 
         foreach (GridCell gridCell in grid.GetAllCells())

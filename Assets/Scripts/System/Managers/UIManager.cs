@@ -8,14 +8,6 @@ public class UIManager : MonoBehaviour
 {
     Dictionary<Type, PoolData> poolDictionary;
 
-    [Header("Card UI")]
-    [SerializeField] PreviewUI previewUI;
-
-    [Header("Action UI")]
-    [SerializeField] GameObject actionUIPrefab;
-    [SerializeField] Transform actionUILayout;
-    public Transform ActionUILayout { get { return actionUILayout; } }
-
     [Header("Damage Popup UI")]
     [SerializeField] GameObject damagePopupUI;
     [SerializeField] Transform damagePopupParent;
@@ -32,18 +24,8 @@ public class UIManager : MonoBehaviour
     {
         poolDictionary = new Dictionary<Type, PoolData>();
 
-        RegisterPool<ActionUI>(actionUIPrefab, actionUILayout);
-        RegisterPool<DamagePopupUI>(damagePopupUI, damagePopupParent);
+        RegisterPool<DamagePopup>(damagePopupUI, damagePopupParent);
     }
-
-    #region CardUI
-    public void DisplayUI(Entity entity)
-    {
-        previewUI.OnUpdate(entity); 
-        previewUI.gameObject.SetActive(true);
-    }
-    public void CloseUI() => previewUI.gameObject.SetActive(false); 
-    #endregion 
 
     #region Pooling 
     public void RegisterPool<T>(GameObject prefab, Transform parent) where T: MonoBehaviour, IPoolable
@@ -90,15 +72,15 @@ public class UIManager : MonoBehaviour
     }
     IEnumerator DamagePopup(int damage, Vector3 position)
     {
-        GameObject damagePopup = Pop<DamagePopupUI>();
+        GameObject damagePopup = Pop<DamagePopup>();
         damagePopup.transform.SetParent(damagePopupParent, false);
         damagePopup.transform.position = Camera.main.WorldToScreenPoint(position);
 
-        damagePopup.GetComponent<DamagePopupUI>().Init(damage);
+        damagePopup.GetComponent<DamagePopup>().Init(damage);
 
         yield return new WaitForSeconds(2f);
 
-        Push<DamagePopupUI>(damagePopup); 
+        Push<DamagePopup>(damagePopup); 
     }
     #endregion
 

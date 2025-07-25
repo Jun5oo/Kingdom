@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
@@ -52,7 +53,7 @@ public class Resurrection : IAction
             
             if(token != null)
             {
-                if (!token.IsAllies(kingToken.OwnerPlayerID))
+                if (!token.IsAllies(kingToken.OwnerID))
                     return false; 
                 if (token.TokenState == TokenState.Graveyard)
                     return true; 
@@ -64,10 +65,10 @@ public class Resurrection : IAction
 
     }
 
-    public void Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         this.targetPosition = targetPosition;
-        Revive(); 
+        await Revive(); 
     }
 
     public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer);
@@ -76,7 +77,7 @@ public class Resurrection : IAction
         return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
-    public void Revive()
+    public async UniTask Revive()
     {
         Exit(); 
 
@@ -88,10 +89,18 @@ public class Resurrection : IAction
 
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
-        
+
+        var taskComplete = new UniTaskCompletionSource(); 
+
         tokenMovement.PlayerSpinToss(() =>
         {
             targetToken.Revive(); 
-        }, () => { OnActionComplete?.Invoke(); });
+        }, () => 
+        { 
+            OnActionComplete?.Invoke();
+            taskComplete.TrySetResult(); 
+        });
+
+        await taskComplete.Task; 
     }
 }

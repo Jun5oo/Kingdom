@@ -94,12 +94,12 @@ public class HoverSystem : MonoBehaviour, IGameSystem
         
         if(tokenManager.TryGetTokenFrom(gridPosition, out Token token))
         {
-            if (token.CurrentAttackRange == null || token.CurrentAttackRange.Count <= 0)
+            if (token.AttackRange == null || token.AttackRange.Count <= 0)
                 return; 
 
             gridManager.HighlightGridCells((Vector2Int gridPos) =>
             {
-                foreach (var pos in token.CurrentAttackRange)
+                foreach (var pos in token.AttackRange)
                 {
                     if (gridPos == (gridPosition + pos))
                         return true;
@@ -111,13 +111,6 @@ public class HoverSystem : MonoBehaviour, IGameSystem
         }
     }
 
-    public void EnableSystem()
-    {
-        this.enabled = true; 
-    }
-
-    public void DisableSystem()
-    {
-        this.enabled = true;
-    }
+    public void EnableSystem() => enabled = true;
+    public void DisableSystem() => enabled = false; 
 }

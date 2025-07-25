@@ -6,7 +6,7 @@ public interface ISelectable
     public void OnSelected();
     public void OnDeselected();
     public bool IsSelectable();
-    public Entity Entity { get; }
-
+    public BaseObject BaseObject { get; }   
+    
     public event Action OnSelectedComplete;  
 }

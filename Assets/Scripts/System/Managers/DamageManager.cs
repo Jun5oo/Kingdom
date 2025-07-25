@@ -31,7 +31,7 @@ public class DamageManager
     }
     public void ProcessKingDamage(Token token, int damage)
     {
-        if(tokenManager.TryGetKingTokenFrom(token.OwnerPlayerID, out Token king)){
+        if(tokenManager.TryGetKingTokenFrom(token.OwnerID, out Token king)){
             
             if(king.TryGetComponent<IDamageable>(out IDamageable damageable))
             {
@@ -48,7 +48,7 @@ public class DamageManager
             return;
         }
 
-        if (defender.CurrentAttackRange == null || defender.CurrentAttackRange.Count == 0)
+        if (defender.AttackRange == null || defender.AttackRange.Count == 0)
         {
             Debug.Log("이 유닛은 반격이 불가능합니다.");
             return;
@@ -63,7 +63,7 @@ public class DamageManager
             return;
         }
 
-        foreach (var position in defender.CurrentAttackRange)
+        foreach (var position in defender.AttackRange)
         {
             if (defenderPos + position == attackerPos)
             {
@@ -101,9 +101,9 @@ public class DamageManager
         }
 
         if (local.CP <= 0)
-            OnKingDefeated?.Invoke(local.OwnerPlayerID);
+            OnKingDefeated?.Invoke(local.OwnerID);
         else if (remote.CP <= 0)
-            OnKingDefeated?.Invoke(remote.OwnerPlayerID);
+            OnKingDefeated?.Invoke(remote.OwnerID);
         else
             return; 
     }

@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
 {
-    GridManager gridManager; 
     IAction currentAction;
 
     [SerializeField] int actionCount = 2; 
@@ -12,11 +11,11 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
     public void Init()
     {
-        DisableSystem(); 
+        DisableSystem();
+        
+        this.currentAction = null;
 
-        this.gridManager = ServiceLocator.Get<GridManager>();
-
-        this.currentAction = null; 
+        GridManager gridManager = ServiceLocator.Get<GridManager>();
 
         gridManager.OnGridCellSelected -= Execute; 
         gridManager.OnGridCellSelected += Execute;
@@ -29,9 +28,6 @@ public class ActionSystem : MonoBehaviour, IGameSystem
             if(currentAction?.Performer != ActionPerformer.System)
                 Exit();
         }
-
-        if (currentAction != null)
-            Debug.Log(currentAction);
     }
 
     public void Enter(IAction action)

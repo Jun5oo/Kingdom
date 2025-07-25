@@ -1,33 +1,26 @@
+using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class KingPlacement : IGameState
 {
-    const float WAIT_TIME = 0.5f;
-
-    PlayerManager playerManager; 
-    UIManager uiManager; 
-    TokenManager tokenManager;
-    ActionSystem actionSystem;
-    ActionFactory actionFactory;
+    // 왕을 배치하는 State. 
+    const int WAIT_TIME = 500;
 
     GameFlowStateMachine stateMachine; 
 
     public KingPlacement(GameFlowStateMachine stateMachine)
     {
         this.stateMachine = stateMachine; 
-
-        playerManager = ServiceLocator.Get<PlayerManager>();
-        uiManager = ServiceLocator.Get<UIManager>();
-        tokenManager = ServiceLocator.Get<TokenManager>(); 
-        actionSystem = ServiceLocator.Get<ActionSystem>();
-        actionFactory = ServiceLocator.Get<ActionFactory>();
     }
-    public IEnumerator Enter()
+    public async UniTask Enter()
     {
-        yield return OnPlacement(stateMachine.firstID);
-        yield return OnPlacement(stateMachine.secondID);
+        PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
+        UIManager uiManager = ServiceLocator.Get<UIManager>();
+        TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
+
+        await OnPlacement(stateMachine.firstID);
+        await OnPlacement(stateMachine.secondID);
 
         if (tokenManager.TryGetKingTokenFrom(playerManager.Local.PlayerID, out Token localToken))
             uiManager.SetHUD(playerManager.Local, localToken);
@@ -41,14 +34,19 @@ public class KingPlacement : IGameState
 
         uiManager.OnActiveHUD();
 
-        yield return new WaitForSeconds(WAIT_TIME);
+        await UniTask.Delay(WAIT_TIME);
 
-        FirstDraw firstDraw = new FirstDraw(stateMachine);
-        stateMachine.Enter(firstDraw); 
+        MainPhase mainPhase = new MainPhase(stateMachine);
+        stateMachine.Enter(mainPhase); 
     }
 
-    public IEnumerator OnPlacement(int playerID)
+    public async UniTask OnPlacement(int playerID)
     {
+        PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
+        UIManager uiManager = ServiceLocator.Get<UIManager>();
+        ActionSystem actionSystem = ServiceLocator.Get<ActionSystem>();
+        ActionFactory actionFactory = ServiceLocator.Get<ActionFactory>();
+
         if (playerID != playerManager.Local.PlayerID)
             uiManager.OnNotification("상대 플레이어의 선택을 기다리는 중입니다.");
 
@@ -70,7 +68,7 @@ public class KingPlacement : IGameState
 
         actionSystem.Enter(summon);
 
-        yield return new WaitUntil(() => done); 
+        await UniTask.WaitUntil(() => done); 
 
         summon.OnActionComplete -= completeCallback;
     }

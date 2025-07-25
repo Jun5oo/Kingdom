@@ -2,39 +2,39 @@ using UnityEngine;
 
 public class TurnEndButton : MonoBehaviour
 {
-    TurnManager turnManager; 
+    TurnSystem turnSystem; 
 
-    [SerializeField] Renderer renderer;
+    [SerializeField] Renderer buttonRenderer;
 
     [SerializeField] Material turnOnMaterial; 
     Material turnOffMaterial;
 
     void Start()
     {
-        turnManager = ServiceLocator.Get<TurnManager>();
-        turnOffMaterial = renderer.material;
+        turnSystem = ServiceLocator.Get<TurnSystem>();
+        turnOffMaterial = buttonRenderer.sharedMaterial;
 
-        turnManager.OnTurnStarted -= TurnOn;
-        turnManager.OnTurnEnded -= TurnOff;
-        turnManager.OnTurnStarted += TurnOn;
-        turnManager.OnTurnEnded += TurnOff; 
+        turnSystem.OnTurnStarted -= TurnOn;
+        turnSystem.OnTurnEnded -= TurnOff;
+        turnSystem.OnTurnStarted += TurnOn;
+        turnSystem.OnTurnEnded += TurnOff; 
     }
 
     public void TurnOn()
     {
-        if(turnManager.IsMyTurn())
-            renderer.material = turnOnMaterial; 
+        if(turnSystem.IsMyTurn())
+            buttonRenderer.sharedMaterial = turnOnMaterial; 
     }
 
     public void TurnOff()
     {
-        renderer.material = turnOffMaterial; 
+        buttonRenderer.material = turnOffMaterial; 
     }
 
     public void OnMouseDown()
     {
-        if (turnManager.TurnState == TurnState.Unable)
+        if (turnSystem.TurnState == TurnState.Unable)
             return; 
-        turnManager.EndTurn(); 
+        turnSystem.EndTurn(); 
     }
 }

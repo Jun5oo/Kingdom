@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c7b49b98205880408ee807531d7bcdb, type: 3}
-  m_Name: Undead_MELEE
+  m_Name: Undead_Melee
   m_EditorClassIdentifier: 
+  cardID: 2
   cardName: MELEE
-  sprite: {fileID: 21300000, guid: 7647694f2f445d74aa8612b0df92e960, type: 3}
   description: MELEE
-  cardArt: {fileID: 2800000, guid: 0043c459b54fb464c955dc23f3a951a2, type: 3}
+  race: 1
+  actions: 000000000100000002000000
   cp: 10
   movement: 2
   race: 1
   isKing: 0
-  actions: 000000000100000002000000
   moveRange:
   - {x: 1, y: 0}
   - {x: 2, y: 0}

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,7 +44,7 @@ public class AttackAction : IAction
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.CurrentAttackRange;
+        attackablePositions = token.AttackRange;
 
         currentCost = 1; 
     }
@@ -68,7 +69,7 @@ public class AttackAction : IAction
 
         }, HighlightType.AttackHighlight, HighlightLayer.Action);
     }
-    public void Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         var target = tokenManager.GetTokenFrom(targetPosition);
         this.target = target;
@@ -88,14 +89,14 @@ public class AttackAction : IAction
             return; 
         }
 
-        if (damageable.IsAllies(token.OwnerPlayerID))
+        if (damageable.IsAllies(token.OwnerID))
         {
             Debug.Log("아군을 공격할 수 없습니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
 
-        Transition(AttackState.Prepare); 
+        await Transition(AttackState.Prepare); 
     }
 
     public void Exit()
@@ -104,18 +105,18 @@ public class AttackAction : IAction
         gridManager?.UnhighlightGridCells(HighlightLayer.Hover); 
     }
 
-    void Transition(AttackState state)
+    async UniTask Transition(AttackState state)
     {
         switch (state)
         {
             case AttackState.Prepare:
-                Prepare(); 
+                await Prepare(); 
                 break;
             case AttackState.Animation:
-                Attack(); 
+                await Attack(); 
                 break;
             case AttackState.Placing:
-                Placing(); 
+                await Placing(); 
                 break;
             case AttackState.Done:
                 Done(); 
@@ -123,20 +124,22 @@ public class AttackAction : IAction
         }
     }
 
-    void Prepare()
+    async UniTask Prepare()
     {
         Exit();
-        Transition(AttackState.Animation); 
+        await Transition(AttackState.Animation); 
     }
     
-    void Attack()
+    async UniTask Attack()
     {
         Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition); 
 
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
         PRS prs = tokenMovement.PRS;
 
-        int counterDamage = target.CP; 
+        int counterDamage = target.CP;
+
+        var taskComplete = new UniTaskCompletionSource(); 
 
         tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
         {
@@ -147,15 +150,19 @@ public class AttackAction : IAction
             damageManager.TryProcessCounterAttack(target, token, counterDamage);
             damageManager.TryDestroyToken(token);
             damageManager.TryDestroyToken(target); 
-            damageManager.CheckForKingDefeat(); 
-            Transition(AttackState.Placing); 
+            damageManager.CheckForKingDefeat();
+
+            taskComplete.TrySetResult(); 
         });
+
+        await taskComplete.Task;
+        await Transition(AttackState.Placing);
     }
 
-    void Placing()
+    async UniTask Placing()
     {
         Debug.Log("Done"); 
-        Transition(AttackState.Done); 
+        await Transition(AttackState.Done); 
     }
 
     void Done()

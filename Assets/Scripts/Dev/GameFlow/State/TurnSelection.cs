@@ -1,26 +1,25 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class TurnSelection : IGameState
 {
-    const int PLAYER_NUM = 2;
-    const float WAIT_TIME = 1f; 
+    // 턴 순서를 선택하는 State. 두 플레이어 중, 선공 후공을 정하는 작업 
 
-    PlayerManager playerManager;
-    UIManager uiManager;
+    const int PLAYER_NUM = 2;
+    const int WAIT_TIME_MS = 1000; 
 
     GameFlowStateMachine stateMachine; 
 
     public TurnSelection(GameFlowStateMachine stateMachine)
     {
-        playerManager = ServiceLocator.Get<PlayerManager>(); 
-        uiManager = ServiceLocator.Get<UIManager>();
-
         this.stateMachine = stateMachine; 
     }
 
-    public IEnumerator Enter()
+    public async UniTask Enter()
     {
+        PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
+        UIManager uiManager = ServiceLocator.Get<UIManager>();
+
         int[] playerID = new int[PLAYER_NUM];
 
         playerID[0] = playerManager.Local.PlayerID; 
@@ -39,10 +38,8 @@ public class TurnSelection : IGameState
         stateMachine.firstID = first; 
         stateMachine.secondID = second;
 
-        yield return new WaitForSeconds(WAIT_TIME);
-
+        await UniTask.Delay(WAIT_TIME_MS);
         KingDraw kingDraw = new KingDraw(stateMachine);
-
         stateMachine.Enter(kingDraw); 
     }
 }

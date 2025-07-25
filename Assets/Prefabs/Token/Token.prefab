@@ -575,15 +575,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf0fe6f9d7991c44a69289db14e92b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitData: {fileID: 0}
-  currentTokenCP: 0
-  movement: 0
-  attackRange: []
-  movementRange: []
-  ownerPlayerID: 0
-  tokenMovement: {fileID: 5961579675541900130}
-  tokenHover: {fileID: 8842170041966107595}
-  tokenView: {fileID: 6569040969496006808}
+  currentCP: 0
+  ownerID: 0
+  movement: {fileID: 5961579675541900130}
+  interaction: {fileID: 8842170041966107595}
+  view: {fileID: 6569040969496006808}
 --- !u!114 &8842170041966107595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -596,10 +592,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96e1d7cd3e8c37641a8def98dc785fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 6409758460409004148}
   movement: {fileID: 5961579675541900130}
-  token: {fileID: 6409758460409004148}
-  tokenMovement: {fileID: 5961579675541900130}
 --- !u!114 &5961579675541900130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -627,4 +620,4 @@ MonoBehaviour:
   mr: {fileID: 1804923418352026484}
   cp: {fileID: 4441986974082147149}
   movement: {fileID: 8042113581738872009}
-  anchorUIPosition: {fileID: 828061612229363646}
+  anchorPosition: {fileID: 828061612229363646}

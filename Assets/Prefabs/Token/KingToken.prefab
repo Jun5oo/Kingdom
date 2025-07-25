@@ -79,12 +79,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf0fe6f9d7991c44a69289db14e92b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitData: {fileID: 0}
-  currentTokenCP: 0
-  ownerPlayerID: 0
-  tokenMovement: {fileID: 9117598697662519698}
-  tokenHover: {fileID: 6727704145962439212}
-  tokenView: {fileID: 7749355927112467335}
+  currentCP: 0
+  ownerID: 0
+  movement: {fileID: 9117598697662519698}
+  interaction: {fileID: 6727704145962439212}
+  view: {fileID: 7749355927112467335}
 --- !u!114 &6727704145962439212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -97,9 +96,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96e1d7cd3e8c37641a8def98dc785fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  token: {fileID: 8864065948736491606}
-  tokenMovement: {fileID: 9117598697662519698}
-  viewState: 0
+  movement: {fileID: 9117598697662519698}
 --- !u!114 &9117598697662519698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -127,7 +124,7 @@ MonoBehaviour:
   mr: {fileID: 5638011669168195462}
   cp: {fileID: 3961889722980610243}
   movement: {fileID: 8896438682755004660}
-  anchorUIPosition: {fileID: 4048629800038366665}
+  anchorPosition: {fileID: 4048629800038366665}
 --- !u!1 &6201989530813335111
 GameObject:
   m_ObjectHideFlags: 0
