@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    const int HEIGHT = 7; 
-    const int WIDTH = 7; 
+    public const int HEIGHT = 7; 
+    public const int WIDTH = 7; 
 
     Grid grid;
 
@@ -70,5 +70,7 @@ public class GridManager : MonoBehaviour
     public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
     public Vector2Int GetGridPosition(Vector3 worldPosition) => grid.GetGridPosition(worldPosition);
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition);
+    public int GetRandomGridXPos() => UnityEngine.Random.Range(0, WIDTH - 1);
+    public int GetRandomGridYPos() => UnityEngine.Random.Range(0, HEIGHT - 1);
     #endregion
 }

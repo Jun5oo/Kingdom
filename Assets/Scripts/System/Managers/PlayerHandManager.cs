@@ -67,6 +67,17 @@ public class PlayerHandManager : MonoBehaviour
         return card.OwnerPlayerID == playerManager.Local.PlayerID;
     }
 
+    public List<Card> GetHandCards(int playerID)
+    {
+        if (!playerHands.ContainsKey(playerID))
+        {
+            Debug.LogError("Invalid playerID");
+            return null; 
+        }
+
+        return playerHands[playerID].HandCard;
+    }
+
     #region CardAlignment 
     void CardAlignment(List<Card> handList, Transform hand, Transform left, Transform right, int cardCount, int playerID)
     {

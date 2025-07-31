@@ -12,6 +12,8 @@ public class KingPlacement : IGameState
     ActionSystem actionSystem;
     ActionFactory actionFactory;
 
+    AIController aiController;
+
     GameFlowStateMachine stateMachine; 
 
     public KingPlacement(GameFlowStateMachine stateMachine)
@@ -23,6 +25,7 @@ public class KingPlacement : IGameState
         tokenManager = ServiceLocator.Get<TokenManager>(); 
         actionSystem = ServiceLocator.Get<ActionSystem>();
         actionFactory = ServiceLocator.Get<ActionFactory>();
+        aiController = ServiceLocator.Get<AIController>();
     }
     public IEnumerator Enter()
     {
@@ -49,11 +52,7 @@ public class KingPlacement : IGameState
 
     public IEnumerator OnPlacement(int playerID)
     {
-        if (playerID != playerManager.Local.PlayerID)
-            uiManager.OnNotification("상대 플레이어의 선택을 기다리는 중입니다.");
-
-        else
-            uiManager.OnNotification("왕을 소환할 곳을 선택해주세요."); 
+        bool isAI = playerID != playerManager.Local.PlayerID;
 
         bool done = false;
         Action completeCallback = () => done = true;
@@ -65,12 +64,21 @@ public class KingPlacement : IGameState
         else
             card = stateMachine.secondCard;
 
-        IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System); 
+        IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System);
+
+        if (isAI)
+        {
+            uiManager.OnNotification("상대 플레이어의 선택을 기다리는 중입니다.");
+            aiController.DecideKingPlacement(summon as SummonAction);
+        }
+        else
+        {
+            uiManager.OnNotification("왕을 소환할 곳을 선택해주세요.");
+        }
+
         summon.OnActionComplete += completeCallback;
-
         actionSystem.Enter(summon);
-
-        yield return new WaitUntil(() => done); 
+        yield return new WaitUntil(() => done);
 
         summon.OnActionComplete -= completeCallback;
     }

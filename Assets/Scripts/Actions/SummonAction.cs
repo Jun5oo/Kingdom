@@ -149,14 +149,20 @@ public class SummonAction : IAction
     {
         OnActionComplete?.Invoke();
     }
+
+    public int GetGridPosYForKing()
+    {
+        if (handManager.IsMyCard(card))
+            return 0;
+        else
+            return 6;
+    }
+
     private bool CanSummonAt(Vector2Int pos)
     {
         if (card.IsKing)
         {
-            if(handManager.IsMyCard(card))
-                return pos.y < 1;
-            else
-                return pos.y >= 6; 
+            return pos.y == GetGridPosYForKing();
         }
 
         int playerID = card.OwnerPlayerID;

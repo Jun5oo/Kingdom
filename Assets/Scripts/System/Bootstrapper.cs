@@ -22,6 +22,8 @@ public class Bootstrapper : MonoBehaviour
 
     UIInvoker uiInvoker;
 
+    AIController aiController;
+
     [SerializeField] DeckManager deckManager;
     DrawManager drawManager; 
 
@@ -44,6 +46,8 @@ public class Bootstrapper : MonoBehaviour
         
         drawManager = new DrawManager();
 
+        aiController = new AIController();
+
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(turnManager);
         ServiceLocator.Register(damageManager); 
@@ -63,6 +67,8 @@ public class Bootstrapper : MonoBehaviour
 
         ServiceLocator.Register(deckManager);
         ServiceLocator.Register(drawManager); 
+
+        ServiceLocator.Register(aiController);
 
         Initialization();
 
@@ -90,7 +96,8 @@ public class Bootstrapper : MonoBehaviour
         selectionSystem.Init();
 
         deckManager.Init();
-        drawManager.Init(); 
+        drawManager.Init();
+        aiController.Init();
     }
 
 }

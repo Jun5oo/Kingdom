@@ -17,6 +17,8 @@ public class TurnManager : IGameSystem
     DrawManager drawManager; 
     ActionSystem actionSystem;
 
+    AIController AIController;
+
     TurnState currentTurnState; 
     public TurnState TurnState { get { return currentTurnState; } }
 
@@ -33,6 +35,7 @@ public class TurnManager : IGameSystem
         this.uiManager = ServiceLocator.Get<UIManager>();
         this.handManager = ServiceLocator.Get<PlayerHandManager>(); 
         this.actionSystem = ServiceLocator.Get<ActionSystem>();
+        AIController = ServiceLocator.Get<AIController>();
 
         DisableSystem(); 
     }
@@ -63,12 +66,20 @@ public class TurnManager : IGameSystem
             uiManager.OnNotification("Enemy Turn!", () => 
             { 
                 currentTurnState = TurnState.EnemyTurn;
-                OnTurnStarted?.Invoke(); 
+                OnTurnStarted?.Invoke();
+
+                StartAITurn(currentPlayerID);
             });
 
         Card card = drawManager.Draw(currentPlayerID);
         handManager.AddCardToHand(currentPlayerID, card); 
     }
+
+    private void StartAITurn(int currentPlayerID)
+    {
+        AIController.InvokeRandomAction(currentPlayerID, EndTurn);
+    }
+
     public void EndTurn()
     {
         currentTurnState = TurnState.EndTurn;
