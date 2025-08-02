@@ -65,6 +65,7 @@ public class KingPlacement : IGameState
             card = stateMachine.secondCard;
 
         IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System);
+        summon.OnActionComplete += completeCallback;
 
         if (isAI)
         {
@@ -74,10 +75,9 @@ public class KingPlacement : IGameState
         else
         {
             uiManager.OnNotification("왕을 소환할 곳을 선택해주세요.");
+            actionSystem.Enter(summon);
         }
 
-        summon.OnActionComplete += completeCallback;
-        actionSystem.Enter(summon);
         yield return new WaitUntil(() => done);
 
         summon.OnActionComplete -= completeCallback;

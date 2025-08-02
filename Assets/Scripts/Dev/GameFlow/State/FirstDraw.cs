@@ -8,7 +8,9 @@ public class FirstDraw : IGameState
 
     TurnManager turnManager;
     DrawManager drawManager;
-    PlayerHandManager handManager; 
+    PlayerHandManager handManager;
+
+    PlayerManager playerManager;
 
     GameFlowStateMachine stateMachine;
 
@@ -19,6 +21,7 @@ public class FirstDraw : IGameState
         turnManager = ServiceLocator.Get<TurnManager>(); 
         drawManager = ServiceLocator.Get<DrawManager>();
         handManager = ServiceLocator.Get<PlayerHandManager>();
+        playerManager = ServiceLocator.Get<PlayerManager>();
 
         this.stateMachine = stateMachine;
 
@@ -36,7 +39,17 @@ public class FirstDraw : IGameState
         SelectionSystem selectionSystem = ServiceLocator.Get<SelectionSystem>();
         ActionSystem actionSystem = ServiceLocator.Get<ActionSystem>();
 
-        selectionSystem.EnableSystem();
+        bool isAI = stateMachine.secondID != playerManager.Local.PlayerID;
+
+        if (isAI)
+        {
+            selectionSystem.DisableSystem();
+        }
+        else
+        {
+            selectionSystem.EnableSystem();
+        }
+
         actionSystem.EnableSystem(); 
     }
 

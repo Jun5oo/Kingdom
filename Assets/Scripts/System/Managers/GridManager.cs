@@ -55,6 +55,23 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+
+    public List<Vector2Int> GetSummonableGridCells(Predicate<Vector2Int> predicate)
+    {
+        List<Vector2Int> summonablePosList = new List<Vector2Int>();
+
+        foreach (GridCell gridCell in grid.GetAllCells())
+        {
+            Vector2Int gridPos = gridCell.GetGridPosition();
+            if (predicate(gridPos))
+            {
+                summonablePosList.Add(gridPos);
+            }
+        }
+
+        return summonablePosList;
+    }
+
     public void UnhighlightGridCells(HighlightLayer layer)
     {
         List<GridCell> highlightedCells = highlightLayerToGridCells[layer];

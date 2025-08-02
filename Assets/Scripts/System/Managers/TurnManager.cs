@@ -17,7 +17,7 @@ public class TurnManager : IGameSystem
     DrawManager drawManager; 
     ActionSystem actionSystem;
 
-    AIController AIController;
+    AIController aiController;
 
     TurnState currentTurnState; 
     public TurnState TurnState { get { return currentTurnState; } }
@@ -35,7 +35,7 @@ public class TurnManager : IGameSystem
         this.uiManager = ServiceLocator.Get<UIManager>();
         this.handManager = ServiceLocator.Get<PlayerHandManager>(); 
         this.actionSystem = ServiceLocator.Get<ActionSystem>();
-        AIController = ServiceLocator.Get<AIController>();
+        aiController = ServiceLocator.Get<AIController>();
 
         DisableSystem(); 
     }
@@ -77,7 +77,7 @@ public class TurnManager : IGameSystem
 
     private void StartAITurn(int currentPlayerID)
     {
-        AIController.InvokeRandomAction(currentPlayerID, EndTurn);
+        aiController.InvokeRandomAction(currentPlayerID, EndTurn);
     }
 
     public void EndTurn()
