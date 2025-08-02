@@ -19,6 +19,8 @@ public class GameFlowManager
 
         uiManager = ServiceLocator.Get<UIManager>(); 
         damageManager = ServiceLocator.Get<DamageManager>();
+
+        damageManager.OnKingDefeated -= GameOver;
         damageManager.OnKingDefeated += GameOver; 
     }
 

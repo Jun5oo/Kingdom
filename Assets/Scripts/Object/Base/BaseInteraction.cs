@@ -12,7 +12,7 @@ public enum InteractionState
 public abstract class BaseInteraction : MonoBehaviour, IHoverable, ISelectable
 {
     private BaseObject baseObject; 
-    protected InteractionState currentState;
+    [SerializeField] protected InteractionState currentState;
 
     protected Vector3 originPos;
     protected Quaternion originRotation;
@@ -28,7 +28,7 @@ public abstract class BaseInteraction : MonoBehaviour, IHoverable, ISelectable
         currentState = InteractionState.Idle;
     }
 
-    public virtual bool IsHoverable() => currentState == InteractionState.Hover;
+    public virtual bool IsHoverable() => currentState == InteractionState.Idle;
     public virtual bool IsSelectable() => currentState == InteractionState.Idle || currentState == InteractionState.Hover; 
 
     public abstract void OnHover();

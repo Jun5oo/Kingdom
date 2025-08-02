@@ -4,14 +4,11 @@ public class SelectionResolver {
 
     TokenManager tokenManager;
 
-    TurnSystem turnSystem;
     ActionSystem actionSystem; 
 
     public SelectionResolver()
     {
         tokenManager = ServiceLocator.Get<TokenManager>();  
-
-        turnSystem = ServiceLocator.Get<TurnSystem>();
         actionSystem = ServiceLocator.Get<ActionSystem>();
     }
 
@@ -39,14 +36,6 @@ public class SelectionResolver {
         if (selectable == null)
             return false;
 
-        /*
-        if (turnSystem.GetCurrentTurnPlayerID() != selectable.Entity.OwnerID)
-            return false;
-        */ 
-        /*
-        if (turnSystem.TurnState != TurnState.PlayerTurn)
-            return false;
-        */
         if (actionSystem.IsActionInProgress())
             return false;
 

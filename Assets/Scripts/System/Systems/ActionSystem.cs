@@ -7,8 +7,6 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
     [SerializeField] int actionCount = 2; 
 
-    public event Action OnActionDepleted; 
-
     public void Init()
     {
         DisableSystem();
@@ -77,27 +75,10 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
 
         actionCount -= currentAction.Cost; 
-
         Exit();
-
-        if (actionCount <= 0)
-            OnActionDepleted?.Invoke();
     }
-    public int GetCurrentActionCount()
-    {
-        return actionCount; 
-    }
-    public void ResetActionCount()
-    {
-        actionCount = 2; 
-    }
-
-    public void EnableSystem()
-    {
-        this.enabled = true; 
-    }
-    public void DisableSystem()
-    {
-        this.enabled = false; 
-    }
+    public int GetCurrentActionCount() => actionCount; 
+    public void ResetActionCount() => actionCount = 2; 
+    public void EnableSystem() => enabled = true; 
+    public void DisableSystem() => enabled = false;
 }

@@ -15,7 +15,7 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     {
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
-        this.actionSystem = ServiceLocator.Get<ActionSystem>(); 
+        this.actionSystem = ServiceLocator.Get<ActionSystem>();
     }
 
     void Update()
@@ -74,6 +74,9 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     }
     public void ExitHover()
     {
+        if (currentHoverable == null)
+            return; 
+
         currentHoverable?.OffHover();
         currentHoverable = null;
         gridManager.UnhighlightGridCells(HighlightLayer.Hover);

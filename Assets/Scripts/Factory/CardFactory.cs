@@ -4,25 +4,36 @@ using UnityEngine;
 public class CardFactory 
 {
     GameObject cardPrefab;
-    TextureLoader textureLoader;
+    CardTextureLoader loader;
+    PrefabLoader prefabLoader; 
 
-    public void Init(GameObject prefab)
+    public async UniTask Init()
     {
-        cardPrefab = prefab; 
-        textureLoader = ServiceLocator.Get<TextureLoader>();  
-    } 
+        loader = ServiceLocator.Get<CardTextureLoader>();
+        prefabLoader = ServiceLocator.Get<PrefabLoader>();
+
+        cardPrefab = await prefabLoader.LoadPrefabAsync<Card>();
+
+        Debug.Log("CardFactory Initialized");
+    }
     public async UniTask<Card> CreateCardAsync(CardData cardData, int playerID)
     {
         GameObject cardObject = GameObject.Instantiate(cardPrefab);
         cardObject.gameObject.SetActive(false); 
 
-        Card card = cardObject.GetComponent<Card>();
-        card.Init(cardData, playerID);
+        if(cardObject.TryGetComponent<Card>(out Card card))
+        {
+            card.Init(cardData, playerID);
 
-        VisualTexture textures = await textureLoader.LoadAllTextures(cardData); 
+            VisualTexture textures = await loader.LoadAllTextures(cardData);
+            Debug.Log("CardTexture Load Complete");
 
-        if(card.TryGetComponent<CardView>(out CardView cardView))
-            cardView.Init(textures); 
+            if (card.TryGetComponent<CardView>(out CardView cardView))
+                cardView.Init(textures);
+        }
+
+        else
+            Debug.LogError("Cannot found Card component from Card prefab");
 
         return card;
     }

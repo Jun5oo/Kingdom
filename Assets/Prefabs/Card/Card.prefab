@@ -66,6 +66,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5adacf3976b8d0e4db5c94cf055bee54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 1
   movement: {fileID: 6250172426435667192}
 --- !u!114 &6250172426435667192
 MonoBehaviour:

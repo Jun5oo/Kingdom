@@ -13,7 +13,6 @@ public class DrawManager
     }
     public async UniTask<Card> Draw(int playerID)
     {
-        Debug.Log($"[DrawManager] Draw({playerID}) 호출됨");
         // 랜덤 카드 드로우 
         CardData cardData = deckManager.GetCardData(playerID);
         

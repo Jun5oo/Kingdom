@@ -135,9 +135,8 @@ public class SummonAction : IAction
 
         PRS prs = new PRS(targetPos, quaternion, scale);
 
-        Debug.Log("tokenFactory start create token"); 
         Token token = await tokenFactory.CreateToken(card.UnitData, card.OwnerID);
-        Debug.Log("tokenFactory created token");
+        Debug.Log("Token Summon Complete");
 
         token.transform.position = targetPos + (Vector3.up * 10);
         token.transform.rotation = quaternion; 
@@ -152,13 +151,9 @@ public class SummonAction : IAction
         tokenMovement.MoveTransform(prs, 1f, false, () => 
         {
             taskCompletion.TrySetResult();
-            Debug.Log("taskComplete"); 
         });
 
-        Debug.Log("waiting for task");
         await taskCompletion.Task;
-
-        Debug.Log("try enter placing"); 
         await Transition(SummonState.Placing);
     }
     async UniTask Placing()

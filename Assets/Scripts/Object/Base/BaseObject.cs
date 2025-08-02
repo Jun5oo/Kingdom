@@ -18,6 +18,6 @@ public abstract class BaseObject : MonoBehaviour
     public virtual Race Race { get { return cardData.Race; } }
     public virtual List<ActionType> Actions { get { return cardData.Actions; } }
 
-    public abstract int OwnerID { get; } 
+    public abstract int OwnerID { get; }
 }
 

@@ -19,7 +19,6 @@ MonoBehaviour:
   actions: 000000000100000002000000
   cp: 4
   movement: 1
-  race: 1
   isKing: 0
   moveRange:
   - {x: 1, y: 0}
@@ -35,3 +34,4 @@ MonoBehaviour:
   - {x: 0, y: 2}
   - {x: 2, y: 0}
   - {x: -2, y: 0}
+  passives: 

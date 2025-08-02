@@ -17,6 +17,7 @@ public class TurnSelection : IGameState
 
     public async UniTask Enter()
     {
+        Debug.Log("Turn Selection Phase"); 
         PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
         UIManager uiManager = ServiceLocator.Get<UIManager>();
 

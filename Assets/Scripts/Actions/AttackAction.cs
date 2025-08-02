@@ -17,6 +17,7 @@ public class AttackAction : IAction
     GridManager gridManager;
     TokenManager tokenManager;
     DamageManager damageManager;
+    EventQueue eventQueue; 
 
     Token token;
     Token target;
@@ -41,6 +42,8 @@ public class AttackAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>(); 
         this.damageManager = ServiceLocator.Get<DamageManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
+        this.eventQueue = ServiceLocator.Get<EventQueue>();
+
         this.token = token;
         this.performer = performer;
 
@@ -84,7 +87,7 @@ public class AttackAction : IAction
 
         if(!target.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            Debug.Log("공격할 수 없는 대상입니다! (Non-IDamageable)");
+            Debug.Log("공격할 수 없는 대상입니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
@@ -112,11 +115,11 @@ public class AttackAction : IAction
             case AttackState.Prepare:
                 await Prepare(); 
                 break;
-            case AttackState.Animation:
+            case AttackState.Attack:
                 await Attack(); 
                 break;
             case AttackState.Placing:
-                await Placing(); 
+                Placing(); 
                 break;
             case AttackState.Done:
                 Done(); 
@@ -127,47 +130,88 @@ public class AttackAction : IAction
     async UniTask Prepare()
     {
         Exit();
-        await Transition(AttackState.Animation); 
-    }
-    
-    async UniTask Attack()
-    {
-        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition); 
+
+        // EventQueue에 데미지 계산 순서를 넣기. 
+
+        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition);
 
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
         PRS prs = tokenMovement.PRS;
 
+        int damage = token.CP;
         int counterDamage = target.CP;
 
-        var taskComplete = new UniTaskCompletionSource(); 
-
-        tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+        // 공격 애니메이션 
+        eventQueue.Enqueue(async () =>
         {
-            damageManager.ProcessCombat(token, target); 
-        },
-        onCompleteCallback: () =>
-        {
-            damageManager.TryProcessCounterAttack(target, token, counterDamage);
-            damageManager.TryDestroyToken(token);
-            damageManager.TryDestroyToken(target); 
-            damageManager.CheckForKingDefeat();
+            var hit = new UniTaskCompletionSource();
+            var end = new UniTaskCompletionSource(); 
 
-            taskComplete.TrySetResult(); 
+            tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            {
+                damage = damageManager.ProcessDamage(token, target);
+                hit.TrySetResult();
+            }, onCompleteCallback: () =>
+            {
+                end.TrySetResult(); 
+            });
+
+            await hit.Task; 
+            await end.Task; 
+        });
+        // 반격 데미지 계산 
+        eventQueue.Enqueue(() =>
+        {
+            counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
+            return UniTask.CompletedTask; 
+        });
+        // 왕에게의 간접 데미지 계산 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.ProcessKingDamage(token, counterDamage);
+            damageManager.ProcessKingDamage(target, damage);
+            return UniTask.CompletedTask;
         });
 
-        await taskComplete.Task;
+        // 왕의 HP 확인 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.IsKingDefeated();
+            return UniTask.CompletedTask; 
+        });
+
+        eventQueue.Enqueue(async () =>
+        {
+            if(target.TryGetComponent<IDestructible>(out IDestructible destructibleTarget))
+            {
+                if (target.IsDead)
+                    await damageManager.ProcessUnitDeath(token, target); 
+            }
+
+            if (token.TryGetComponent<IDestructible>(out IDestructible destructibleAttacker))
+            {
+                if (token.IsDead)
+                    await damageManager.ProcessUnitDeath(target, token); 
+            }
+        }); 
+
+        await Transition(AttackState.Attack); 
+    }
+    
+    async UniTask Attack()
+    {
+        await eventQueue.ExecuteAllAsync(); 
         await Transition(AttackState.Placing);
     }
 
     async UniTask Placing()
     {
-        Debug.Log("Done"); 
-        await Transition(AttackState.Done); 
+        await Transition(AttackState.Done);
     }
 
     void Done()
     {
-        OnActionComplete?.Invoke(); 
+        OnActionComplete?.Invoke();
     }
 
     public bool IsValid()

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IAction
 {
-    // 행동 인터페이스 
+    // 오브젝트 행동 인터페이스 
     public ActionType ActionType { get; }
     public HighlightLayer HighlightLayer { get; }
     public HighlightType HighlightType { get; }

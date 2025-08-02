@@ -15,6 +15,16 @@ MonoBehaviour:
   m_GroupName: Prefab
   m_GUID: 5a4d9cd2588f838488cc6a4516352dd9
   m_SerializeEntries:
+  - m_GUID: 414cf8f478c49464e95a6853df65cb60
+    m_Address: cardPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 665ba653c305b4a4294e646b7171e7f4
+    m_Address: tokenPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 90dbc966eebcc184581ba055559674e3
     m_Address: actionPrefab
     m_ReadOnly: 0
@@ -22,6 +32,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: da4e982871e1a564dae16947f4e4fab5
     m_Address: damagePrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f10e4e9f1e657bc42861aa1c6a8a0f34
+    m_Address: divineShieldPrefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

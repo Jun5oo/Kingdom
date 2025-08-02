@@ -26,8 +26,6 @@ public class UnitCard : Card
 
         this.currentCP = CP;
 
-        Debug.Log($"[UnitCard] Init called with data: {unitCardData?.Name}");
-
         interaction.Init(this);
         movement.Init();
     }

@@ -15,6 +15,7 @@ public class KingPlacement : IGameState
     }
     public async UniTask Enter()
     {
+        Debug.Log("King Placement Phase"); 
         PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
         UIManager uiManager = ServiceLocator.Get<UIManager>();
         TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
@@ -68,8 +69,8 @@ public class KingPlacement : IGameState
 
         actionSystem.Enter(summon);
 
-        await UniTask.WaitUntil(() => done); 
-
+        await UniTask.WaitUntil(() => done);
+        Debug.Log($"{playerID}: KingPlacement Complete"); 
         summon.OnActionComplete -= completeCallback;
     }
 }

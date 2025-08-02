@@ -3,7 +3,8 @@ public enum ActionType
     Summon, 
     Move, 
     Attack,
-    Resurrection
+    Resurrection, 
+    DivineShield
 }
 
 public enum ActionPerformer
@@ -32,7 +33,7 @@ public enum MoveState
 public enum AttackState
 {
     Prepare,
-    Animation,
+    Attack,
     Placing,
     Done
 }

@@ -33,7 +33,7 @@ public class CardInteraction : BaseInteraction
     public override void OnHover()
     {
         if (!IsHoverable())
-            return; 
+            return;
 
         Vector3 targetPosition = originPos + hoverOffset;
         Vector3 targetScale = hoverScale;
@@ -64,8 +64,6 @@ public class CardInteraction : BaseInteraction
             currentState = InteractionState.Selected; 
             OnSelectionComplete(); 
         });
-
-        Debug.Log(currentState); 
     }
     public override void OnDeselected()
     {

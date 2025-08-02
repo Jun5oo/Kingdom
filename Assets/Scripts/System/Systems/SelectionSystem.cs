@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
 public class SelectionSystem : MonoBehaviour, IGameSystem
 {
@@ -9,16 +8,23 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
     SelectionResolver resolver;
     SelectionInputHandler handler;
 
+    // Preview Displayer에 전달 
     public Action<BaseObject> onSelected;
+    // ActionDisplayer에 전달 
     public Action<BaseObject> onSelectedComplete;
     public Action onDeselected;
+
+    bool isSelectionLocked; 
+
+    void Awake()
+    {
+        DisableSystem();
+    }
 
     public void Init()
     {
         this.resolver = new SelectionResolver();
         this.handler = new SelectionInputHandler(resolver, TrySelect);
-        
-        DisableSystem(); 
 
         currentSelectable = null;
     }
@@ -29,6 +35,9 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
     public void TrySelect(ISelectable selectable)
     {
+        if (isSelectionLocked)
+            return; 
+
         if (selectable == currentSelectable)
             return;
 
@@ -47,16 +56,25 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
         if (selectable == null)
             return;
 
+        isSelectionLocked = true; 
+
         onSelected?.Invoke(selectable.BaseObject); 
 
         currentSelectable = selectable;
-        currentSelectable.OnSelected();
-        
+
         currentSelectable.OnSelectedComplete -= OnSelectedComplete;
-        currentSelectable.OnSelectedComplete += OnSelectedComplete; 
+        currentSelectable.OnSelectedComplete += OnSelectedComplete;
+        
+        currentSelectable.OnSelected();
     }
+
     public void OnSelectedComplete()
     {
+        if (currentSelectable == null)
+            return;
+
+        isSelectionLocked = false; 
+
         BaseObject baseObject = currentSelectable.BaseObject; 
 
         if (baseObject == null)
@@ -75,9 +93,19 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
         // currentSelectable이 null인 경우도 생각
         currentSelectable?.OnDeselected();
         currentSelectable = null;
+
+        isSelectionLocked = false; 
     }
 
-    public void EnableSystem() => enabled = true; 
-    public void DisableSystem() => enabled = false;
+    public void EnableSystem()
+    {
+        enabled = true;
+        isSelectionLocked = false; 
+    }
+    public void DisableSystem()
+    {
+        enabled = false;
+        isSelectionLocked = true; 
+    }
 
 }

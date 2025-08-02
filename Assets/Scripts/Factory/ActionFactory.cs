@@ -11,10 +11,6 @@ public class ActionFactory
             case ActionType.Summon:
                 if (baseObject is UnitCard card)
                     action = new SummonAction(card, performer);
-                else
-                {
-                    Debug.LogError($"[ActionFactory] Tried to create SummonAction for {baseObject.GetType()}, but it's not a UnitCard.");
-                }
                 break;
             case ActionType.Move:
                 if(baseObject is Token moveableToken)
@@ -25,10 +21,17 @@ public class ActionFactory
                     action = new AttackAction(attackableToken, performer); 
                 break;
             case ActionType.Resurrection: 
-                if(baseObject is Token kingToken)
+                if(baseObject is Token undeadKing)
                 {
-                    if (kingToken.IsKing)
-                        action = new Resurrection(kingToken, performer);
+                    if (undeadKing.IsKing)
+                        action = new ResurrectionAction(undeadKing, performer);
+                }
+                break;
+            case ActionType.DivineShield:
+                if(baseObject is Token celestialKing)
+                {
+                    if (celestialKing.IsKing)
+                        action = new DivineShieldAction(celestialKing, performer); 
                 }
                 break; 
         }

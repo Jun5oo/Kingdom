@@ -4,8 +4,6 @@ public class TokenInteraction : BaseInteraction
 {
     [SerializeField] TokenMovement movement;
 
-    float selectOffsetY = 0.5f; 
-
     public override void Init(BaseObject baseObject)
     {
         base.Init(baseObject); 
@@ -40,29 +38,17 @@ public class TokenInteraction : BaseInteraction
         if (!IsSelectable())
             return;
 
-        Vector3 position = originPos + (Vector3.up * selectOffsetY); 
-        Quaternion rotation = originRotation;
-        Vector3 scale = originScale;
+        currentState = InteractionState.Selected;
+        OnSelectionComplete();
 
-        movement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
-        {
-            currentState = InteractionState.Selected;
-            OnSelectionComplete(); 
-        }); 
     }
     public override void OnDeselected()
     {
         if (currentState != InteractionState.Selected)
             return;
 
-        Vector3 position = originPos;
-        Quaternion rotation = originRotation;
-        Vector3 scale = originScale;
+        currentState = InteractionState.Idle;
 
-        movement.MoveTransform(new PRS(position, rotation, scale), 0.2f, true, () =>
-        {
-            currentState = InteractionState.Idle;
-        });
     }
     public override void OnUpdatePRS()
     {

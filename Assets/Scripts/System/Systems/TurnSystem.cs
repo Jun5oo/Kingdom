@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using UnityEngine; 
 
 public enum TurnState
 {
@@ -24,8 +25,10 @@ public class TurnSystem : IGameSystem
     int[] playerID;
     int currentPlayerID;
 
-    public Action OnTurnStarted; 
-    public Action OnTurnEnded;
+    public Action OnPlayerTurnStarted;
+    public Action OnOpponentTurnStarted; 
+    public Action OnPlayerTurnEnded;
+    public Action OnOpponentTurnEnded;
 
     public void Init()
     {
@@ -42,11 +45,10 @@ public class TurnSystem : IGameSystem
         this.playerID = playerID;
         currentPlayerID = playerID[0];
 
-        actionSystem.OnActionDepleted -= Wait;  
-        actionSystem.OnActionDepleted += Wait;
     }
     public async UniTask BeginTurnLoop()
     {
+        Debug.Log("Start TurnLoop!"); 
         await StartTurn(); 
     }
     public async UniTask StartTurn()
@@ -60,14 +62,14 @@ public class TurnSystem : IGameSystem
             uiManager.OnNotification("My Turn!", () => 
             { 
                 currentTurnState = TurnState.PlayerTurn;
-                OnTurnStarted?.Invoke(); 
+                OnPlayerTurnStarted?.Invoke(); 
             });
 
         else
             uiManager.OnNotification("Enemy Turn!", () => 
             { 
                 currentTurnState = TurnState.EnemyTurn;
-                OnTurnStarted?.Invoke(); 
+                OnOpponentTurnStarted?.Invoke(); 
             });
 
         Card card = await drawManager.Draw(currentPlayerID);
@@ -78,8 +80,12 @@ public class TurnSystem : IGameSystem
         if (TurnState == TurnState.Unable)
             return;
 
+        if (currentTurnState == TurnState.PlayerTurn)
+            OnPlayerTurnEnded?.Invoke();
+        else
+            OnOpponentTurnEnded?.Invoke(); 
+
         currentTurnState = TurnState.EndTurn;
-        OnTurnEnded?.Invoke(); 
 
         foreach(var _playerID in playerID) 
         {
@@ -92,25 +98,13 @@ public class TurnSystem : IGameSystem
 
         await StartTurn(); 
     }
-    public void Wait()
-    {
-        currentTurnState = TurnState.Waiting; 
-    }
-    public int GetCurrentTurnPlayerID()
-    {
-        return currentPlayerID;
-    }
-    public bool IsMyTurn()
-    {
-        return currentPlayerID == playerManager.Local.PlayerID;
-    }
-
+    public void Wait() => currentTurnState = TurnState.Waiting;
+    public int GetCurrentTurnPlayerID() => currentPlayerID;
+    public bool IsMyTurn() => currentPlayerID == playerManager.Local.PlayerID; 
     public void EnableSystem()
     {
+        Wait(); 
         BeginTurnLoop(); 
     }
-    public void DisableSystem()
-    {
-        currentTurnState = TurnState.Unable; 
-    }
+    public void DisableSystem() => currentTurnState = TurnState.Unable; 
 }

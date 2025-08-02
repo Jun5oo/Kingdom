@@ -8,14 +8,11 @@ public class TokenView : BaseView
     [SerializeField] TextMeshPro movement;
     [SerializeField] Transform anchorPosition;
 
-    VisualTexture textures; 
     public override Transform Anchor {  get { return anchorPosition; } }
 
     public void Init(VisualTexture textures, int cp, int movement)
     {
-        this.textures = textures;
-
-        SetTokenArt(textures.Art); 
+        SetTokenView(textures.Art, textures.Frame, textures.Mask); 
         
         this.cp.text = cp.ToString();
         this.movement.text = movement.ToString();
@@ -31,9 +28,11 @@ public class TokenView : BaseView
         this.movement.text = movement.ToString(); 
     }
 
-    public void SetTokenArt(Texture2D texture)
+    public void SetTokenView(Texture2D art, Texture2D frame, Texture2D artMask)
     {
         Material tokenMaterial = mr.GetComponent<Renderer>().material;
-        tokenMaterial.SetTexture("_TokenArt", texture);
+        tokenMaterial.SetTexture("_TokenArt", art);
+        tokenMaterial.SetTexture("_TokenFrame", frame);
+        tokenMaterial.SetTexture("_TokenFrameMask", artMask); 
     }
 }

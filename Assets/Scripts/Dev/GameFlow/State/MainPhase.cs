@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-
+using UnityEngine; 
 public class MainPhase : IGameState
 {
     // MainPhase 개시. 필요한 System들을 Enabled 시키고 첫 드로우를 실행. 
@@ -16,6 +16,8 @@ public class MainPhase : IGameState
 
     public async UniTask Enter()
     {
+        Debug.Log("Initial Draw Phase"); 
+
         await Draw(stateMachine.firstID);
         await Draw(stateMachine.secondID);
 

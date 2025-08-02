@@ -1,15 +1,9 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TokenState
-{
-    Alive = 0, 
-    Graveyard = 1, 
-    Dead = 2
-}
-
-public class Token : BaseObject, IDamageable
+public class Token : BaseObject, IDamageable, IDestructible, IBuffable 
 {
     [Header("RunTime Data")]
     [SerializeField] int currentCP;
@@ -19,8 +13,10 @@ public class Token : BaseObject, IDamageable
     [SerializeField] TokenInteraction interaction;
     [SerializeField] TokenView view;
 
-    TokenState tokenState;
-    IDeathBehaviour deathBehaviour;
+    List<IBuff> buffs;
+    List<IPassive> passives;
+
+    bool isDead; 
 
     public UnitCardData UnitData { get { return Data as UnitCardData; } }
     public int CP { get { return currentCP; } }
@@ -31,9 +27,6 @@ public class Token : BaseObject, IDamageable
 
     public List<Vector2Int> MoveableRange { get { return UnitData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return UnitData.AttackRange; } }
-    
-    public TokenState TokenState {  get { return tokenState; } }
-    public IDeathBehaviour DeathBehaviour { get {  return deathBehaviour; } }
 
     public void Init(UnitCardData unitData, int playerID)
     {
@@ -42,67 +35,95 @@ public class Token : BaseObject, IDamageable
         this.currentCP = MAXCP;
         this.ownerID = playerID;
 
-        this.tokenState = TokenState.Alive; 
-
         movement.Init();
         interaction.Init(this); 
 
-        switch (Race)
+        buffs = new List<IBuff>();
+        passives = new List<IPassive>();
+
+        PassiveFactory passiveFactory = ServiceLocator.Get<PassiveFactory>(); 
+
+        foreach(var passive in UnitData.Passive)
         {
-            case Race.Undead:
-                deathBehaviour = new UndeadDeathBehaviour();
-                break;
-            default:
-                deathBehaviour = new DefaultDeathBehaviour();
-                break; 
+            IPassive created = passiveFactory.CreatePassive(passive, this);
+            passives.Add(created);
+            created.Deactivate(); 
+            created.Activate(); 
         }
-    }
-    public bool IsAllies(int playerID)
-    {
-        return OwnerID == playerID; 
+
+        isDead = false; 
     }
 
-    public Action<int> OnCPUpdate; 
-    public void TakeDamage(int damage, bool isDirect = false)
+    public Action<int> OnCPUpdate;
+
+    #region IDamageable 
+    public bool IsAllies(int playerID) => OwnerID == playerID;
+    public int TakeDamage(int damage, bool isDirect = false)
     {
         if (isDirect && IsKing)
-            damage *= 2; 
+            damage *= 2;
 
-        currentCP -= damage;
-        view.OnUpdateCP(currentCP);
-        OnCPUpdate?.Invoke(currentCP);
-    }
-    public bool TryEnterGraveyard()
-    {
-        if (TokenState != TokenState.Alive)
-            return false; 
+        List<IBuff> removeList = new List<IBuff>(); 
 
-        if (Race != Race.Undead || IsKing)
+        foreach(var buff in buffs)
         {
-            tokenState = TokenState.Dead; 
-            return false;
+            if (buff is IDamageModifierBuff dmgModifier && !buff.IsExpired()) 
+                damage = dmgModifier.ModifyDamage(damage);
+
+            if (buff.IsExpired())
+                removeList.Add(buff); 
         }
 
-        tokenState = TokenState.Graveyard;
+        foreach(var buff in removeList)
+            RemoveBuff(buff); 
+
+        currentCP -= damage;
+        OnCPUpdate?.Invoke(currentCP);
+
+        if (currentCP <= 0)
+            isDead = true; 
+
+        view.OnUpdateCP(currentCP);
+
+        return damage; 
+    }
+    #endregion
+
+    #region IDestructible 
+    public void Die()
+    {
+        Debug.Log($"{this} dead"); 
+    }
+    public bool IsDead => isDead; 
+    #endregion
+
+    #region IBuffable
+    public void AddBuff(IBuff buff)
+    {
+        if (!buff.IsStackable() && buffs.Contains(buff))
+            return; 
+        buffs.Add(buff); 
+    }
+    public void RemoveBuff(IBuff buff) => buffs.Remove(buff);
+    public bool CanApply(IBuff buff)
+    {
+        if (!buff.IsStackable() && buffs.Contains(buff))
+            return false;
         return true; 
     }
-    public void SetTokenStatus(int cp, int movement, List<Vector2Int> moveRange, List<Vector2Int> attackRange)
-    {
-        this.currentCP = cp;
 
-        view?.OnUpdateCP(currentCP);
-        view?.OnUpdateMovement(movement); 
-    }
-    public void Revive()
-    {
-        if (TokenState != TokenState.Graveyard)
-            return;
+    #endregion
 
-        tokenState = TokenState.Alive;
-        SetTokenStatus(MAXCP, Movement, MoveableRange, AttackRange);
-    }
     void OnDestroy()
     {
-        OnCPUpdate = null; 
+        foreach(var buff in buffs)
+            RemoveBuff(buff); 
+
+        buffs.Clear(); 
+
+        foreach(var passive in passives)
+            passive.Deactivate(); 
+
+        OnCPUpdate = null;
     }
 }

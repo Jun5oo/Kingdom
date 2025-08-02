@@ -3,10 +3,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PoolManager
+public class PoolManager : MonoBehaviour
 {
     Dictionary<Type, PoolData> poolDictionary;
-    
+
+    [SerializeField] Canvas canvas; 
+
     PrefabLoader loader; 
 
     GameObject actionPrefab; // Get object from addressable 
@@ -15,11 +17,6 @@ public class PoolManager
     GameObject actionPool;
     GameObject damagePool; 
 
-    public PoolManager()
-    {
-        poolDictionary = new Dictionary<Type, PoolData>();
-    }
-
     public async UniTask InitAsync()
     {
         loader = ServiceLocator.Get<PrefabLoader>();
@@ -27,8 +24,13 @@ public class PoolManager
         actionPrefab = await loader.LoadPrefabAsync<ActionPopup>();
         damagePrefab = await loader.LoadPrefabAsync<DamagePopup>();
 
-        actionPool = new GameObject("ActionPool");
-        damagePool = new GameObject("DamagePool");
+        actionPool = new GameObject("ActionPool", typeof(RectTransform));
+        damagePool = new GameObject("DamagePool", typeof(RectTransform));
+
+        actionPool.transform.SetParent(canvas.transform, true);
+        damagePool.transform.SetParent(canvas.transform, true); 
+
+        poolDictionary = new Dictionary<Type, PoolData>();
 
         RegisterPool<ActionPopup>(actionPrefab, actionPool.transform);
         RegisterPool<DamagePopup>(damagePrefab, damagePool.transform);
@@ -66,6 +68,7 @@ public class PoolManager
         {
             component.gameObject.SetActive(false);
             poolInfo.pool.Enqueue(component.gameObject);
+            component.transform.SetParent(poolInfo.parent, true);
         }
 
         else
