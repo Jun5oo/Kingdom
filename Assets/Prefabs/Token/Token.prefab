@@ -571,6 +571,7 @@ GameObject:
   - component: {fileID: 8842170041966107595}
   - component: {fileID: 5961579675541900130}
   - component: {fileID: 6569040969496006808}
+  - component: {fileID: 2969334695364115470}
   m_Layer: 0
   m_Name: Token
   m_TagString: Untagged
@@ -638,18 +639,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebcceecbf24f804398e4047629df271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  swordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
-  swordSpawnPoint: {fileID: 4933813663905246059}
-  swordSwingDuration: 1
-  bowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
-  arrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
-  bowSpawnPoint: {fileID: 4933813663905246059}
-  arrowSpawnPoint: {fileID: 4933813663905246059}
-  bowDrawDuration: 1
-  arrowFlightDuration: 0.5
-  enableTestMode: 1
-  testTargetPosition: {x: 2, y: 0, z: 2}
-  testRangedAttack: 0
+  attackAnimationController: {fileID: 2969334695364115470}
 --- !u!114 &6569040969496006808
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -666,3 +656,27 @@ MonoBehaviour:
   cp: {fileID: 4441986974082147149}
   movement: {fileID: 8042113581738872009}
   anchorPosition: {fileID: 828061612229363646}
+--- !u!114 &2969334695364115470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8454641024595709411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c513f18f823d8c647b7c0daeb848f201, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
+  swordSpawnPoint: {fileID: 4933813663905246059}
+  swordSwingDuration: 0.5
+  bowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
+  arrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
+  bowSpawnPoint: {fileID: 4933813663905246059}
+  arrowSpawnPoint: {fileID: 4933813663905246059}
+  bowDrawDuration: 0.5
+  arrowFlightDuration: 0.5
+  enableTestMode: 1
+  testTargetPosition: {x: 2, y: 0, z: 2}
+  testRangedAttack: 0
