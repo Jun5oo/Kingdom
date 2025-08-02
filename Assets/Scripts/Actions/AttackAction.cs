@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,7 @@ public class AttackAction : IAction
     GridManager gridManager;
     TokenManager tokenManager;
     DamageManager damageManager;
+    EventQueue eventQueue; 
 
     Token token;
     Token target;
@@ -40,10 +42,12 @@ public class AttackAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>(); 
         this.damageManager = ServiceLocator.Get<DamageManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
+        this.eventQueue = ServiceLocator.Get<EventQueue>();
+
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.CurrentAttackRange;
+        attackablePositions = token.AttackRange;
 
         currentCost = 1; 
     }
@@ -68,7 +72,7 @@ public class AttackAction : IAction
 
         }, HighlightType.AttackHighlight, HighlightLayer.Action);
     }
-    public void Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         var target = tokenManager.GetTokenFrom(targetPosition);
         this.target = target;
@@ -83,19 +87,19 @@ public class AttackAction : IAction
 
         if(!target.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            Debug.Log("공격할 수 없는 대상입니다! (Non-IDamageable)");
+            Debug.Log("공격할 수 없는 대상입니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
 
-        if (damageable.IsAllies(token.OwnerPlayerID))
+        if (damageable.IsAllies(token.OwnerID))
         {
             Debug.Log("아군을 공격할 수 없습니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
 
-        Transition(AttackState.Prepare); 
+        await Transition(AttackState.Prepare); 
     }
 
     public void Exit()
@@ -104,15 +108,15 @@ public class AttackAction : IAction
         gridManager?.UnhighlightGridCells(HighlightLayer.Hover); 
     }
 
-    void Transition(AttackState state)
+    async UniTask Transition(AttackState state)
     {
         switch (state)
         {
             case AttackState.Prepare:
-                Prepare(); 
+                await Prepare(); 
                 break;
-            case AttackState.Animation:
-                Attack(); 
+            case AttackState.Attack:
+                await Attack(); 
                 break;
             case AttackState.Placing:
                 Placing(); 
@@ -123,44 +127,91 @@ public class AttackAction : IAction
         }
     }
 
-    void Prepare()
+    async UniTask Prepare()
     {
         Exit();
-        Transition(AttackState.Animation); 
-    }
-    
-    void Attack()
-    {
-        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition); 
+
+        // EventQueue에 데미지 계산 순서를 넣기. 
+
+        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition);
 
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
         PRS prs = tokenMovement.PRS;
 
-        int counterDamage = target.CP; 
+        int damage = token.CP;
+        int counterDamage = target.CP;
 
-        tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+        // 공격 애니메이션 
+        eventQueue.Enqueue(async () =>
         {
-            damageManager.ProcessCombat(token, target); 
-        },
-        onCompleteCallback: () =>
-        {
-            damageManager.TryProcessCounterAttack(target, token, counterDamage);
-            damageManager.TryDestroyToken(token);
-            damageManager.TryDestroyToken(target); 
-            damageManager.CheckForKingDefeat(); 
-            Transition(AttackState.Placing); 
+            var hit = new UniTaskCompletionSource();
+            var end = new UniTaskCompletionSource(); 
+
+            tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            {
+                damage = damageManager.ProcessDamage(token, target);
+                hit.TrySetResult();
+            }, onCompleteCallback: () =>
+            {
+                end.TrySetResult(); 
+            });
+
+            await hit.Task; 
+            await end.Task; 
         });
+        // 반격 데미지 계산 
+        eventQueue.Enqueue(() =>
+        {
+            counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
+            return UniTask.CompletedTask; 
+        });
+        // 왕에게의 간접 데미지 계산 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.ProcessKingDamage(token, counterDamage);
+            damageManager.ProcessKingDamage(target, damage);
+            return UniTask.CompletedTask;
+        });
+
+        // 왕의 HP 확인 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.IsKingDefeated();
+            return UniTask.CompletedTask; 
+        });
+
+        eventQueue.Enqueue(async () =>
+        {
+            if(target.TryGetComponent<IDestructible>(out IDestructible destructibleTarget))
+            {
+                if (target.IsDead)
+                    await damageManager.ProcessUnitDeath(token, target); 
+            }
+
+            if (token.TryGetComponent<IDestructible>(out IDestructible destructibleAttacker))
+            {
+                if (token.IsDead)
+                    await damageManager.ProcessUnitDeath(target, token); 
+            }
+        }); 
+
+        await Transition(AttackState.Attack); 
+    }
+    
+    async UniTask Attack()
+    {
+        await eventQueue.ExecuteAllAsync(); 
+        await Transition(AttackState.Placing);
     }
 
-    void Placing()
+    async UniTask Placing()
     {
-        Debug.Log("Done"); 
-        Transition(AttackState.Done); 
+        await Transition(AttackState.Done);
     }
 
     void Done()
     {
-        OnActionComplete?.Invoke(); 
+        OnActionComplete?.Invoke();
     }
 
     public bool IsValid()

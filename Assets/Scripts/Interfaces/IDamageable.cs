@@ -3,9 +3,8 @@ using UnityEngine;
 
 public interface IDamageable
 {
-    public int CP { get; }
-    public List<Vector2Int> CurrentAttackRange { get; }
-    public void TakeDamage(int damage, bool isDirect = false);
+    // 데미지를 받을 수 있는 오브젝트 인터페이스 
+    public int TakeDamage(int damage, bool isDirect = false);
     public bool IsAllies(int playerID); 
 }
 

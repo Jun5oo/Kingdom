@@ -1,6 +1,6 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 
 public interface IGameState 
 {
-    public IEnumerator Enter(); 
+    public UniTask Enter(); 
 }

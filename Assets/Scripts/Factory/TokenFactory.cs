@@ -1,28 +1,49 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class TokenFactory
 {
     GameObject tokenPrefab;
-    GameObject kingTokenPrefab;
-    
-    public void Init(GameObject tokenPrefab, GameObject kingTokenPrefab)
+
+    TokenTextureLoader textureLoader;
+    PrefabLoader prefabLoader; 
+
+    public async UniTask Init()
     {
-        this.tokenPrefab = tokenPrefab;
-        this.kingTokenPrefab = kingTokenPrefab;
+        textureLoader = ServiceLocator.Get<TokenTextureLoader>();
+        prefabLoader = ServiceLocator.Get<PrefabLoader>();
+
+        tokenPrefab = await prefabLoader.LoadPrefabAsync<Token>(); 
     }
-
-    public Token CreateToken(UnitCardData unitData, int playerID)
+    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID)
     {
-        GameObject prefab = tokenPrefab;
+        GameObject prefab = tokenPrefab; 
+        prefab.SetActive(false); 
 
-        if (unitData.IsKing)
-            prefab = kingTokenPrefab;
+        if(prefab == null)
+            Debug.Log("No prefab found"); 
 
-        GameObject tokenObject = GameObject.Instantiate(prefab); 
-        Token token = tokenObject.GetComponent<Token>();
+        GameObject tokenObject = GameObject.Instantiate(prefab);
+
+        if (tokenObject == null)
+            Debug.Log("Cannot Instantiate TokenPrefab");
+
+        if (tokenObject.TryGetComponent<Token>(out Token token))
+            token.Init(unitData, playerID);
+
+        if (token == null)
+            Debug.Log("Cannot found Token Component in TokenPrefab"); 
+
+        VisualTexture textures = await textureLoader.LoadAllTextures(unitData);
+        Debug.Log("TokenTextureLoad Complete");
         
-        token.Init(unitData, playerID); 
-        
+        if (token.TryGetComponent<TokenView>(out TokenView tokenView))
+            tokenView.Init(textures, unitData.CP, unitData.Movement);
+
+        if (tokenView == null)
+            Debug.Log("Cannot found TokenView Component in TokenPrefab");
+
+        tokenObject.SetActive(true); 
         return token; 
     }
 }

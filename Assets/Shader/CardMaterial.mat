@@ -28,8 +28,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 3ecf3091a59818b4da77a6b57a830759, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _BackTexture:
+        m_Texture: {fileID: 2800000, guid: 3ecf3091a59818b4da77a6b57a830759, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BackgroundTexture:
-        m_Texture: {fileID: 2800000, guid: 000ae604a22786049a91bd96d1710629, type: 3}
+        m_Texture: {fileID: 2800000, guid: 9a651bc7d58db0f41ae5044aad585d27, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BaseMap:
@@ -41,11 +45,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CardArtTexture:
-        m_Texture: {fileID: 2800000, guid: 0043c459b54fb464c955dc23f3a951a2, type: 3}
+        m_Texture: {fileID: 2800000, guid: dfc7e9fa96d925645ad17950da959492, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CardFrameTexture:
-        m_Texture: {fileID: 2800000, guid: fe1a1e6a154a8174982470415b3f543f, type: 3}
+        m_Texture: {fileID: 2800000, guid: 57c6c33b5c423994c94c0905c1145141, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -69,7 +73,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskTexture:
-        m_Texture: {fileID: 2800000, guid: ef571718b9a718a40a64d2a628705c13, type: 3}
+        m_Texture: {fileID: 2800000, guid: bfff821aaddcbbd4cab1aed52b4a3ec9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

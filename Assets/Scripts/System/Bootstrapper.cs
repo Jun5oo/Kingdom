@@ -1,56 +1,82 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 [DefaultExecutionOrder(-1)]
 public class Bootstrapper : MonoBehaviour
 {
-    [SerializeField] GameFlowManager gameFlowManager; 
+    // 게임에 필요한 매니저, 시스템, 팩토리, 로더 클래스들을 생성하고 ServiceLocator에 등록하는 가장 먼저 실행되어야 하는 클래스
+    // ExecutionOrder를 통해서 가장 먼저 실행 
+
     [SerializeField] UIManager uiManager;
     [SerializeField] GridManager gridManager;
-    [SerializeField] PlayerHandManager handManager;
+    [SerializeField] HandManager handManager;
     [SerializeField] HoverSystem hoverSystem;
     [SerializeField] SelectionSystem selectionSystem;
     [SerializeField] ActionSystem actionSystem;
 
+    GameFlowManager gameFlowManager;
     PlayerManager playerManager;
     TokenManager tokenManager;
-    TurnManager turnManager;
+    TurnSystem turnSystem;
     DamageManager damageManager;
+    [SerializeField] PoolManager poolManager;
 
     CardFactory cardFactory;
     TokenFactory tokenFactory;
     ActionFactory actionFactory;
-
-    UIInvoker uiInvoker;
+    PassiveFactory passiveFactory; 
 
     [SerializeField] DeckManager deckManager;
-    DrawManager drawManager; 
+    DrawManager drawManager;
 
-    [SerializeField] GameObject cardPrefab;
-    [SerializeField] GameObject tokenPrefab;
-    [SerializeField] GameObject kingTokenPrefab;
+    CardTextureLoader cardTextureLoader;
+    TokenTextureLoader tokenTextureLoader; 
+    PrefabLoader prefabLoader;
 
+    EventQueue eventQueue;
+    [SerializeField] CardDatabase database; 
 
     void Awake()
     {
+        RegisterServices(); 
+    }
+
+    async void Start()
+    {
+        await Initialization();
+        gameFlowManager.GameStart();
+    }
+
+    public void RegisterServices()
+    {
+        gameFlowManager = new GameFlowManager();
         playerManager = new PlayerManager();
-        turnManager = new TurnManager();
         tokenManager = new TokenManager();
         damageManager = new DamageManager();
-        
-        cardFactory = new CardFactory();
-        actionFactory = new ActionFactory();
-        tokenFactory = new TokenFactory();
-        uiInvoker = new UIInvoker(); 
-        
         drawManager = new DrawManager();
 
+        cardFactory = new CardFactory();
+        tokenFactory = new TokenFactory();
+        actionFactory = new ActionFactory();
+        passiveFactory = new PassiveFactory(); 
+
+        turnSystem = new TurnSystem();
+
+        cardTextureLoader = new CardTextureLoader();
+        tokenTextureLoader = new TokenTextureLoader();
+        prefabLoader = new PrefabLoader();
+
+        eventQueue = new EventQueue(); 
+
         ServiceLocator.Register(playerManager);
-        ServiceLocator.Register(turnManager);
-        ServiceLocator.Register(damageManager); 
-        ServiceLocator.Register(uiManager); 
+        ServiceLocator.Register(damageManager);
+        ServiceLocator.Register(uiManager);
         ServiceLocator.Register(gridManager);
         ServiceLocator.Register(handManager);
         ServiceLocator.Register(tokenManager);
+        ServiceLocator.Register(poolManager);
+
+        ServiceLocator.Register(turnSystem);
         ServiceLocator.Register(hoverSystem);
         ServiceLocator.Register(selectionSystem);
         ServiceLocator.Register(actionSystem);
@@ -58,18 +84,20 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(cardFactory);
         ServiceLocator.Register(tokenFactory);
         ServiceLocator.Register(actionFactory);
-
-        ServiceLocator.Register(uiInvoker);
-
+        ServiceLocator.Register(passiveFactory); 
+        
+        ServiceLocator.Register(drawManager);
         ServiceLocator.Register(deckManager);
-        ServiceLocator.Register(drawManager); 
 
-        Initialization();
+        ServiceLocator.Register(cardTextureLoader);
+        ServiceLocator.Register(tokenTextureLoader);
+        ServiceLocator.Register(prefabLoader);
 
-        gameFlowManager.GameStart(); 
+        ServiceLocator.Register(eventQueue);
+        ServiceLocator.Register(database);
     }
 
-    void Initialization()
+    public async UniTask Initialization()
     {
         playerManager.Init();
         gameFlowManager.Init(); 
@@ -78,19 +106,24 @@ public class Bootstrapper : MonoBehaviour
         actionSystem.Init();
         damageManager.Init();
 
-        cardFactory.Init(cardPrefab);
-        tokenFactory.Init(tokenPrefab, kingTokenPrefab);
+        cardTextureLoader.Init();
+        tokenTextureLoader.Init();
+        
+        await cardFactory.Init();
+        await tokenFactory.Init();
 
         handManager.Init();
-        turnManager.Init();
-
-        uiInvoker.Init();
+        turnSystem.Init();
 
         hoverSystem.Init();
         selectionSystem.Init();
 
         deckManager.Init();
-        drawManager.Init(); 
+        drawManager.Init();
+
+        await poolManager.InitAsync();
+
+        database.Init(); 
     }
 
 }

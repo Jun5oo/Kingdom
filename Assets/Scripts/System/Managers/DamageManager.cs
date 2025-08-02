@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
@@ -5,79 +6,80 @@ public class DamageManager
 {
     PlayerManager playerManager; 
     TokenManager tokenManager;
-    UIManager uiManager;
+    DamageDisplayer displayer;
 
-    public Action<int> OnKingDefeated; 
-     
+    public Action<int> OnKingDefeated;
+
+    // 플레이어의 유닛이 사망했을 때 
+    public Action<int, Token> OnPlayerUnitDead;
+    // 플레이어의 유닛이 유닛을 처치했을 때  
+    public Action<Token, Token> OnPlayerUnitKilledEnemy;
+
     public void Init()
     {
         this.playerManager = ServiceLocator.Get<PlayerManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
-        this.uiManager = ServiceLocator.Get<UIManager>(); 
+        this.displayer = new DamageDisplayer();
     }
 
-    public void ProcessCombat(Token attacker, Token defender)
+    public int ProcessDamage(Token attacker, Token defender)
     {
-        int attackerCP = attacker.CP;
+        int damage = attacker.CP;
 
         if (defender.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            damageable.TakeDamage(attackerCP, true);
-            uiManager.ShowDamagePopup(attackerCP, defender.transform.position);
+            damage = damageable.TakeDamage(damage, true);
+            displayer.Display(damage, defender);
         }
 
-        if (!defender.IsKing)
-            ProcessKingDamage(defender, attackerCP);
+        return damage; 
     }
     public void ProcessKingDamage(Token token, int damage)
     {
-        if(tokenManager.TryGetKingTokenFrom(token.OwnerPlayerID, out Token king)){
-            
+        if (token.IsKing)
+            return; 
+
+        if(tokenManager.TryGetKingTokenFrom(token.OwnerID, out Token king))
+        {
             if(king.TryGetComponent<IDamageable>(out IDamageable damageable))
             {
-                damageable.TakeDamage(damage, false);
-                uiManager.ShowDamagePopup(damage, king.transform.position); 
+                damage = damageable.TakeDamage(damage, false);
+                displayer.Display(damage, king); 
             }
         }
     }
-    public void TryProcessCounterAttack(Token defender, Token attacker, int cp)
+    public int ProcessCounterDamage(Token defender, Token attacker, int defenderCP)
     {
-        if (defender == null)
+        if (!attacker.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            Debug.Log("Defender를 찾을 수 없습니다."); 
-            return;
+            Debug.Log("공격한 유닛은 IDamageable이 아닙니다.");
+            return 0; 
         }
 
-        if (defender.CurrentAttackRange == null || defender.CurrentAttackRange.Count == 0)
+        if (defender.AttackRange == null || defender.AttackRange.Count == 0)
         {
             Debug.Log("이 유닛은 반격이 불가능합니다.");
-            return;
+            return 0; 
         }
 
         Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
         Vector2Int attackerPos = tokenManager.GetGridPositionOfToken((attacker));
 
-        if (!attacker.TryGetComponent<IDamageable>(out IDamageable damageable))
-        {
-            Debug.Log("Attacker는 IDamageable이 아닙니다."); 
-            return;
-        }
 
-        foreach (var position in defender.CurrentAttackRange)
+        foreach (var position in defender.AttackRange)
         {
             if (defenderPos + position == attackerPos)
             {
-                damageable.TakeDamage(cp, false);
-                uiManager.ShowDamagePopup(cp, attacker.transform.position);
+                int damage = damageable.TakeDamage(defenderCP, false);
+                displayer.Display(damage, attacker);
 
-                if (!attacker.IsKing)
-                    ProcessKingDamage(attacker, cp); 
-
-                return; 
+                return damage; 
             }
         }
+
+        return 0; 
     }
-    public void CheckForKingDefeat()
+    public void IsKingDefeated()
     {
         tokenManager.TryGetKingTokenFrom(playerManager.Local.PlayerID, out Token local); 
         tokenManager.TryGetKingTokenFrom(playerManager.Remote.PlayerID, out Token remote);
@@ -94,25 +96,32 @@ public class DamageManager
             return; 
         }
 
-        if(local.CP <= 0 && remote.CP <= 0)
+        if(local.IsDead && remote.IsDead)
         {
+            // 무승부 
             OnKingDefeated?.Invoke(-1);
-            return; 
+            return;
         }
 
-        if (local.CP <= 0)
-            OnKingDefeated?.Invoke(local.OwnerPlayerID);
-        else if (remote.CP <= 0)
-            OnKingDefeated?.Invoke(remote.OwnerPlayerID);
+        if (local.IsDead)
+            OnKingDefeated?.Invoke(local.OwnerID);
+        else if (remote.IsDead)
+            OnKingDefeated?.Invoke(remote.OwnerID);
         else
             return; 
     }
-    public void TryDestroyToken(Token token)
-    {
-        if (token.CP > 0)
-            return;
 
-        IDeathBehaviour deathBehaviour = token.DeathBehaviour;
-        deathBehaviour.OnDeath(token, tokenManager); 
+    public async UniTask ProcessUnitDeath(Token killer, Token victim)
+    {
+        if(killer.OwnerID == victim.OwnerID)
+        {
+            Debug.Log("현재 시스템에서는 같은 팀을 처치할 수 없습니다. 뭔가 문제가 발생했습니다.");
+            return; 
+        }
+
+        OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
+        OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);
+
+        tokenManager.DestroyToken(victim);
     }
 }
