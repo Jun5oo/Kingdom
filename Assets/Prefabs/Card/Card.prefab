@@ -51,9 +51,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentCP: 0
-  cardView: {fileID: 4832598343463769610}
-  cardHover: {fileID: 2077332992406354925}
-  cardMovement: {fileID: 6250172426435667192}
+  view: {fileID: 4832598343463769610}
+  interaction: {fileID: 2077332992406354925}
+  movement: {fileID: 6250172426435667192}
 --- !u!114 &2077332992406354925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,13 +63,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1288629786031619872}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc9ee59fe5445ef41aa7a4f624d4ad8f, type: 3}
+  m_Script: {fileID: 11500000, guid: 5adacf3976b8d0e4db5c94cf055bee54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 2353214916810408593}
+  currentState: 1
   movement: {fileID: 6250172426435667192}
-  card: {fileID: 2353214916810408593}
-  cardMovement: {fileID: 6250172426435667192}
 --- !u!114 &6250172426435667192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,7 +93,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mr: {fileID: 4828136179358386229}
-  anchorUIPosition: {fileID: 5719935437210986111}
+  anchorPosition: {fileID: 5719935437210986111}
 --- !u!65 &7863602967167193028
 BoxCollider:
   m_ObjectHideFlags: 0

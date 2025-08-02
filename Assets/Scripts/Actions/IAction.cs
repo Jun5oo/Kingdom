@@ -1,9 +1,10 @@
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
 public interface IAction
 {
-    // 행동 인터페이스 
+    // 오브젝트 행동 인터페이스 
     public ActionType ActionType { get; }
     public HighlightLayer HighlightLayer { get; }
     public HighlightType HighlightType { get; }
@@ -11,7 +12,7 @@ public interface IAction
 
     public void Enter();
     public void Exit();
-    public void Execute(Vector2Int targetPosition); 
+    public UniTask Execute(Vector2Int targetPosition); 
     public bool IsValid();
 
     public event Action OnActionCanceled;

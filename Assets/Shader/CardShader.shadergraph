@@ -2687,10 +2687,10 @@
     "m_Guid": {
         "m_GuidSerialized": "d45a9ff9-889d-435c-a754-d818a6987949"
     },
-    "m_Name": "Back",
+    "m_Name": "BackTexture",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "Back",
-    "m_DefaultReferenceName": "_Back",
+    "m_RefNameGeneratedByDisplayName": "BackTexture",
+    "m_DefaultReferenceName": "_BackTexture",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
@@ -3305,7 +3305,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Texture2DMaterialSlot",
     "m_ObjectId": "f4e5b90d82eb482eac79a221ccd29b0a",
     "m_Id": 0,
-    "m_DisplayName": "Back",
+    "m_DisplayName": "BackTexture",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",

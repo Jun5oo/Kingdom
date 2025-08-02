@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: CardArt
+  m_EditorClassIdentifier: 
+  m_GroupName: CardArt
+  m_GUID: 8949414f734b8f348bb62a8f84e5085b
+  m_SerializeEntries:
+  - m_GUID: 0043c459b54fb464c955dc23f3a951a2
+    m_Address: card_art_2
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c020d93f5925d64baef7cd2353d6ecb
+    m_Address: card_art_1
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 818a99f8400e79d458a53ed31ffef4cc
+    m_Address: card_art_3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 856da0262f2a76c4ab6b8f0d57940629
+    m_Address: card_art_4
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b0db6eae0fd171d4595aa5adba50d8d9
+    m_Address: card_art_7
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfc7e9fa96d925645ad17950da959492
+    m_Address: card_art_5
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 2b5e7a67e570aa74f86136f1b5ecc269, type: 2}
+    - {fileID: 11400000, guid: 2a4cf20480115844a94d372722596e85, type: 2}

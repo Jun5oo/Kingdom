@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,7 @@ public class AttackAction : IAction
     GridManager gridManager;
     TokenManager tokenManager;
     DamageManager damageManager;
+    EventQueue eventQueue; 
 
     Token token;
     Token target;
@@ -40,10 +42,12 @@ public class AttackAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>(); 
         this.damageManager = ServiceLocator.Get<DamageManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
+        this.eventQueue = ServiceLocator.Get<EventQueue>();
+
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.CurrentAttackRange;
+        attackablePositions = token.AttackRange;
 
         currentCost = 1; 
     }
@@ -68,7 +72,7 @@ public class AttackAction : IAction
 
         }, HighlightType.AttackHighlight, HighlightLayer.Action);
     }
-    public void Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         var target = tokenManager.GetTokenFrom(targetPosition);
         this.target = target;
@@ -83,19 +87,19 @@ public class AttackAction : IAction
 
         if(!target.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
-            Debug.Log("공격할 수 없는 대상입니다! (Non-IDamageable)");
+            Debug.Log("공격할 수 없는 대상입니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
 
-        if (damageable.IsAllies(token.OwnerPlayerID))
+        if (damageable.IsAllies(token.OwnerID))
         {
             Debug.Log("아군을 공격할 수 없습니다!");
             OnActionCanceled?.Invoke();
             return; 
         }
 
-        Transition(AttackState.Prepare); 
+        await Transition(AttackState.Prepare); 
     }
 
     public void Exit()
@@ -104,15 +108,15 @@ public class AttackAction : IAction
         gridManager?.UnhighlightGridCells(HighlightLayer.Hover); 
     }
 
-    void Transition(AttackState state)
+    async UniTask Transition(AttackState state)
     {
         switch (state)
         {
             case AttackState.Prepare:
-                Prepare(); 
+                await Prepare(); 
                 break;
-            case AttackState.Animation:
-                Attack(); 
+            case AttackState.Attack:
+                await Attack(); 
                 break;
             case AttackState.Placing:
                 Placing(); 
@@ -123,87 +127,91 @@ public class AttackAction : IAction
         }
     }
 
-    void Prepare()
+    async UniTask Prepare()
     {
         Exit();
-        Transition(AttackState.Animation); 
-    }
-    
-    void Attack()
-    {
-        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition); 
+
+        // EventQueue에 데미지 계산 순서를 넣기. 
+
+        Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition);
 
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
         PRS prs = tokenMovement.PRS;
 
-        int counterDamage = target.CP; 
+        int damage = token.CP;
+        int counterDamage = target.CP;
 
-        // 근접과 원거리 공격 구분
-        bool isMeleeAttack = IsMeleeAttack();
-        
-        if (isMeleeAttack)
+        // 공격 애니메이션 
+        eventQueue.Enqueue(async () =>
         {
-            // 근접 공격 애니메이션
-            tokenMovement.MeleeAttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            var hit = new UniTaskCompletionSource();
+            var end = new UniTaskCompletionSource(); 
+
+            tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
             {
-                // 히트 효과만 처리 (데미지는 애니메이션 완료 후 처리)
-                Debug.Log("칼 휘두르기 히트!");
-            },
-            onCompleteCallback: () =>
+                damage = damageManager.ProcessDamage(token, target);
+                hit.TrySetResult();
+            }, onCompleteCallback: () =>
             {
-                // 애니메이션 완료 후 데미지 처리
-                damageManager.ProcessCombat(token, target);
-                damageManager.TryProcessCounterAttack(target, token, counterDamage);
-                damageManager.TryDestroyToken(token);
-                damageManager.TryDestroyToken(target); 
-                damageManager.CheckForKingDefeat(); 
-                Transition(AttackState.Placing); 
+                end.TrySetResult(); 
             });
-        }
-        else
+
+            await hit.Task; 
+            await end.Task; 
+        });
+        // 반격 데미지 계산 
+        eventQueue.Enqueue(() =>
         {
-            // 원거리 공격 애니메이션
-            tokenMovement.RangeAttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
+            return UniTask.CompletedTask; 
+        });
+        // 왕에게의 간접 데미지 계산 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.ProcessKingDamage(token, counterDamage);
+            damageManager.ProcessKingDamage(target, damage);
+            return UniTask.CompletedTask;
+        });
+
+        // 왕의 HP 확인 
+        eventQueue.Enqueue(() =>
+        {
+            damageManager.IsKingDefeated();
+            return UniTask.CompletedTask; 
+        });
+
+        eventQueue.Enqueue(async () =>
+        {
+            if(target.TryGetComponent<IDestructible>(out IDestructible destructibleTarget))
             {
-                // 히트 효과만 처리 (데미지는 애니메이션 완료 후 처리)
-                Debug.Log("원거리 공격 히트!");
-            },
-            onCompleteCallback: () =>
+                if (target.IsDead)
+                    await damageManager.ProcessUnitDeath(token, target); 
+            }
+
+            if (token.TryGetComponent<IDestructible>(out IDestructible destructibleAttacker))
             {
-                // 애니메이션 완료 후 데미지 처리
-                damageManager.ProcessCombat(token, target);
-                damageManager.TryProcessCounterAttack(target, token, counterDamage);
-                damageManager.TryDestroyToken(token);
-                damageManager.TryDestroyToken(target); 
-                damageManager.CheckForKingDefeat(); 
-                Transition(AttackState.Placing); 
-            });
-        }
+                if (token.IsDead)
+                    await damageManager.ProcessUnitDeath(target, token); 
+            }
+        }); 
+
+        await Transition(AttackState.Attack); 
+    }
+    
+    async UniTask Attack()
+    {
+        await eventQueue.ExecuteAllAsync(); 
+        await Transition(AttackState.Placing);
     }
 
-    // 근접 공격인지 판단하는 메서드
-    bool IsMeleeAttack()
+    async UniTask Placing()
     {
-        Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
-        Vector2Int targetGridPosition = this.targetPosition;
-        
-        // 현재 위치와 타겟 위치의 거리 계산
-        int distance = Mathf.Abs(targetGridPosition.x - currentGridPosition.x) + 
-                      Mathf.Abs(targetGridPosition.y - currentGridPosition.y);
-        
-        // 거리가 1이면 근접 공격, 2 이상이면 원거리 공격
-        return distance == 1;
-    }
-
-    void Placing()
-    {
-        Debug.Log("Done"); 
-        Transition(AttackState.Done); 
+        await Transition(AttackState.Done);
     }
 
     void Done()
     {
-        OnActionComplete?.Invoke(); 
+        OnActionComplete?.Invoke();
     }
 
     public bool IsValid()

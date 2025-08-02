@@ -1,22 +1,41 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class CardFactory 
 {
     GameObject cardPrefab;
-    
-    public void Init(GameObject prefab)
+    CardTextureLoader loader;
+    PrefabLoader prefabLoader; 
+
+    public async UniTask Init()
     {
-        cardPrefab = prefab; 
-    } 
-    public Card CreateCard(CardData cardData, int playerID)
+        loader = ServiceLocator.Get<CardTextureLoader>();
+        prefabLoader = ServiceLocator.Get<PrefabLoader>();
+
+        cardPrefab = await prefabLoader.LoadPrefabAsync<Card>();
+
+        Debug.Log("CardFactory Initialized");
+    }
+    public async UniTask<Card> CreateCardAsync(CardData cardData, int playerID)
     {
-        // 카드를 생성 
         GameObject cardObject = GameObject.Instantiate(cardPrefab);
         cardObject.gameObject.SetActive(false); 
 
-        Card card = cardObject.GetComponent<Card>();
-        card.Init(cardData, playerID); 
-        
+        if(cardObject.TryGetComponent<Card>(out Card card))
+        {
+            card.Init(cardData, playerID);
+
+            VisualTexture textures = await loader.LoadAllTextures(cardData);
+            Debug.Log("CardTexture Load Complete");
+
+            if (card.TryGetComponent<CardView>(out CardView cardView))
+                cardView.Init(textures);
+        }
+
+        else
+            Debug.LogError("Cannot found Card component from Card prefab");
+
         return card;
     }
+
 }

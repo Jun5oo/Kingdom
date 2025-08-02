@@ -6,18 +6,20 @@ public class UnitCardData : CardData
 {
     [SerializeField] int cp;
     [SerializeField] int movement;
-    [SerializeField] Race race;
     [SerializeField] bool isKing;
 
-    [SerializeField] List<ActionType> actions;
     [SerializeField] List<Vector2Int> moveRange;
     [SerializeField] List<Vector2Int> attackRange;
 
+    // 추후에 수정 필요 
+    [SerializeField] List<PassiveType> passives;
+
     public int CP { get { return cp; } }
     public int Movement { get { return movement; } }
-    public Race Race { get { return race; } }
     public bool IsKing { get { return isKing; } }
-    public List<ActionType> Actions { get { return actions; } }
     public List<Vector2Int> MoveRange { get { return moveRange; } }
     public List<Vector2Int> AttackRange { get { return attackRange; } }
+
+    public List<PassiveType> Passive {  get { return passives; } }
+    
 }

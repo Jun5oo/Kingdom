@@ -3,20 +3,17 @@ using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
 {
-    GridManager gridManager; 
     IAction currentAction;
 
     [SerializeField] int actionCount = 2; 
 
-    public event Action OnActionDepleted; 
-
     public void Init()
     {
-        DisableSystem(); 
+        DisableSystem();
+        
+        this.currentAction = null;
 
-        this.gridManager = ServiceLocator.Get<GridManager>();
-
-        this.currentAction = null; 
+        GridManager gridManager = ServiceLocator.Get<GridManager>();
 
         gridManager.OnGridCellSelected -= Execute; 
         gridManager.OnGridCellSelected += Execute;
@@ -29,9 +26,6 @@ public class ActionSystem : MonoBehaviour, IGameSystem
             if(currentAction?.Performer != ActionPerformer.System)
                 Exit();
         }
-
-        if (currentAction != null)
-            Debug.Log(currentAction);
     }
 
     public void Enter(IAction action)
@@ -81,27 +75,10 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
 
         actionCount -= currentAction.Cost; 
-
         Exit();
-
-        if (actionCount <= 0)
-            OnActionDepleted?.Invoke();
     }
-    public int GetCurrentActionCount()
-    {
-        return actionCount; 
-    }
-    public void ResetActionCount()
-    {
-        actionCount = 2; 
-    }
-
-    public void EnableSystem()
-    {
-        this.enabled = true; 
-    }
-    public void DisableSystem()
-    {
-        this.enabled = false; 
-    }
+    public int GetCurrentActionCount() => actionCount; 
+    public void ResetActionCount() => actionCount = 2; 
+    public void EnableSystem() => enabled = true; 
+    public void DisableSystem() => enabled = false;
 }

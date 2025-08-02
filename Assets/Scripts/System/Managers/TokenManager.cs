@@ -90,8 +90,4 @@ public class TokenManager
 
         return false; 
     }
-    public bool IsMyToken(Token token)
-    {
-        return token.OwnerPlayerID == playerManager.Local.PlayerID;
-    }
 }

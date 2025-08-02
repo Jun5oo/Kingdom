@@ -1,34 +1,33 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class KingDraw : IGameState
 {
-    const float WAIT_TIME = 2f;
-
-    PlayerHandManager handManager;
-    DrawManager drawManager; 
+    const int WAIT_TIME_MS = 2000;
 
     GameFlowStateMachine stateMachine;
 
     public KingDraw(GameFlowStateMachine stateMachine)
     {
-        handManager = ServiceLocator.Get<PlayerHandManager>();
-        drawManager = ServiceLocator.Get<DrawManager>();    
-
         this.stateMachine = stateMachine; 
     }
 
-    public IEnumerator Enter()
+    public async UniTask Enter()
     {
-        Card firstCard = drawManager.DrawKing(stateMachine.firstID);
+        HandManager handManager = ServiceLocator.Get<HandManager>();
+        DrawManager drawManager = ServiceLocator.Get<DrawManager>();
+
+        Debug.Log("Draw King Phase"); 
+
+        Card firstCard = await drawManager.DrawKing(stateMachine.firstID);
         handManager.AddCardToHand(stateMachine.firstID, firstCard); 
-        Card secondCard = drawManager.DrawKing(stateMachine.secondID);
+        Card secondCard = await drawManager.DrawKing(stateMachine.secondID);
         handManager.AddCardToHand(stateMachine.secondID, secondCard);
 
         stateMachine.firstCard = firstCard; 
         stateMachine.secondCard = secondCard;
 
-        yield return new WaitForSeconds(WAIT_TIME);
+        await UniTask.Delay(WAIT_TIME_MS);
 
         KingPlacement placement = new KingPlacement(stateMachine);
         stateMachine.Enter(placement); 
