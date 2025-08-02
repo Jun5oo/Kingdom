@@ -33,22 +33,19 @@ public class AIController
     {
         ActionType randomAction = GetRandomAction();
 
-        List<Card> cards = handManager.GetHandCards(currentPlayerID);
-
         // 할 수 있는 액션 나열
         // 1. 필드 위에 있는 오브젝트들 이동 및 공격
         // 2. 새로운 유닛 소환
         // 3. 영웅 능력 사용 (현재는 제외)
 
-        // 테스트
-        Card card = cards[0];
-
-        IAction action = actionFactory.CreateAction(randomAction, card, ActionPerformer.System);
-
         switch (randomAction)
         {
             // 전체 action들이 가능한지 검사, action들을 다 수행했는지 검사 후 턴 넘김
             case ActionType.Summon:
+                List<Card> cards = handManager.GetHandCards(currentPlayerID);
+                // 테스트
+                Card card = cards[0];
+                IAction action = actionFactory.CreateAction(randomAction, card, ActionPerformer.System);
                 // 현재 자신의 영역 중 유효한 그리드 찾아서 배치 (유닛이 없는 곳에 배치)
                 break;
             case ActionType.Move:
@@ -59,7 +56,7 @@ public class AIController
                 break;
         }
 
-        OnAllActionsDone?.Invoke();
+        //OnAllActionsDone?.Invoke();
     }
 
     private ActionType GetRandomAction()
