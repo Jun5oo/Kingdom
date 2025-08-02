@@ -138,18 +138,61 @@ public class AttackAction : IAction
 
         int counterDamage = target.CP; 
 
-        tokenMovement.AttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+        // 근접과 원거리 공격 구분
+        bool isMeleeAttack = IsMeleeAttack();
+        
+        if (isMeleeAttack)
         {
-            damageManager.ProcessCombat(token, target); 
-        },
-        onCompleteCallback: () =>
+            // 근접 공격 애니메이션
+            tokenMovement.MeleeAttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            {
+                // 히트 효과만 처리 (데미지는 애니메이션 완료 후 처리)
+                Debug.Log("칼 휘두르기 히트!");
+            },
+            onCompleteCallback: () =>
+            {
+                // 애니메이션 완료 후 데미지 처리
+                damageManager.ProcessCombat(token, target);
+                damageManager.TryProcessCounterAttack(target, token, counterDamage);
+                damageManager.TryDestroyToken(token);
+                damageManager.TryDestroyToken(target); 
+                damageManager.CheckForKingDefeat(); 
+                Transition(AttackState.Placing); 
+            });
+        }
+        else
         {
-            damageManager.TryProcessCounterAttack(target, token, counterDamage);
-            damageManager.TryDestroyToken(token);
-            damageManager.TryDestroyToken(target); 
-            damageManager.CheckForKingDefeat(); 
-            Transition(AttackState.Placing); 
-        });
+            // 원거리 공격 애니메이션
+            tokenMovement.RangeAttackTargetFrom(targetPosition, prs, onHitCallback: () =>
+            {
+                // 히트 효과만 처리 (데미지는 애니메이션 완료 후 처리)
+                Debug.Log("원거리 공격 히트!");
+            },
+            onCompleteCallback: () =>
+            {
+                // 애니메이션 완료 후 데미지 처리
+                damageManager.ProcessCombat(token, target);
+                damageManager.TryProcessCounterAttack(target, token, counterDamage);
+                damageManager.TryDestroyToken(token);
+                damageManager.TryDestroyToken(target); 
+                damageManager.CheckForKingDefeat(); 
+                Transition(AttackState.Placing); 
+            });
+        }
+    }
+
+    // 근접 공격인지 판단하는 메서드
+    bool IsMeleeAttack()
+    {
+        Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
+        Vector2Int targetGridPosition = this.targetPosition;
+        
+        // 현재 위치와 타겟 위치의 거리 계산
+        int distance = Mathf.Abs(targetGridPosition.x - currentGridPosition.x) + 
+                      Mathf.Abs(targetGridPosition.y - currentGridPosition.y);
+        
+        // 거리가 1이면 근접 공격, 2 이상이면 원거리 공격
+        return distance == 1;
     }
 
     void Placing()

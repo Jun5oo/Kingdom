@@ -32,6 +32,7 @@ Transform:
   m_LocalScale: {x: 7, y: 7, z: 7}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1275165581153073870}
   - {fileID: 828061612229363646}
   - {fileID: 4715773734348691678}
   m_Father: {fileID: 8106864892955022957}
@@ -351,6 +352,37 @@ Transform:
   - {fileID: 8418824815367808780}
   m_Father: {fileID: 7039852454078775548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5924954766173229447
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1275165581153073870}
+  m_Layer: 0
+  m_Name: AttackPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1275165581153073870
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5924954766173229447}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.267, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7039852454078775548}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8017713882654443747
 GameObject:
   m_ObjectHideFlags: 0
@@ -596,8 +628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96e1d7cd3e8c37641a8def98dc785fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entity: {fileID: 6409758460409004148}
-  movement: {fileID: 5961579675541900130}
+  hoverState: 0
   token: {fileID: 6409758460409004148}
   tokenMovement: {fileID: 5961579675541900130}
 --- !u!114 &5961579675541900130
@@ -612,6 +643,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebcceecbf24f804398e4047629df271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
+  swordSpawnPoint: {fileID: 1275165581153073870}
+  swordSwingDuration: 0.5
+  bowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
+  arrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
+  bowSpawnPoint: {fileID: 1275165581153073870}
+  arrowSpawnPoint: {fileID: 1275165581153073870}
+  bowDrawDuration: 0.5
+  arrowFlightDuration: 1
+  enableTestMode: 1
+  testTargetPosition: {x: 2, y: 0, z: 2}
+  testRangedAttack: 0
 --- !u!114 &6569040969496006808
 MonoBehaviour:
   m_ObjectHideFlags: 0

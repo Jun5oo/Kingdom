@@ -72,6 +72,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf0fe6f9d7991c44a69289db14e92b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitData: {fileID: 0}
+  currentTokenCP: 0
+  movement: 0
+  attackRange: []
+  movementRange: []
+  ownerPlayerID: 0
   tokenMovement: {fileID: 2849838149549069074}
   tokenHover: {fileID: 6425854193932676621}
   tokenView: {fileID: 4450753242767943383}
@@ -87,6 +93,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebcceecbf24f804398e4047629df271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordPrefab: {fileID: 0}
+  swordSpawnPoint: {fileID: 0}
+  swordSwingDuration: 0.3
+  swordSwingAngle: 90
 --- !u!114 &6425854193932676621
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,9 +109,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96e1d7cd3e8c37641a8def98dc785fdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hoverState: 0
   token: {fileID: 2520348902860650806}
   tokenMovement: {fileID: 2849838149549069074}
-  tokenState: 0
 --- !u!114 &4450753242767943383
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b107fc6ac2eef34da22c2b3abc1a71a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sr: {fileID: 244403416671969619}
+  mr: {fileID: 0}
   cp: {fileID: 8532351548535874812}
   movement: {fileID: 6112819481067806111}
   anchorUIPosition: {fileID: 8044448189849396092}
