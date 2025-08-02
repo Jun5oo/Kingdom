@@ -351,6 +351,37 @@ Transform:
   - {fileID: 8418824815367808780}
   m_Father: {fileID: 7039852454078775548}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6951110431799665277
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4933813663905246059}
+  m_Layer: 0
+  m_Name: AttackPostion
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4933813663905246059
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6951110431799665277}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2.59, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8106864892955022957}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8017713882654443747
 GameObject:
   m_ObjectHideFlags: 0
@@ -560,6 +591,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4933813663905246059}
   - {fileID: 7039852454078775548}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -606,6 +638,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ebcceecbf24f804398e4047629df271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
+  swordSpawnPoint: {fileID: 4933813663905246059}
+  swordSwingDuration: 1
+  bowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
+  arrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
+  bowSpawnPoint: {fileID: 4933813663905246059}
+  arrowSpawnPoint: {fileID: 4933813663905246059}
+  bowDrawDuration: 1
+  arrowFlightDuration: 0.5
+  enableTestMode: 1
+  testTargetPosition: {x: 2, y: 0, z: 2}
+  testRangedAttack: 0
 --- !u!114 &6569040969496006808
 MonoBehaviour:
   m_ObjectHideFlags: 0
