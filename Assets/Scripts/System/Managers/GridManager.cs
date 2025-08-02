@@ -7,8 +7,8 @@ public class GridManager : MonoBehaviour
     const int HEIGHT = 7; 
     const int WIDTH = 7;
 
-    Vector3 originPos = Vector3.zero; 
-    // Vector3 originPos = Vector3.left * 8; 
+    // Vector3 originPos = Vector3.zero; 
+    Vector3 originPos = Vector3.left * 8; 
 
     Grid grid;
 

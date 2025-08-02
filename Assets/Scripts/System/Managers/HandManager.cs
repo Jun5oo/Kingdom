@@ -56,12 +56,13 @@ public class HandManager : MonoBehaviour
 
         card.gameObject.SetActive(true); 
 
-        // CardAlignmentOnBoardSide(playerID, card);
+        CardAlignmentOnBoardSide(playerID, card);
   
+        /*
         PlayerHand playerHand = playerHands[playerID];
         playerHand.AddCard(card);
         CardAlignment(playerHand.HandCard, playerHand.Hand, playerHand.HandLeft, playerHand.HandRight, playerHand.HandCard.Count, playerID);
-
+        */ 
     }
     public void RemoveCardFromHand(int playerID, Card card)
     {
@@ -71,12 +72,14 @@ public class HandManager : MonoBehaviour
             return;
         }
 
-        // RemoveFromSlot(playerID, card); 
+        RemoveFromSlot(playerID, card); 
         
+        /*
         PlayerHand playerHand = playerHands[playerID];
         playerHand.RemoveCard(card); 
 
         CardAlignment(playerHand.HandCard, playerHand.Hand, playerHand.HandLeft, playerHand.HandRight, playerHand.HandCard.Count, playerID); 
+        */
     }
     public bool IsMyCard(Card card)
     {
@@ -146,7 +149,7 @@ public class HandManager : MonoBehaviour
         int idx = hand.Count; 
 
         Vector3 pos = slot[idx].transform.position;
-        float rotationX = playerID == playerManager.Local.PlayerID ? 70f : -700f; 
+        float rotationX = 90f;
         float rotationZ = playerID == playerManager.Local.PlayerID ? 0f : 180f;
         Quaternion rotation = Quaternion.Euler(rotationX, 0f, rotationZ);
         Vector3 scale = Vector3.one;
