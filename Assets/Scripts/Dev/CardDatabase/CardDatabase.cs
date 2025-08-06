@@ -3,22 +3,23 @@ using UnityEngine;
 
 public class CardDatabase : MonoBehaviour 
 {
-    [SerializeField] List<UnitCardData> database;
-    Dictionary<string, UnitCardData> dictionary; 
+    [SerializeField] List<CardData> database;
+    // cardID, cardData 
+    Dictionary<string, CardData> dictionary; 
 
     // 카드 데이터를 가져올 임시적인 클래스 
     public void Init()
     {
-        dictionary = new Dictionary<string, UnitCardData>();
+        dictionary = new Dictionary<string, CardData>();
         
-        foreach(UnitCardData data in database)
+        foreach(CardData data in database)
             dictionary[data.Name] = data; 
     }
 
-    public UnitCardData GetData(string name)
+    public T GetCardData<T>(string name) where T : CardData
     {
-        if(dictionary.TryGetValue(name, out UnitCardData data))
-            return data;
+        if(dictionary.TryGetValue(name, out CardData data))
+            return data as T;
 
         return null; 
     } 

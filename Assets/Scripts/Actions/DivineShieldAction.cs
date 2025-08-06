@@ -9,6 +9,7 @@ public class DivineShieldAction : IAction
     HighlightType highlightType; 
     ActionPerformer performer;
 
+    Token token; 
     BaseObject target;
     int currentCost;
 
@@ -25,9 +26,12 @@ public class DivineShieldAction : IAction
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+    public int OwnerID { get { return token.OwnerID; } }
+
     public DivineShieldAction(Token token, ActionPerformer performer)
     {
-        // ActionType 추후에 정리할 필요가 있음. 
         actionType = ActionType.DivineShield;
         highlightLayer = HighlightLayer.Action;
         highlightType = HighlightType.SummonHighlight;
@@ -36,8 +40,11 @@ public class DivineShieldAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager =ServiceLocator.Get<TokenManager>();
 
+        this.token = token; 
         this.target = token;
-        this.currentCost = 2; 
+        this.currentCost = 2;
+
+        resourceType = ResourceType.Ability; 
     }
 
     public void Enter()
@@ -95,7 +102,8 @@ public class DivineShieldAction : IAction
 
     public bool IsValid()
     {
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
 }

@@ -23,7 +23,8 @@ public class GainAbilityCoin : IPassive
         if (baseObject.OwnerID != attacker.OwnerID)
             return;
 
-        // 현재는 처치한 Token의 정보를 사용하지는 않지만, 추후 로그 등 기록을 남길 때 사용할 수 있으므로 남겨둠. 
+        var abilityResourceSystem = ServiceLocator.Get<IResourceSystem>();
+        abilityResourceSystem.Add(attacker.OwnerID, 1); 
 
         Debug.Log($"PlayerID {attacker.OwnerID} get ability coin!"); 
     }

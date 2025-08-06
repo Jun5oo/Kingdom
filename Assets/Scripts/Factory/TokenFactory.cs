@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TokenFactory
@@ -15,27 +16,17 @@ public class TokenFactory
 
         tokenPrefab = await prefabLoader.LoadPrefabAsync<Token>(); 
     }
-    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID)
+    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID, CardData sourceObject = null, List<UnitCardData> sourceObjects = null)
     {
         GameObject prefab = tokenPrefab; 
         prefab.SetActive(false); 
 
-        if(prefab == null)
-            Debug.Log("No prefab found"); 
-
         GameObject tokenObject = GameObject.Instantiate(prefab);
 
-        if (tokenObject == null)
-            Debug.Log("Cannot Instantiate TokenPrefab");
-
         if (tokenObject.TryGetComponent<Token>(out Token token))
-            token.Init(unitData, playerID);
-
-        if (token == null)
-            Debug.Log("Cannot found Token Component in TokenPrefab"); 
+            token.Init(unitData, playerID, sourceObject, sourceObjects);
 
         VisualTexture textures = await textureLoader.LoadAllTextures(unitData);
-        Debug.Log("TokenTextureLoad Complete");
         
         if (token.TryGetComponent<TokenView>(out TokenView tokenView))
             tokenView.Init(textures, unitData.CP, unitData.Movement);

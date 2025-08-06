@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ResurrectionAction : IAction
@@ -19,15 +20,20 @@ public class ResurrectionAction : IAction
 
     GridManager gridManager;
     TokenManager tokenManager;
+    SummonSystem summonSystem; 
 
-    Token kingToken;
+    Token token;
 
     Vector2Int targetPosition;
 
     int currentCost; 
     public int Cost { get { return currentCost;}}
 
-    public ResurrectionAction(Token kingToken, ActionPerformer performer)
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+    public int OwnerID { get { return token.OwnerID; } }
+
+    public ResurrectionAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.Resurrection;
         highlightLayer = HighlightLayer.Action;
@@ -36,10 +42,13 @@ public class ResurrectionAction : IAction
 
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
+        this.summonSystem  = ServiceLocator.Get<SummonSystem>();
 
-        this.kingToken = kingToken;
+        this.token = token;
 
-        currentCost = 2; 
+        currentCost = 2;
+
+        resourceType = ResourceType.Ability; 
     }
 
     public void Enter()
@@ -53,13 +62,10 @@ public class ResurrectionAction : IAction
             
             if(token != null)
             {
-                if (!token.IsAllies(kingToken.OwnerID))
-                    return false; 
-
-                /*
-                if (token.TokenState == TokenState.Graveyard)
-                    return true;
-                */ 
+                if (!token.IsAllies(this.token.OwnerID))
+                    return false;
+                if (token.UnitData.Tag == UnitTag.Graveyard)
+                    return true; 
             }
 
             return false; 
@@ -70,17 +76,21 @@ public class ResurrectionAction : IAction
 
     public async UniTask Execute(Vector2Int targetPosition)
     {
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+
         this.targetPosition = targetPosition;
-        await Revive(); 
+        Revive();
+        await eventQueue.ExecuteAllAsync(); 
     }
 
     public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer);
     public bool IsValid()
     {
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
-    public async UniTask Revive()
+    public void Revive()
     {
         Exit(); 
 
@@ -93,18 +103,16 @@ public class ResurrectionAction : IAction
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
 
-        var taskComplete = new UniTaskCompletionSource(); 
-        /*
-        tokenMovement.PlayerSpinToss(() =>
-        {
-            targetToken.Revive(); 
-        }, () => 
-        { 
-            OnActionComplete?.Invoke();
-            taskComplete.TrySetResult(); 
-        });
-        */ 
+        var unitData = new List<UnitCardData>(targetToken.SourceObjects);
+        
+        tokenManager.DestroyToken(targetToken);
+       
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
-        await taskComplete.Task; 
+        eventQueue.Enqueue(async () =>
+        {
+            await summonSystem.Summon(token.OwnerID, unitData[0], targetPosition);
+            OnActionComplete?.Invoke(); 
+        });
     }
 }

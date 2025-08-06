@@ -20,6 +20,7 @@ MonoBehaviour:
   cp: 1
   movement: 0
   isKing: 0
+  tag: 2
   moveRange: []
   attackRange: []
   passives: 

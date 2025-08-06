@@ -45,7 +45,7 @@ public class EventQueue
             }
             catch (Exception ex)
             {
-                Debug.LogError("Event 실행 중 오류 발생"); 
+                Debug.LogError($"Event 실행 중 오류 발생{ex}"); 
             }
         }
 

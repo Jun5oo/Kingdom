@@ -8,6 +8,7 @@ public class MoveAction : IAction
     ActionType actionType;
     HighlightLayer highlightLayer;
     HighlightType highlightType;
+    ActionPerformer performer;
 
     public ActionType ActionType { get { return actionType; } }
     public HighlightLayer HighlightLayer { get { return highlightLayer; } }
@@ -17,7 +18,6 @@ public class MoveAction : IAction
     GridManager gridManager;
     TokenManager tokenManager; 
     Token token;
-    ActionPerformer performer;
 
     List<Vector2Int> moveablePositions;
 
@@ -28,6 +28,11 @@ public class MoveAction : IAction
 
     int currentCost;
     public int Cost { get { return currentCost; } }
+
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+
+    public int OwnerID { get { return token.OwnerID; } }
 
     public MoveAction(Token token, ActionPerformer performer)
     {
@@ -44,6 +49,8 @@ public class MoveAction : IAction
         this.moveablePositions = token.MoveableRange;
 
         currentCost = 1;
+
+        resourceType = ResourceType.Action; 
     }
 
     public void Enter()
@@ -86,7 +93,8 @@ public class MoveAction : IAction
         if(moveablePositions.Count == 0) 
             return false;
 
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
     async UniTask Transition(MoveState state)

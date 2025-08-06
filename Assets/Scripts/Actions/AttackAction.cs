@@ -33,6 +33,10 @@ public class AttackAction : IAction
     int currentCost; 
     public int Cost { get { return currentCost; } }
 
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+    public int OwnerID { get { return token.OwnerID; } }
+
     public AttackAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.Attack;
@@ -49,7 +53,8 @@ public class AttackAction : IAction
 
         attackablePositions = token.AttackRange;
 
-        currentCost = 1; 
+        currentCost = 1;
+        resourceType = ResourceType.Action; 
     }
 
     public void Enter()
@@ -195,31 +200,35 @@ public class AttackAction : IAction
         // 왕에게의 간접 데미지 계산 
         eventQueue.Enqueue(() =>
         {
-            damageManager.ProcessKingDamage(token, counterDamage);
-            damageManager.ProcessKingDamage(target, damage);
+            damageManager.ProcessIndirectDamage(token, counterDamage);
+            damageManager.ProcessIndirectDamage(target, damage);
             return UniTask.CompletedTask;
         });
 
-        // 사망 처리 (왕의 HP 확인 전에)
+        // 사망여부확인 (Defender) 
         eventQueue.Enqueue(async () =>
         {
             // 타겟이 죽었는지 확인하고 처리
             if(target.TryGetComponent<IDestructible>(out IDestructible destructibleTarget))
             {
-                if (target.IsDead)
+                if (destructibleTarget.IsDead)
                 {
                     Debug.Log($"타겟 {target} 사망 처리");
-                    await damageManager.ProcessUnitDeath(token, target); 
+                    damageManager.ProcessUnitDeath(token, target); 
                 }
             }
+        });
 
+        // 사망여부확인 (Attacker) 
+        eventQueue.Enqueue(async () =>
+        {
             // 공격자가 죽었는지 확인하고 처리
             if (token.TryGetComponent<IDestructible>(out IDestructible destructibleAttacker))
             {
-                if (token.IsDead)
+                if (destructibleAttacker.IsDead)
                 {
                     Debug.Log($"공격자 {token} 사망 처리");
-                    await damageManager.ProcessUnitDeath(target, token); 
+                    damageManager.ProcessUnitDeath(target, token);
                 }
             }
         });
@@ -265,6 +274,7 @@ public class AttackAction : IAction
         if(attackablePositions.Count == 0) 
             return false;
 
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 }

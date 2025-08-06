@@ -7,19 +7,18 @@ public class UnitCardData : CardData
     [SerializeField] int cp;
     [SerializeField] int movement;
     [SerializeField] bool isKing;
+    
+    [SerializeField] UnitTag tag; 
 
     [SerializeField] List<Vector2Int> moveRange;
     [SerializeField] List<Vector2Int> attackRange;
-
-    // 추후에 수정 필요 
     [SerializeField] List<PassiveType> passives;
 
-    public int CP { get { return cp; } }
-    public int Movement { get { return movement; } }
-    public bool IsKing { get { return isKing; } }
-    public List<Vector2Int> MoveRange { get { return moveRange; } }
-    public List<Vector2Int> AttackRange { get { return attackRange; } }
-
-    public List<PassiveType> Passive {  get { return passives; } }
-    
+    public int CP { get { return cp; } set { cp = value; } }
+    public int Movement { get { return movement; } set { Movement = value; } }
+    public bool IsKing { get { return isKing; } set { isKing = value; } }
+    public List<Vector2Int> MoveRange { get { return moveRange; } set { moveRange = value; } }
+    public List<Vector2Int> AttackRange { get { return attackRange; } set { attackRange = value; } }
+    public List<PassiveType> Passive { get { return passives; } set { passives = value; } }
+    public UnitTag Tag { get { return tag; } }
 }

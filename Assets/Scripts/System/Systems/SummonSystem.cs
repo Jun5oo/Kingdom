@@ -16,15 +16,41 @@ public class SummonSystem
         gridManager = ServiceLocator.Get<GridManager>();
     }
 
-    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int position)
+    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition)
     {
+        if (tokenManager.IsTokenAtGridPosition(targetPosition))
+        {
+            Debug.Log("해당 위치에 유닛이 존재합니다.");
+            return;
+        }
+
+        Vector3 position = gridManager.GetWorldPosition(targetPosition);
+        Quaternion rotation = Quaternion.Euler(90f, 0f, 0f);
+        Vector3 scale = Vector3.one;
+
+        PRS prs = new PRS(position, rotation, scale); 
+
         // 1. 생성 
         Token created = await tokenFactory.CreateToken(unitCardData, playerID);
+        created.transform.position = position + Vector3.up * 10f;
+        created.transform.rotation = rotation;
 
-        // 2. 소환 애니메이션 
-        Vector3 targetPosition = gridManager.GetWorldPosition(position);
+        if(created.IsKing)
+            tokenManager.AddKingToken(playerID, created);
 
-        // 3. 생성된 토큰 배치 
-        tokenManager.PlaceTokenTo(created, position); 
+        tokenManager.PlaceTokenTo(created, targetPosition);
+
+        var task = new UniTaskCompletionSource();
+
+        // 2. 애니메이션  
+        if (created.TryGetComponent<TokenMovement>(out TokenMovement movement))
+        {
+            movement.MoveTransform(prs, 0.5f, false, () =>
+            {
+                task.TrySetResult(); 
+            });
+
+            await task.Task; 
+        }
     }
 }

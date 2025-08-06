@@ -51,6 +51,28 @@ public class ActionDisplayer : MonoBehaviour
         {
             IAction action = actionFactory.CreateAction(actionType, baseObject);
 
+            if (action == null)
+                continue;
+
+            if (!action.IsValid())
+                continue;
+
+            if (!actionSystem.CanPerformAction(action, baseObject.OwnerID))
+                return;
+
+            ActionPopup actionPopup = poolManager.Pop<ActionPopup>();
+            actionPopup.Init(action);
+            actionPopup.gameObject.transform.SetParent(layout.transform, true);
+
+            actionPopup.OnSelected -= actionSystem.Enter;
+            actionPopup.OnSelected += actionSystem.Enter;
+
+            actionPopup.OnClicked -= Clear;
+            actionPopup.OnClicked += Clear;
+
+            pooled.Add(actionPopup);
+
+            /*
             if (action != null)
             {
                 if (action.IsValid())
@@ -67,7 +89,7 @@ public class ActionDisplayer : MonoBehaviour
 
                     pooled.Add(actionPopup);
                 }
-            }
+            }*/ 
         }
     }
     public void Clear()

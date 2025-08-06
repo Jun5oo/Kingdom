@@ -54,9 +54,9 @@ public class TurnSystem : IGameSystem
     public async UniTask StartTurn()
     {
         if (TurnState == TurnState.Unable)
-            return; 
+            return;
 
-        actionSystem.ResetActionCount(); 
+        actionSystem.ResetActionCount(currentPlayerID); 
 
         if (playerManager.Local.PlayerID == currentPlayerID)
             uiManager.OnNotification("My Turn!", () => 

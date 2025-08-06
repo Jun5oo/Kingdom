@@ -20,6 +20,7 @@ MonoBehaviour:
   cp: 40
   movement: 1
   isKing: 1
+  tag: 0
   moveRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}

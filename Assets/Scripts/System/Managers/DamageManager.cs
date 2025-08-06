@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class DamageManager
 {
+    // 데미지 뿐만 아니라, 한 전투에서의 과정(유닛 처치, 사망 등)을 관리하므로 CombatManager로 클래스 이름을 변경해줄 예정 
+
     PlayerManager playerManager; 
     TokenManager tokenManager;
     DamageDisplayer displayer;
 
     public Action<int> OnKingDefeated;
 
+    // 플레이어의 유닛이 사망했을 때, 사전 준비작업을 하기 위한 이벤트 
+    public Action<int, Token> OnPrepareUnitDeath; 
     // 플레이어의 유닛이 사망했을 때 
     public Action<int, Token> OnPlayerUnitDead;
     // 플레이어의 유닛이 유닛을 처치했을 때  
@@ -34,7 +38,7 @@ public class DamageManager
 
         return damage; 
     }
-    public void ProcessKingDamage(Token token, int damage)
+    public void ProcessIndirectDamage(Token token, int damage)
     {
         if (token.IsKing)
             return; 
@@ -111,13 +115,17 @@ public class DamageManager
             return; 
     }
 
-    public async UniTask ProcessUnitDeath(Token killer, Token victim)
+    public void ProcessUnitDeath(Token killer, Token victim)
     {
         if(killer.OwnerID == victim.OwnerID)
         {
             Debug.Log("현재 시스템에서는 같은 팀을 처치할 수 없습니다. 뭔가 문제가 발생했습니다.");
             return; 
         }
+
+        OnPrepareUnitDeath?.Invoke(victim.OwnerID, victim);
+
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
         OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
         OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);

@@ -16,9 +16,10 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     List<IBuff> buffs;
     List<IPassive> passives;
 
-    bool isDead; 
+    bool isDead;
 
     public UnitCardData UnitData { get { return Data as UnitCardData; } }
+    
     public int CP { get { return currentCP; } }
     public int MAXCP { get { return UnitData.CP; } }
     public int Movement { get { return UnitData.Movement; } }
@@ -28,7 +29,15 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public List<Vector2Int> MoveableRange { get { return UnitData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return UnitData.AttackRange; } }
 
-    public void Init(UnitCardData unitData, int playerID)
+
+    // 생성한 주체, ex) 무덤을 생성한 것은 언데드 왕
+    [SerializeField] CardData sourceObject; 
+    // 생성에 필요한 재료, ex) 무덤의 original cardData 또는 업그레이드에 사용된 오브젝트 
+    [SerializeField] List<UnitCardData> sourceObjects;
+    public CardData SourceObject { get { return sourceObject; } }
+    public List<UnitCardData> SourceObjects { get { return  sourceObjects; } }
+
+    public void Init(UnitCardData unitData, int playerID, CardData sourceObject, List<UnitCardData> sourceObjects)
     {
         base.Init(unitData); 
 
@@ -51,7 +60,14 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
             created.Activate(); 
         }
 
-        isDead = false; 
+        isDead = false;
+
+        this.sourceObject = sourceObject;
+        
+        if (sourceObjects != null)
+            this.sourceObjects = sourceObjects;
+        else
+            this.sourceObjects = new List<UnitCardData>(); 
     }
 
     public Action<int> OnCPUpdate;
@@ -114,6 +130,16 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     #endregion
 
+    public T GetSourceObjects<T>() where T : BaseObject
+    {
+        return SourceObject as T; 
+    }
+
+    public List<T> GetSourceTokens<T>() where T: BaseObject
+    {
+        return SourceObjects as List<T>; 
+    }
+
     void OnDestroy()
     {
         foreach(var buff in buffs)
@@ -122,7 +148,10 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
         buffs.Clear(); 
 
         foreach(var passive in passives)
-            passive.Deactivate(); 
+            passive.Deactivate();
+
+        passives.Clear();
+        sourceObjects.Clear(); 
 
         OnCPUpdate = null;
     }
