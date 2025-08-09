@@ -4,7 +4,8 @@ public enum ActionType
     Move, 
     Attack,
     Resurrection, 
-    DivineShield
+    DivineShield, 
+    Upgrade, 
 }
 
 public enum ActionPerformer

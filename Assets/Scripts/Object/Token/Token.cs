@@ -6,6 +6,7 @@ using UnityEngine;
 public class Token : BaseObject, IDamageable, IDestructible, IBuffable 
 {
     [Header("RunTime Data")]
+    [SerializeField] int currentLevel; 
     [SerializeField] int currentCP;
     [SerializeField] int ownerID;
 
@@ -21,10 +22,12 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public UnitCardData UnitData { get { return Data as UnitCardData; } }
     
     public int CP { get { return currentCP; } }
-    public int MAXCP { get { return UnitData.CP; } }
-    public int Movement { get { return UnitData.Movement; } }
-    public bool IsKing { get { return UnitData.IsKing; } }
+    public int MAXCP { get { return UnitData.GetCP(currentLevel); } }
+    public int Movement { get { return UnitData.GetCP(currentLevel); } }
+    public int Level { get { return currentLevel; } }
     public override int OwnerID { get { return ownerID; } }
+
+    public UnitTag Tag { get { return UnitData.Tag; } }
 
     public List<Vector2Int> MoveableRange { get { return UnitData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return UnitData.AttackRange; } }
@@ -39,8 +42,9 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     public void Init(UnitCardData unitData, int playerID, CardData sourceObject, List<UnitCardData> sourceObjects)
     {
-        base.Init(unitData); 
+        base.Init(unitData);
 
+        this.currentLevel = unitData.Level; 
         this.currentCP = MAXCP;
         this.ownerID = playerID;
 
@@ -76,7 +80,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public bool IsAllies(int playerID) => OwnerID == playerID;
     public int TakeDamage(int damage, bool isDirect = false)
     {
-        if (isDirect && IsKing)
+        if (isDirect && Tag == UnitTag.King)
             damage *= 2;
 
         List<IBuff> removeList = new List<IBuff>(); 

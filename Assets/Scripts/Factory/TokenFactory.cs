@@ -29,10 +29,10 @@ public class TokenFactory
         VisualTexture textures = await textureLoader.LoadAllTextures(unitData);
         
         if (token.TryGetComponent<TokenView>(out TokenView tokenView))
-            tokenView.Init(textures, unitData.CP, unitData.Movement);
+            tokenView.Init(textures, unitData.GetCP(unitData.Level), unitData.GetMovement(unitData.Level));
 
         if (tokenView == null)
-            Debug.Log("Cannot found TokenView Component in TokenPrefab");
+            Debug.Log("TokenView 컴포넌트를 찾을 수 없습니다.");
 
         tokenObject.SetActive(true); 
         return token; 

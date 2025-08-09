@@ -46,7 +46,7 @@
                     card.Description = description;
                     card.Race = ParseEnum<Race>(GetValue(headers, values, "Race"), Race.None);
                     card.IsKing = ParseBool(GetValue(headers, values, "IsKing"));
-                    card.CP = int.Parse(GetValue(headers, values, "CP"));
+                    card.CP = ParseIntList(GetValue(headers, values, "CP")); 
                     card.AttackRange = ParseVector2IntArray(GetValue(headers, values, "AttackRange"));
                     card.MoveRange = ParseVector2IntArray(GetValue(headers, values, "MovementRange"));
                     card.Passive = ParseEnumList<PassiveType>(GetValue(headers, values, "Passive"));
@@ -133,4 +133,21 @@
 
             return list;
         }
-    }
+
+        private static List<int> ParseIntList(string input)
+        {
+            var list = new List<int>();
+            if (string.IsNullOrWhiteSpace(input)) return list;
+
+            var parts = input.Split(':');
+            foreach (var p in parts)
+            {
+                if (int.TryParse(p.Trim(), out int val))
+                    list.Add(val);
+                else
+                    Debug.LogWarning($"Invalid int value: {p} in CP list");
+            }
+
+            return list;
+        }
+}

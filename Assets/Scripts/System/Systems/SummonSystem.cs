@@ -1,4 +1,6 @@
 using Cysharp.Threading.Tasks;
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SummonSystem
@@ -16,7 +18,7 @@ public class SummonSystem
         gridManager = ServiceLocator.Get<GridManager>();
     }
 
-    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition)
+    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition, CardData sourceObject = null, List<UnitCardData> sourceObjects = null)
     {
         if (tokenManager.IsTokenAtGridPosition(targetPosition))
         {
@@ -31,11 +33,11 @@ public class SummonSystem
         PRS prs = new PRS(position, rotation, scale); 
 
         // 1. 생성 
-        Token created = await tokenFactory.CreateToken(unitCardData, playerID);
+        Token created = await tokenFactory.CreateToken(unitCardData, playerID, sourceObject, sourceObjects);
         created.transform.position = position + Vector3.up * 10f;
         created.transform.rotation = rotation;
 
-        if(created.IsKing)
+        if(created.Tag == UnitTag.King)
             tokenManager.AddKingToken(playerID, created);
 
         tokenManager.PlaceTokenTo(created, targetPosition);

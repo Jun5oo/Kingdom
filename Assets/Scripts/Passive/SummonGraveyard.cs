@@ -58,7 +58,7 @@ public class SummonGraveyard : IPassive
 
         eventQueue.Enqueue(async () =>
         {
-            await summonSystem.Summon(deadToken.OwnerID, graveyard, position); 
+            await summonSystem.Summon(deadToken.OwnerID, graveyard, position, passiveOwner.Data, new List<UnitCardData> { deadToken.UnitData }); 
         }); 
     }
 }

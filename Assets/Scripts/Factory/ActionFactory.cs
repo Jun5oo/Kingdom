@@ -23,15 +23,23 @@ public class ActionFactory
             case ActionType.Resurrection: 
                 if(baseObject is Token undeadKing)
                 {
-                    if (undeadKing.IsKing)
+                    if (undeadKing.Tag == UnitTag.King)
                         action = new ResurrectionAction(undeadKing, performer);
                 }
                 break;
             case ActionType.DivineShield:
                 if(baseObject is Token celestialKing)
                 {
-                    if (celestialKing.IsKing)
+                    if (celestialKing.Tag == UnitTag.King)
                         action = new DivineShieldAction(celestialKing, performer); 
+                }
+                break;
+            case ActionType.Upgrade:
+                Debug.Log("UpgradeAction");
+                if(baseObject is Token king)
+                {
+                    if(king.Tag == UnitTag.King)
+                        action = new UpgradeAction(king, performer);
                 }
                 break; 
         }

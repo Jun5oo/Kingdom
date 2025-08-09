@@ -148,7 +148,7 @@ public class SummonAction : IAction
     }
     private bool CanSummonAt(Vector2Int pos)
     {
-        if (card.IsKing)
+        if (card.Tag == UnitTag.King)
         {
             if(handManager.IsMyCard(card))
                 return pos.y < 1;

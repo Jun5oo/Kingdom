@@ -1,5 +1,4 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +6,7 @@ public class PlayerHUD : MonoBehaviour
 {
     [SerializeField] RectTransform panel; 
 
-    [SerializeField] Image playerImage;
+    [SerializeField] RawImage playerImage;
     [SerializeField] TextMeshProUGUI playerName;
     [SerializeField] TextMeshProUGUI playerCp;
 

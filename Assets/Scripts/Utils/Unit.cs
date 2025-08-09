@@ -1,6 +1,7 @@
 public enum UnitTag
 {
+    Normal,
+    Hero, 
     King, 
-    Normal, 
     Graveyard 
 }

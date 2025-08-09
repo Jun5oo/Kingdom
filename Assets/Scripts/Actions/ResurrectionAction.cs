@@ -22,7 +22,7 @@ public class ResurrectionAction : IAction
     TokenManager tokenManager;
     SummonSystem summonSystem; 
 
-    Token token;
+    Token actionOwner;
 
     Vector2Int targetPosition;
 
@@ -31,7 +31,7 @@ public class ResurrectionAction : IAction
 
     public ResourceType resourceType;
     public ResourceType ResourceType { get { return resourceType; } }
-    public int OwnerID { get { return token.OwnerID; } }
+    public int OwnerID { get { return actionOwner.OwnerID; } }
 
     public ResurrectionAction(Token token, ActionPerformer performer)
     {
@@ -44,7 +44,7 @@ public class ResurrectionAction : IAction
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
         this.summonSystem  = ServiceLocator.Get<SummonSystem>();
 
-        this.token = token;
+        this.actionOwner = token;
 
         currentCost = 2;
 
@@ -62,7 +62,7 @@ public class ResurrectionAction : IAction
             
             if(token != null)
             {
-                if (!token.IsAllies(this.token.OwnerID))
+                if (!token.IsAllies(this.actionOwner.OwnerID))
                     return false;
                 if (token.UnitData.Tag == UnitTag.Graveyard)
                     return true; 
@@ -111,7 +111,7 @@ public class ResurrectionAction : IAction
 
         eventQueue.Enqueue(async () =>
         {
-            await summonSystem.Summon(token.OwnerID, unitData[0], targetPosition);
+            await summonSystem.Summon(actionOwner.OwnerID, unitData[0], targetPosition, actionOwner.Data);
             OnActionComplete?.Invoke(); 
         });
     }

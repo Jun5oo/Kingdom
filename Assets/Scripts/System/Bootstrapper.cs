@@ -37,6 +37,7 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] CardDatabase database;
 
     SummonSystem summonSystem;
+    UpgradeSystem upgradeSystem; 
 
     void Awake()
     {
@@ -71,6 +72,7 @@ public class Bootstrapper : MonoBehaviour
         eventQueue = new EventQueue(); 
 
         summonSystem = new SummonSystem();
+        upgradeSystem = new UpgradeSystem();
 
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(damageManager);
@@ -100,7 +102,8 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(eventQueue);
         ServiceLocator.Register(database);
 
-        ServiceLocator.Register(summonSystem); 
+        ServiceLocator.Register(summonSystem);
+        ServiceLocator.Register(upgradeSystem); 
     }
 
     public async UniTask Initialization()
@@ -131,6 +134,7 @@ public class Bootstrapper : MonoBehaviour
 
         database.Init();
         summonSystem.Init();
+        upgradeSystem.Init(); 
     }
 
 }

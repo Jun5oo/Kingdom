@@ -21,11 +21,20 @@ public class HandManager : MonoBehaviour
     [SerializeField] Transform remoteCardParent;
 
     // Test 
+    /*
     [SerializeField] List<GameObject> localSlot;
     [SerializeField] List<GameObject> remoteSlot;
     List<Card> _localHand;
-    List<Card> _remoteHand; 
+    List<Card> _remoteHand;
 
+    Card[]__localHand;
+    Card[] __remoteHand; 
+    */
+    [SerializeField] GameObject[] localSlot;
+    [SerializeField] GameObject[] remoteSlot;
+
+    Card[] _localHand;
+    Card[] _remoteHand;
 
     public void Init()
     {
@@ -40,8 +49,13 @@ public class HandManager : MonoBehaviour
         playerHands[playerManager.Remote.PlayerID] = remote;
 
         // Test
+        /*
         _localHand = new List<Card>(); 
-        _remoteHand = new List<Card>();    
+        _remoteHand = new List<Card>();
+        */
+
+        _localHand = new Card[8]; 
+        _remoteHand = new Card[8];  
     }
     public void AddCardToHand(int playerID, Card card)
     {
@@ -140,13 +154,30 @@ public class HandManager : MonoBehaviour
 
     public void CardAlignmentOnBoardSide(int playerID, Card card)
     {
+        /*
         List<GameObject> slot = playerID == playerManager.Local.PlayerID ? localSlot : remoteSlot;
         List<Card> hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
+        */
 
-        if (hand.Count >= 8)
-            return;
+        GameObject[] slot = playerID == playerManager.Local.PlayerID ? localSlot : remoteSlot;
+        Card[] hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
 
-        int idx = hand.Count; 
+        int idx = -1; 
+
+        for(int i=0; i<hand.Length; i++)
+        {
+            if (hand[i] == null)
+            {
+                idx = i;
+                break; 
+            }
+        }
+
+        if(idx == -1)
+        {
+            Debug.Log("카드는 8장을 초과할 수 없습니다.");
+            return; 
+        }
 
         Vector3 pos = slot[idx].transform.position;
         float rotationX = 90f;
@@ -157,13 +188,22 @@ public class HandManager : MonoBehaviour
         PRS prs = new PRS(pos, rotation, scale);
 
         card.GetComponent<CardMovement>().MoveTransform(prs, 0f, false);
-        hand.Add(card); 
+        hand[idx] = card; 
     }
     public void RemoveFromSlot(int playerID, Card card)
     {
-        List<Card> hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
+        Card[] hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
 
-        hand.Remove(card);
+        for(int i=0; i< hand.Length; i++)
+        {
+            if (hand[i] == card)
+            {
+                hand[i] = null;
+                break; 
+            }
+        }
+
+        Debug.Log("제거하려는 카드를 찾을 수 없습니다. "); 
         // Destroy(card); 
     }
 }

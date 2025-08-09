@@ -16,15 +16,16 @@ MonoBehaviour:
   cardName: Undead
   description: Undead_KING
   race: 1
-  actions: 0100000003000000
-  cp: 40
-  movement: 1
+  actions: 010000000300000005000000
+  level: 1
+  levelCP: 28000000
+  movement: 01000000
+  tag: 2
   isKing: 1
-  tag: 0
+  attackRange: []
   moveRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}
   - {x: 0, y: 1}
   - {x: 0, y: -1}
-  attackRange: []
   passives: 0000000001000000

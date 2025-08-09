@@ -40,7 +40,7 @@ public class DamageManager
     }
     public void ProcessIndirectDamage(Token token, int damage)
     {
-        if (token.IsKing)
+        if (token.Tag == UnitTag.King)
             return; 
 
         if(tokenManager.TryGetKingTokenFrom(token.OwnerID, out Token king))
