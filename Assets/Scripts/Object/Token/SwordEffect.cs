@@ -31,10 +31,25 @@ public class SwordEffect : MonoBehaviour
         {
             trailRenderer.startColor = swordColor;
             trailRenderer.endColor = new Color(swordColor.r, swordColor.g, swordColor.b, 0f);
+            
+            // 트레일 렌더러를 처음에는 비활성화
+            trailRenderer.enabled = false;
+            
+            // 0.1초 후에 트레일 렌더러 활성화
+            Invoke(nameof(EnableTrailRenderer), 0.1f);
         }
         
         // 자동 제거
         Destroy(gameObject, lifetime);
+    }
+    
+    // 트레일 렌더러를 활성화하는 메서드
+    private void EnableTrailRenderer()
+    {
+        if (trailRenderer != null)
+        {
+            trailRenderer.enabled = true;
+        }
     }
     
     // 칼 휘두르기 효과
