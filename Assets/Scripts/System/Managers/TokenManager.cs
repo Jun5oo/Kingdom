@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 
 public class TokenManager
@@ -9,6 +10,9 @@ public class TokenManager
     Dictionary<Token, Vector2Int> TokenToGrid; 
 
     Dictionary<int, Token> PlayerIDToKingToken;
+
+    List<Token> playerTokens = new List<Token>();
+    List<Token> aiTokens = new List<Token>();
 
     public void Init()
     {
@@ -30,12 +34,14 @@ public class TokenManager
     public void MoveTokenTo(Token token, Vector2Int to)
     {
         RemoveToken(token);
-        PlaceTokenTo(token, to); 
+        PlaceTokenTo(token, to);
     }
     public void AddToken(Vector2Int gridPosition, Token token)
     {
         GridToToken[gridPosition] = token;
-        TokenToGrid[token] = gridPosition; 
+        TokenToGrid[token] = gridPosition;
+        List<Token> tokens = GetTokens(token.OwnerID);
+        tokens.Add(token);
     }
     public void AddKingToken(int playerID, Token token)
     {
@@ -46,6 +52,8 @@ public class TokenManager
         Vector2Int gridPosition = TokenToGrid[token]; 
         GridToToken.Remove(gridPosition);
         TokenToGrid.Remove(token);
+        List<Token> tokens = GetTokens(token.OwnerID);
+        tokens.Remove(token);
     }
     public void DestroyToken(Token token)
     {
@@ -89,5 +97,10 @@ public class TokenManager
         }
 
         return false; 
+    }
+
+    public List<Token> GetTokens(int playerId)
+    {
+        return playerId == playerManager.Local.PlayerID ? playerTokens : aiTokens;
     }
 }

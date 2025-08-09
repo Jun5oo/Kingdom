@@ -19,7 +19,7 @@ public class MoveAction : IAction
     Token token;
     ActionPerformer performer;
 
-    List<Vector2Int> moveablePositions;
+    public List<Vector2Int> MoveablePositions { get; private set; }
 
     Vector2Int targetPosition; 
 
@@ -41,7 +41,7 @@ public class MoveAction : IAction
         this.performer = performer;
 
         this.token = token;
-        this.moveablePositions = token.MoveableRange;
+        this.MoveablePositions = token.MoveableRange;
 
         currentCost = 1;
     }
@@ -54,7 +54,7 @@ public class MoveAction : IAction
         {
             Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token); 
 
-            foreach(Vector2Int position in moveablePositions)
+            foreach(Vector2Int position in MoveablePositions)
             {
                 Vector2Int availablePosition = currentGridPosition + position; 
                 if (availablePosition == gridPosition && !tokenManager.IsTokenAtGridPosition(gridPosition))
@@ -83,7 +83,7 @@ public class MoveAction : IAction
 
     public bool IsValid()
     {
-        if(moveablePositions.Count == 0) 
+        if(MoveablePositions.Count == 0) 
             return false;
 
         return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
@@ -144,5 +144,4 @@ public class MoveAction : IAction
     {
         OnActionComplete?.Invoke(); 
     }
-
 }

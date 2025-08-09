@@ -28,6 +28,13 @@ public class AISummonStrategy
         List<Card> cards = handManager.GetHandCards(currentPlayerID);
         // 테스트
 
+        if (cards.Count == 0)
+        {
+            summonAction = null;
+            validGridPosList = null;
+            return false;
+        }
+
         Card card = GetRandomCard(cards);
 
         summonAction = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System) as SummonAction;
@@ -76,7 +83,7 @@ public class AISummonStrategy
         return true;
     }
 
-    private static Card GetRandomCard(List<Card> cards)
+    private Card GetRandomCard(List<Card> cards)
     {
         int randomIndex = UnityEngine.Random.Range(0, cards.Count);
         Card card = cards[randomIndex];

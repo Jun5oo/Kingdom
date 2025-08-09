@@ -16,6 +16,8 @@ public class AIController
     ActionType[] actionTypes;
 
     AISummonStrategy aiSummonStrategy;
+    AIMoveStrategy aiMoveStrategy;
+    AIAttackStrategy aiAttackStrategy;
 
     ActionSystem actionSystem;
 
@@ -30,6 +32,8 @@ public class AIController
         tokenManager = ServiceLocator.Get<TokenManager>();
 
         aiSummonStrategy = new AISummonStrategy(handManager, actionFactory, tokenManager);
+        aiMoveStrategy = new AIMoveStrategy(actionFactory, tokenManager);
+        aiAttackStrategy = new AIAttackStrategy(actionFactory, tokenManager);
 
         actionSystem = ServiceLocator.Get<ActionSystem>();
     }
@@ -48,18 +52,34 @@ public class AIController
         // 2. 새로운 유닛 소환
         // 3. 영웅 능력 사용 (현재는 제외)
 
-        List<ActionType> availableActions = new List<ActionType>();
         int actionCount = actionSystem.GetCurrentActionCount();
+        List<ActionType> availableActions = new List<ActionType>();
 
         while (actionCount > 0)
         {
             bool canSummon = aiSummonStrategy.CanSummonAction(currentPlayerID, out SummonAction summonAction,
                 out List<Vector2Int> validGridPosListForSummon);
-            //bool canMove = gridManager.CanMoveAction(currentPlayerID);
-            //bool canAttack = gridManager.CanAttackAction(currentPlayerID);
+            bool canMove = aiMoveStrategy.CanMoveAction(currentPlayerID, out MoveAction moveAction,
+                out List<Vector2Int> validGridPosListForMove);
+            bool canAttack = aiAttackStrategy.CanAttackAction(currentPlayerID, out AttackAction attackAction,
+                out List<Vector2Int> validGridPosListForAttack);
 
             if (canSummon)
+            {
                 availableActions.Add(ActionType.Summon);
+            }
+            if (canMove)
+            {
+                availableActions.Add(ActionType.Move);
+            }
+            if (canAttack)
+            {
+                availableActions.Add(ActionType.Attack);
+            }
+            if (availableActions.Count == 0)
+            {
+                break;
+            }
 
             ActionType randomAction = GetRandomAction(availableActions);
 
@@ -71,14 +91,17 @@ public class AIController
                     // 현재 자신의 영역 중 유효한 그리드 찾아서 배치 (유닛이 없는 곳에 배치)
                     break;
                 case ActionType.Move:
+                    await aiMoveStrategy.MoveRandomPos(moveAction, validGridPosListForMove);
                     // 현재 자신의 필드 내 유닛 중 하나를 선택하여 이동 (이동이 가능한지 체크 : 상하좌우)
                     break;
                 case ActionType.Attack:
+                    await aiAttackStrategy.AttackRandomTarget(attackAction, validGridPosListForAttack);
                     // 현재 자신의 필드 내 유닛들을 검사하여 공격이 가능한지 체크 후 실행
                     break;
             }
 
             actionCount--;
+            availableActions.Clear();
         }
 
         await OnAllActionsDone.Invoke();
