@@ -105,7 +105,7 @@ public class GridCell : MonoBehaviour, IHoverable
     public bool IsHighlighted() => isHighlighted;
     #endregion
 
-    public void OnMouseDown()
+    void OnMouseDown()
     {
         if (!EventSystem.current.IsPointerOverGameObject())
             OnClicked?.Invoke(this);

@@ -1,18 +1,17 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class DrawManager
 {
-    PlayerHandManager handManager; 
     DeckManager deckManager; 
     CardFactory cardFactory; 
 
     public void Init()
     {
-        handManager = ServiceLocator.Get<PlayerHandManager>();
         deckManager = ServiceLocator.Get<DeckManager>();
         cardFactory = ServiceLocator.Get<CardFactory>();    
     }
-    public Card Draw(int playerID)
+    public async UniTask<Card> Draw(int playerID)
     {
         // 랜덤 카드 드로우 
         CardData cardData = deckManager.GetCardData(playerID);
@@ -23,9 +22,10 @@ public class DrawManager
             return null;
         }
 
-        return cardFactory.CreateCard(cardData, playerID); 
+        Card card = await cardFactory.CreateCardAsync(cardData, playerID);
+        return card; 
     }
-    public Card DrawKing(int playerID)
+    public async UniTask<Card> DrawKing(int playerID)
     {
         CardData cardData = deckManager.GetKingCardData(playerID); 
 
@@ -35,7 +35,7 @@ public class DrawManager
             return null; 
         }
 
-        return cardFactory.CreateCard(cardData, playerID); 
-            
+        Card card = await cardFactory.CreateCardAsync(cardData, playerID);
+        return card; 
     }
 }

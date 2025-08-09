@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: TokenArtMask
+  m_EditorClassIdentifier: 
+  m_GroupName: TokenArtMask
+  m_GUID: 6e63e6a5a126b2a4aba2766223bf8d90
+  m_SerializeEntries:
+  - m_GUID: 03b6ad40d11432a478390ef0dfad845b
+    m_Address: token_artmask_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 94e74fa5fbf543349bd44084b81e5d9b
+    m_Address: token_artmask_king
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: e01e7504dd17e37459b3bafc4c1bb218, type: 2}
+    - {fileID: 11400000, guid: 746f6891350d1384396defb3d481a651, type: 2}

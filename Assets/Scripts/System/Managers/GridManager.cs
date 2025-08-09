@@ -7,6 +7,8 @@ public class GridManager : MonoBehaviour
     public const int HEIGHT = 7; 
     public const int WIDTH = 7; 
 
+    Vector3 originPos = Vector3.left * 8; 
+
     Grid grid;
 
     [SerializeField] GameObject gridPrefab;
@@ -17,7 +19,7 @@ public class GridManager : MonoBehaviour
     public void Init()
     {
         grid = new Grid();
-        grid.Init(HEIGHT, WIDTH, Vector3.zero, gridPrefab);
+        grid.Init(HEIGHT, WIDTH, originPos, gridPrefab);
         grid.CreateGridMap(transform, gridCellSprite);
 
         foreach (GridCell gridCell in grid.GetAllCells())

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: CardFrame
+  m_EditorClassIdentifier: 
+  m_GroupName: CardFrame
+  m_GUID: 561d478d8d1f5aa43a7bdec0bba6bb5b
+  m_SerializeEntries:
+  - m_GUID: 3fc65fd091f78474381ba650f5cd6765
+    m_Address: card_frame_celestial_king
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 57c6c33b5c423994c94c0905c1145141
+    m_Address: card_frame_celestial_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bd25d88131950754787c745225e8e085
+    m_Address: card_frame_undead_king
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f92377e2597809649a80d0cc794bc68a
+    m_Address: card_frame_undead_normal
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 70e00ed7f31c41449afe19986c20c374, type: 2}
+    - {fileID: 11400000, guid: 5eddf937b2955aa4eb581971c60a986a, type: 2}

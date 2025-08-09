@@ -10,16 +10,9 @@ public class GameFlowStateMachine
 
     IGameState currentState;
 
-    MonoBehaviour runner; 
-
-    public GameFlowStateMachine(MonoBehaviour runner)
-    {
-        this.runner = runner; 
-    }
-
     public void Enter(IGameState state)
     {
-        currentState = state; 
-        runner.StartCoroutine(state.Enter()); 
+        currentState = state;
+        state.Enter(); 
     }
 }

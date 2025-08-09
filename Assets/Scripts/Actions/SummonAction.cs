@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +17,7 @@ public class SummonAction : IAction
 
     // References 
     GridManager gridManager;
-    PlayerHandManager handManager;
+    HandManager handManager;
     TokenManager tokenManager;
     TokenFactory tokenFactory; 
     
@@ -42,7 +43,7 @@ public class SummonAction : IAction
         highlightType = HighlightType.SummonHighlight;
 
         this.gridManager = ServiceLocator.Get<GridManager>();
-        this.handManager = ServiceLocator.Get<PlayerHandManager>();
+        this.handManager = ServiceLocator.Get<HandManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
         this.tokenFactory = ServiceLocator.Get<TokenFactory>(); 
         
@@ -75,31 +76,28 @@ public class SummonAction : IAction
 
         gridManager?.HighlightGridCells((Vector2Int gridPosition) => CanSummonAt(gridPosition), highlightType, highlightLayer); 
     }
-    public void Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         this.targetPosition = targetPosition;
-        Transition(SummonState.Prepare); 
+        await Transition(SummonState.Prepare); 
     }
     public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
     public bool IsValid()
     {
         return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
     }
-    void Transition(SummonState state)
+    async UniTask Transition(SummonState state)
     {
         switch (state)
         {
             case SummonState.Prepare:
-                CurrentSummonState = SummonState.Prepare;
-                Prepare(); 
+                await Prepare(); 
                 break;
             case SummonState.Animation:
-                CurrentSummonState = SummonState.Animation;
-                Summon(); 
+                await Summon(); 
                 break;
             case SummonState.Placing:
-                CurrentSummonState = SummonState.Placing;
-                Placing(); 
+                await Placing(); 
                 break;
             case SummonState.Done:
                 CurrentSummonState = SummonState.Done;
@@ -107,11 +105,11 @@ public class SummonAction : IAction
                 break; 
         }
     } 
-    void Prepare()
+    async UniTask Prepare()
     {
         Exit();
 
-        int playerID = card.OwnerPlayerID; 
+        int playerID = card.OwnerID; 
         
         handManager.RemoveCardFromHand(playerID, card);
         
@@ -119,13 +117,18 @@ public class SummonAction : IAction
         PRS prs = cardMovement.PRS;
         prs.position += Vector3.forward * 2f;
 
+        var taskCompletion = new UniTaskCompletionSource(); 
+
         cardMovement.MoveTransform(prs, 0.5f, false, () => 
-        { 
-            Transition(SummonState.Animation);
+        {
             card.gameObject.SetActive(false);
+            taskCompletion.TrySetResult();
         });
+
+        await taskCompletion.Task; 
+        await Transition(SummonState.Animation);
     }
-    void Summon()
+    async UniTask Summon()
     {
         Vector3 worldPosition = gridManager.GetWorldPosition(targetPosition); 
 
@@ -136,21 +139,31 @@ public class SummonAction : IAction
 
         PRS prs = new PRS(targetPos, quaternion, scale);
 
-        Token token = tokenFactory.CreateToken(card.UnitCardData, card.OwnerPlayerID);
+        Token token = await tokenFactory.CreateToken(card.UnitData, card.OwnerID);
+        Debug.Log("Token Summon Complete");
+
         token.transform.position = targetPos + (Vector3.up * 10);
         token.transform.rotation = quaternion; 
         this.token = token;
     
         if (token.IsKing)
-            tokenManager.AddKingToken(card.OwnerPlayerID, token); 
+            tokenManager.AddKingToken(card.OwnerID, token);
+
+        var taskCompletion = new UniTaskCompletionSource(); 
 
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
-        tokenMovement.MoveTransform(prs, 1f, false, () => { Transition(SummonState.Placing); }); 
+        tokenMovement.MoveTransform(prs, 1f, false, () => 
+        {
+            taskCompletion.TrySetResult();
+        });
+
+        await taskCompletion.Task;
+        await Transition(SummonState.Placing);
     }
-    void Placing()
+    async UniTask Placing()
     {
         tokenManager.PlaceTokenTo(token, targetPosition); 
-        Transition(SummonState.Done); 
+        await Transition(SummonState.Done); 
     }
     void Done()
     {
@@ -195,7 +208,7 @@ public class SummonAction : IAction
 
     public bool TryGetKingTokenPos(out Vector2Int gridPos)
     {
-        int playerID = card.OwnerPlayerID;
+        int playerID = card.OwnerID;
         if (tokenManager.TryGetKingTokenFrom(playerID, out Token kingToken))
         {
             gridPos = tokenManager.GetGridPositionOfToken(kingToken);

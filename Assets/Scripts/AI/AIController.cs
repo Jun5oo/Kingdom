@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ public class AIController : MonoBehaviour
 {
     GridManager gridManager;
     ActionFactory actionFactory;
-    PlayerHandManager handManager;
+    HandManager handManager;
 
     TokenManager tokenManager;
 
@@ -23,7 +24,7 @@ public class AIController : MonoBehaviour
         // AI 초기화 로직
         gridManager = ServiceLocator.Get<GridManager>();
         actionFactory = ServiceLocator.Get<ActionFactory>();
-        handManager = ServiceLocator.Get<PlayerHandManager>();
+        handManager = ServiceLocator.Get<HandManager>();
         actionTypes = Enum.GetValues(typeof(ActionType)) as ActionType[]; // 모든 ActionType을 가져옴
 
         tokenManager = ServiceLocator.Get<TokenManager>();
@@ -33,14 +34,14 @@ public class AIController : MonoBehaviour
         actionSystem = ServiceLocator.Get<ActionSystem>();
     }
 
-    public void DecideKingPlacement(SummonAction summon)
+    public async void DecideKingPlacement(SummonAction summon)
     {
         int posY = summon.GetGridPosYForKing();
         Vector2Int targetPos = new Vector2Int(gridManager.GetRandomGridXPos(), posY);
-        summon.Execute(targetPos); // AI places the king at the center of the board
+        await summon.Execute(targetPos); // AI places the king at the center of the board
     }
 
-    public void InvokeRandomAction(int currentPlayerID, Action OnAllActionsDone)
+    public void InvokeRandomAction(int currentPlayerID, Func<UniTask> OnAllActionsDone)
     {
         // 할 수 있는 액션 나열
         // 1. 필드 위에 있는 오브젝트들 이동 및 공격
@@ -80,7 +81,7 @@ public class AIController : MonoBehaviour
             actionCount--;
         }
 
-        OnAllActionsDone?.Invoke();
+        OnAllActionsDone.Invoke();
     }
 
     private ActionType GetRandomAction(List<ActionType> availableActions)

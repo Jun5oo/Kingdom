@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class AISummonStrategy
 {
-    private PlayerHandManager handManager;
+    private HandManager handManager;
     private ActionFactory actionFactory;
     private TokenManager tokenManager;
 
-    public AISummonStrategy(PlayerHandManager playerHandManager, ActionFactory actionFactory, TokenManager tokenManager)
+    public AISummonStrategy(HandManager playerHandManager, ActionFactory actionFactory, TokenManager tokenManager)
     {
         this.handManager = playerHandManager;
         this.actionFactory = actionFactory;

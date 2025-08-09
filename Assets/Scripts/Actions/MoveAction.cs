@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -40,7 +41,7 @@ public class MoveAction : IAction
         this.performer = performer;
 
         this.token = token;
-        this.moveablePositions = token.CurrentMoveRange;
+        this.moveablePositions = token.MoveableRange;
 
         currentCost = 1;
     }
@@ -64,7 +65,7 @@ public class MoveAction : IAction
         }, HighlightType.MoveHighlight, HighlightLayer.Action);
 
     }
-    public void Execute(Vector2Int gridPosition)
+    public async UniTask Execute(Vector2Int gridPosition)
     {
         if(token == null)
         {
@@ -73,7 +74,7 @@ public class MoveAction : IAction
         }
 
         targetPosition = gridPosition; 
-        Transition(MoveState.Prepare); 
+        await Transition(MoveState.Prepare); 
     }
     public void Exit()
     {
@@ -88,18 +89,18 @@ public class MoveAction : IAction
         return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
-    void Transition(MoveState state)
+    async UniTask Transition(MoveState state)
     {
         switch (state)
         {
             case MoveState.Prepare:
-                Prepare();
+                await Prepare();
                 break;
             case MoveState.Animation:
-                Move(); 
+                await Move(); 
                 break;
             case MoveState.Placing:
-                Placing(); 
+                await Placing(); 
                 break;
             case MoveState.Done:
                 Done();
@@ -110,12 +111,12 @@ public class MoveAction : IAction
         }
     }
 
-    void Prepare()
+    async UniTask Prepare()
     {
         Exit(); 
-        Transition(MoveState.Animation);
+        await Transition(MoveState.Animation);
     }
-    void Move()
+    async UniTask Move()
     {
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
 
@@ -123,15 +124,20 @@ public class MoveAction : IAction
         Quaternion quaternion = tokenMovement.PRS.rotation;
         Vector3 scale = tokenMovement.PRS.scale;
 
+        var taskComplete = new UniTaskCompletionSource(); 
+
         tokenMovement.MoveTransform(new PRS(targetWorldPos, quaternion, scale), 0.5f, false, () =>
         {
-            Transition(MoveState.Placing); 
-        }); 
+            taskComplete.TrySetResult(); 
+        });
+
+        await taskComplete.Task;
+        await Transition(MoveState.Placing); 
     }
-    void Placing()
+    async UniTask Placing()
     {
         tokenManager.MoveTokenTo(token, targetPosition); 
-        Transition(MoveState.Done);
+        await Transition(MoveState.Done);
     }
 
     void Done()

@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using UnityEngine;
 
@@ -6,9 +7,9 @@ public class FirstDraw : IGameState
     const int DRAW_NUM = 3;
     const float DRAW_COOLTIME = 0.3f; 
 
-    TurnManager turnManager;
+    TurnSystem turnManager;
     DrawManager drawManager;
-    PlayerHandManager handManager;
+    HandManager handManager;
 
     PlayerManager playerManager;
 
@@ -18,9 +19,9 @@ public class FirstDraw : IGameState
     
     public FirstDraw(GameFlowStateMachine stateMachine)
     {
-        turnManager = ServiceLocator.Get<TurnManager>(); 
+        turnManager = ServiceLocator.Get<TurnSystem>(); 
         drawManager = ServiceLocator.Get<DrawManager>();
-        handManager = ServiceLocator.Get<PlayerHandManager>();
+        handManager = ServiceLocator.Get<HandManager>();
         playerManager = ServiceLocator.Get<PlayerManager>();
 
         this.stateMachine = stateMachine;
@@ -28,13 +29,13 @@ public class FirstDraw : IGameState
         drawTime = new WaitForSeconds(DRAW_COOLTIME); 
     }
 
-    public IEnumerator Enter()
+    public async UniTask Enter()
     {
-        yield return Draw(stateMachine.firstID);
-        yield return Draw(stateMachine.secondID);
+        await Draw(stateMachine.firstID);
+        await Draw(stateMachine.secondID);
 
         turnManager.SetTurnOrder(new int[] {stateMachine.firstID, stateMachine.secondID});  
-        turnManager.BeginTurnLoop(); 
+        await turnManager.BeginTurnLoop(); 
 
         SelectionSystem selectionSystem = ServiceLocator.Get<SelectionSystem>();
         ActionSystem actionSystem = ServiceLocator.Get<ActionSystem>();
@@ -53,13 +54,12 @@ public class FirstDraw : IGameState
         actionSystem.EnableSystem(); 
     }
 
-    IEnumerator Draw(int playerID)
+    async UniTask Draw(int playerID)
     {
        for(int i=0; i<DRAW_NUM; i++)
         {
-            Card card = drawManager.Draw(playerID);
+            Card card = await drawManager.Draw(playerID);
             handManager.AddCardToHand(playerID, card); 
-            yield return drawTime; 
         }
     }
 

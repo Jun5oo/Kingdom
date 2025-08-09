@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: CardBackground
+  m_EditorClassIdentifier: 
+  m_GroupName: CardBackground
+  m_GUID: ebd424c2cefc3bf458dad88aa5cb3fc3
+  m_SerializeEntries:
+  - m_GUID: 7de04c261c964564f8482c80bf201663
+    m_Address: card_bg_undead
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9a651bc7d58db0f41ae5044aad585d27
+    m_Address: card_bg_celestial
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: dfd4b5f62e9f943438a0914c8690e33d, type: 2}
+    - {fileID: 11400000, guid: 901270f5030e87542a2701fa992b9f85, type: 2}
