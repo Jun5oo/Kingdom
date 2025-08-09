@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,18 +16,20 @@ public class AISummonStrategy
         this.tokenManager = tokenManager;
     }
 
-    public void SummonRandomPos(SummonAction summon, List<Vector2Int> validGirdPos)
+    public async UniTask SummonRandomPos(SummonAction summon, List<Vector2Int> validGirdPos)
     {
         int randomIndex = UnityEngine.Random.Range(0, validGirdPos.Count);
         Vector2Int randomGridPos = validGirdPos[randomIndex];
-        summon.Execute(randomGridPos);
+        await summon.Execute(randomGridPos);
     }
 
     public bool CanSummonAction(int currentPlayerID, out SummonAction summonAction, out List<Vector2Int> validGridPosList)
     {
         List<Card> cards = handManager.GetHandCards(currentPlayerID);
         // 테스트
-        Card card = cards[0];
+
+        Card card = GetRandomCard(cards);
+
         summonAction = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System) as SummonAction;
 
         validGridPosList = summonAction.ValidPositions.ToList();
@@ -71,5 +74,12 @@ public class AISummonStrategy
         }
 
         return true;
+    }
+
+    private static Card GetRandomCard(List<Card> cards)
+    {
+        int randomIndex = UnityEngine.Random.Range(0, cards.Count);
+        Card card = cards[randomIndex];
+        return card;
     }
 }

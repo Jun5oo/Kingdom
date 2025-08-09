@@ -94,7 +94,7 @@ public class HandManager : MonoBehaviour
             return null; 
         }
 
-        return playerHands[playerID].HandCard;
+        return playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
     }
 
     #region CardAlignment 

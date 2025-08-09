@@ -43,13 +43,12 @@ public class Bootstrapper : MonoBehaviour
         RegisterServices(); 
     }
 
-    async void Start()
+    void Start()
     {
-        await Initialization();
         gameFlowManager.GameStart();
     }
 
-    public void RegisterServices()
+    public async void RegisterServices()
     {
         gameFlowManager = new GameFlowManager();
         playerManager = new PlayerManager();
@@ -94,12 +93,13 @@ public class Bootstrapper : MonoBehaviour
 
         ServiceLocator.Register(aiController);
 
-        Initialization();
         ServiceLocator.Register(cardTextureLoader);
         ServiceLocator.Register(tokenTextureLoader);
         ServiceLocator.Register(prefabLoader);
         ServiceLocator.Register(eventQueue);
         ServiceLocator.Register(database);
+
+        await Initialization();
     }
 
     public async UniTask Initialization()
