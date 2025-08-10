@@ -668,13 +668,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c513f18f823d8c647b7c0daeb848f201, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  swordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
+  undeadSwordPrefab: {fileID: 3060397016117204166, guid: 3f7c4c2fb2060ce4484fb508027c2923, type: 3}
+  undeadBowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
+  undeadArrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
+  celestialSwordPrefab: {fileID: 3060397016117204166, guid: 12399912016f2274aa39b7c75bef433d, type: 3}
+  celestialBowPrefab: {fileID: 3060397016117204166, guid: 3dcb6ba478f448a4e98754e0c052995f, type: 3}
+  celestialArrowPrefab: {fileID: 3060397016117204166, guid: 74121b9f6f34d4b4fa6e5d01d9962184, type: 3}
   swordSpawnPoint: {fileID: 4933813663905246059}
-  swordSwingDuration: 0.5
-  bowPrefab: {fileID: 3060397016117204166, guid: aad35ba3a0f2e444ab5e092fe85aea67, type: 3}
-  arrowPrefab: {fileID: 3060397016117204166, guid: d62b587ae9702ad44af2b924054d4bd3, type: 3}
   bowSpawnPoint: {fileID: 4933813663905246059}
   arrowSpawnPoint: {fileID: 4933813663905246059}
+  swordSwingDuration: 0.5
   bowDrawDuration: 0.5
   arrowFlightDuration: 0.5
   enableTestMode: 1

@@ -65,19 +65,28 @@ public class DamageManager
         Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
         Vector2Int attackerPos = tokenManager.GetGridPositionOfToken((attacker));
 
-
+        // 반격 가능 여부 확인
+        bool canCounter = false;
         foreach (var position in defender.AttackRange)
         {
             if (defenderPos + position == attackerPos)
             {
-                int damage = damageable.TakeDamage(defenderCP, false);
-                displayer.Display(damage, attacker);
-
-                return damage; 
+                canCounter = true;
+                break;
             }
         }
 
-        return 0; 
+        if (!canCounter)
+        {
+            Debug.Log("반격 불가능: 공격 범위 밖");
+            return 0;
+        }
+
+        // 반격 데미지 적용
+        int damage = damageable.TakeDamage(defenderCP, false);
+        displayer.Display(damage, attacker);
+
+        return damage; 
     }
     public void IsKingDefeated()
     {

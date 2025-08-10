@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class AttackAnimationController : MonoBehaviour
 {
-    [Header("Melee Attack Components")]
-    [SerializeField] GameObject swordPrefab; // 칼 프리팹
-    [SerializeField] Transform swordSpawnPoint; // 칼 생성 위치
-    [SerializeField] float swordSwingDuration = 0.3f; // 칼 휘두르는 시간
+    [Header("Undead Weapon Prefabs")]
+    [SerializeField] GameObject undeadSwordPrefab; // 언데드 칼 프리팹
+    [SerializeField] GameObject undeadBowPrefab; // 언데드 활 프리팹
+    [SerializeField] GameObject undeadArrowPrefab; // 언데드 화살 프리팹
     
-    [Header("Ranged Attack Components")]
-    [SerializeField] GameObject bowPrefab; // 활 프리팹
-    [SerializeField] GameObject arrowPrefab; // 화살 프리팹
+    [Header("Celestial Weapon Prefabs")]
+    [SerializeField] GameObject celestialSwordPrefab; // 천사 칼 프리팹
+    [SerializeField] GameObject celestialBowPrefab; // 천사 활 프리팹
+    [SerializeField] GameObject celestialArrowPrefab; // 천사 화살 프리팹
+    
+    [Header("Spawn Points")]
+    [SerializeField] Transform swordSpawnPoint; // 칼 생성 위치
     [SerializeField] Transform bowSpawnPoint; // 활 생성 위치
     [SerializeField] Transform arrowSpawnPoint; // 화살 생성 위치
+    
+    [Header("Animation Settings")]
+    [SerializeField] float swordSwingDuration = 0.3f; // 칼 휘두르는 시간
     [SerializeField] float bowDrawDuration = 0.5f; // 활 당기는 시간
     [SerializeField] float arrowFlightDuration = 0.3f; // 화살 날아가는 시간
     
@@ -21,6 +28,19 @@ public class AttackAnimationController : MonoBehaviour
     [SerializeField] bool enableTestMode = true; // 테스트 모드 활성화
     [SerializeField] Vector3 testTargetPosition = new Vector3(2, 0, 2); // 테스트용 타겟 위치
     [SerializeField] bool testRangedAttack = false; // 원거리 공격 테스트 모드
+    
+    // Token 컴포넌트 참조
+    private Token token;
+
+    void Start()
+    {
+        // Token 컴포넌트 가져오기
+        token = GetComponent<Token>();
+        if (token == null)
+        {
+            Debug.LogError("Token component not found on AttackAnimationController!");
+        }
+    }
 
     void Update()
     {
@@ -97,9 +117,11 @@ public class AttackAnimationController : MonoBehaviour
     // 칼 생성 및 휘두르기 애니메이션
     void CreateAndSwingSword(Vector3 target, Action onHitCallback, Action onCompleteCallback = null)
     {
-        if (swordPrefab == null)
+        // 종족에 따른 칼 프리팹 선택
+        GameObject selectedSwordPrefab = GetSwordPrefabByRace();
+        if (selectedSwordPrefab == null)
         {
-            Debug.LogWarning("Sword prefab is not assigned!");
+            Debug.LogWarning("No sword prefab found for current race!");
             onHitCallback?.Invoke();
             onCompleteCallback?.Invoke();
             return;
@@ -110,7 +132,7 @@ public class AttackAnimationController : MonoBehaviour
             swordSpawnPoint.position : transform.position + Vector3.up * 1f;
 
         // 칼 인스턴스 생성
-        GameObject sword = Instantiate(swordPrefab, spawnPosition, Quaternion.identity);
+        GameObject sword = Instantiate(selectedSwordPrefab, spawnPosition, Quaternion.identity);
         
         // 타겟 방향 계산
         Vector3 direction = (target - spawnPosition).normalized;
@@ -150,6 +172,57 @@ public class AttackAnimationController : MonoBehaviour
         });
     }
 
+    // 종족에 따른 칼 프리팹 선택
+    private GameObject GetSwordPrefabByRace()
+    {
+        if (token == null) return null;
+        
+        switch (token.Race)
+        {
+            case Race.Undead:
+                return undeadSwordPrefab;
+            case Race.Celestial:
+                return celestialSwordPrefab;
+            default:
+                Debug.LogWarning($"No sword prefab defined for race: {token.Race}");
+                return undeadSwordPrefab; // 기본값으로 언데드 칼 사용
+        }
+    }
+
+    // 종족에 따른 활 프리팹 선택
+    private GameObject GetBowPrefabByRace()
+    {
+        if (token == null) return null;
+        
+        switch (token.Race)
+        {
+            case Race.Undead:
+                return undeadBowPrefab;
+            case Race.Celestial:
+                return celestialBowPrefab;
+            default:
+                Debug.LogWarning($"No bow prefab defined for race: {token.Race}");
+                return undeadBowPrefab; // 기본값으로 언데드 활 사용
+        }
+    }
+
+    // 종족에 따른 화살 프리팹 선택
+    private GameObject GetArrowPrefabByRace()
+    {
+        if (token == null) return null;
+        
+        switch (token.Race)
+        {
+            case Race.Undead:
+                return undeadArrowPrefab;
+            case Race.Celestial:
+                return celestialArrowPrefab;
+            default:
+                Debug.LogWarning($"No arrow prefab defined for race: {token.Race}");
+                return undeadArrowPrefab; // 기본값으로 언데드 화살 사용
+        }
+    }
+
     // 원거리 공격 애니메이션 (활과 화살)
     public void RangeAttackAnimation(Vector3 target, PRS from, Action onHitCallback = null, Action onCompleteCallback = null)
     {
@@ -175,9 +248,13 @@ public class AttackAnimationController : MonoBehaviour
     // 활 생성 및 화살 발사 애니메이션
     void CreateAndShootArrow(Vector3 target, Action onHitCallback, Action onCompleteCallback = null)
     {
-        if (bowPrefab == null || arrowPrefab == null)
+        // 종족에 따른 활과 화살 프리팹 선택
+        GameObject selectedBowPrefab = GetBowPrefabByRace();
+        GameObject selectedArrowPrefab = GetArrowPrefabByRace();
+        
+        if (selectedBowPrefab == null || selectedArrowPrefab == null)
         {
-            Debug.LogWarning("Bow or Arrow prefab is not assigned!");
+            Debug.LogWarning("Bow or Arrow prefab is not assigned for current race!");
             onHitCallback?.Invoke();
             onCompleteCallback?.Invoke();
             return;
@@ -196,7 +273,7 @@ public class AttackAnimationController : MonoBehaviour
         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
 
         // 활 인스턴스 생성 (그냥 생성, 애니메이션 없음)
-        GameObject bow = Instantiate(bowPrefab, bowSpawnPosition, Quaternion.identity);
+        GameObject bow = Instantiate(selectedBowPrefab, bowSpawnPosition, Quaternion.identity);
         bow.transform.rotation = Quaternion.Euler(90f, targetAngle, -90f);
 
         // 활과 화살 애니메이션 시퀀스
@@ -209,7 +286,7 @@ public class AttackAnimationController : MonoBehaviour
         // 활 등장 후 화살 생성
         bowArrowSequence.AppendCallback(() => {
             // 화살 인스턴스 생성
-            GameObject arrow = Instantiate(arrowPrefab, arrowSpawnPosition, Quaternion.identity);
+            GameObject arrow = Instantiate(selectedArrowPrefab, arrowSpawnPosition, Quaternion.identity);
             arrow.transform.rotation = Quaternion.Euler(90f, targetAngle, 0);
             
             // 화살 애니메이션
