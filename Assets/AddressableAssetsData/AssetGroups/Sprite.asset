@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: Sprite
   m_GUID: 653cba445ac5ac549a45156773c36830
   m_SerializeEntries:
+  - m_GUID: 1de5d5dcc6c763a4aa95889a6e6e8dd9
+    m_Address: coin_celestial
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Coin
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63210745964c49a4fbadcf53127b031d
     m_Address: icon_attack
     m_ReadOnly: 0
@@ -32,6 +38,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - Icon
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7ab3cdc0513050438d4f192a3107686
+    m_Address: coin_undead
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Coin
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}

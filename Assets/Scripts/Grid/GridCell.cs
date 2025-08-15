@@ -12,8 +12,6 @@ public class GridCell : MonoBehaviour, IHoverable
     // Highlight 
     [SerializeField] SpriteRenderer highlightRenderer;
     // Grid 
-    [SerializeField] SpriteRenderer gridCellRenderer; 
-
     [SerializeField] private Material onHoverMaterial;
     [SerializeField] private Material offHoverMaterial;
 
@@ -57,8 +55,6 @@ public class GridCell : MonoBehaviour, IHoverable
         
         highlightLayerToRenderer[HighlightLayer.Action] = highlightRenderer;
         highlightLayerToRenderer[HighlightLayer.Hover] = hoverRenderer;
-
-        gridCellRenderer.sprite = sprite; 
     }
 
     public Vector2Int GetGridPosition() => gridPosition;

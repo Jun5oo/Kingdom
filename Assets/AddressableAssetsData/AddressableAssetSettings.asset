@@ -108,9 +108,9 @@ MonoBehaviour:
     m_ProfileVersion: 1
   m_LabelTable:
     m_LabelNames:
-    - default
     - Icon
     - CardData
+    - Coin
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: e8fbab55a427ade44a8cdb74cc32b4fb, type: 2}

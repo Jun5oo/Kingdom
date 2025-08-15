@@ -1,4 +1,6 @@
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class TurnEnd : MonoBehaviour
 {
@@ -6,15 +8,14 @@ public class TurnEnd : MonoBehaviour
 
     [SerializeField] Renderer buttonRenderer;
 
-    [SerializeField] Material green;
-    [SerializeField] Material red; 
-
-    Material gray;
+    [SerializeField] Texture2D myTurn;
+    [SerializeField] Texture2D opponentTurn; 
 
     void Start()
     {
         turnSystem = ServiceLocator.Get<TurnSystem>();
-        gray = buttonRenderer.sharedMaterial;
+
+        this.transform.localScale = Vector3.zero; 
 
         Unsubscribe();
         Subscribe(); 
@@ -22,17 +23,32 @@ public class TurnEnd : MonoBehaviour
 
     public void MyTurn()
     {
-        buttonRenderer.sharedMaterial = green; 
+        OnUpdateTexture(myTurn);
+        DoExpand(); 
     }
-
     public void OpponentTurn()
     {
-        buttonRenderer.sharedMaterial = red;
+        OnUpdateTexture(opponentTurn);
+        DoExpand();
     }
-
     public void EndTurn()
     {
-        buttonRenderer.material = gray; 
+        DoShrink(); 
+    }
+
+    public void OnUpdateTexture(Texture2D texture)
+    {
+        Material mat = buttonRenderer.sharedMaterial;
+        if (mat.HasProperty("_BaseMap"))
+            mat.SetTexture("_BaseMap", texture); 
+    }
+    public void DoExpand()
+    {
+        transform.DOScale(Vector3.one, 0.2f); 
+    }
+    public void DoShrink()
+    {
+        transform.DOScale(Vector3.zero, 0.2f); 
     }
 
     public void OnMouseDown()

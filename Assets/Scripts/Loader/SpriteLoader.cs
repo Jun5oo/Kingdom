@@ -8,6 +8,7 @@ public class SpriteLoader
 {
     // SpriteLoader: Sprite Image를 Addressable Asset을 통해서 가져옴 
     const string ICON_LABEL = "Icon";
+    const string COIN_LABEL = "Coin"; 
 
     public List<AsyncOperationHandle> handle = new List<AsyncOperationHandle>();
     protected Dictionary<string, Sprite> spriteCache;
@@ -15,7 +16,8 @@ public class SpriteLoader
     {
         spriteCache = new Dictionary<string, Sprite>();
 
-        await PreLoadSpriteAsync(ICON_LABEL); 
+        await PreLoadSpriteAsync(ICON_LABEL);
+        await PreLoadSpriteAsync(COIN_LABEL); 
     }
 
     public async UniTask PreLoadSpriteAsync(string label)

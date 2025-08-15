@@ -1,10 +1,14 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AbilityResourceSystem : IResourceSystem
 {
     // Key: PlayerID, Value: Ability Coin 
-    Dictionary<int, int> playerAbilityResources; 
+    Dictionary<int, int> playerAbilityResources;
+
+    // PlayerID, AbilityCount
+    public Action<int, int> onAbilityCountChanged; 
 
     public void Init()
     {
@@ -15,8 +19,16 @@ public class AbilityResourceSystem : IResourceSystem
         playerAbilityResources.Add(playerManager.Remote.PlayerID, 0);
     }
 
-    public void Add(int playerID, int amount) => playerAbilityResources[playerID] += amount;
-    public void Consume(int playerID, int cost) => playerAbilityResources[playerID] -= cost;
+    public void Add(int playerID, int amount)
+    {
+        playerAbilityResources[playerID] += amount;
+        onAbilityCountChanged?.Invoke(playerID, GetCurrentResources(playerID));
+    }
+    public void Consume(int playerID, int cost)
+    {
+        playerAbilityResources[playerID] -= cost;
+        onAbilityCountChanged?.Invoke(playerID, GetCurrentResources(playerID)); 
+    }
     public int GetCurrentResources(int playerID) => playerAbilityResources[playerID];
     public bool IsEnoughResources(int playerID, int cost) => playerAbilityResources[playerID] >= cost;
         
