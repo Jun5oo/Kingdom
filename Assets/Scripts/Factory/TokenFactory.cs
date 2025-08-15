@@ -16,25 +16,45 @@ public class TokenFactory
 
         tokenPrefab = await prefabLoader.LoadPrefabAsync<Token>(); 
     }
-    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID, CardData sourceObject = null, List<UnitCardData> sourceObjects = null)
+    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID, CardData sourceObject = null, List<UnitCardData> sourceObjects = null, int spawnLevel = 1)
     {
         GameObject prefab = tokenPrefab; 
-        prefab.SetActive(false); 
 
         GameObject tokenObject = GameObject.Instantiate(prefab);
+        tokenObject.SetActive(false);
 
         if (tokenObject.TryGetComponent<Token>(out Token token))
-            token.Init(unitData, playerID, sourceObject, sourceObjects);
+            token.Init(unitData, playerID, sourceObject, sourceObjects, spawnLevel);
 
         VisualTexture textures = await textureLoader.LoadAllTextures(unitData);
-        
-        if (token.TryGetComponent<TokenView>(out TokenView tokenView))
-            tokenView.Init(textures, unitData.GetCP(unitData.Level), unitData.GetMovement(unitData.Level));
 
-        if (tokenView == null)
-            Debug.Log("TokenView 컴포넌트를 찾을 수 없습니다.");
+        GameObject statusPrefab = (unitData.Tag != UnitTag.King) ? await prefabLoader.LoadPrefabAsync<NumberStatusPresenter>() : await prefabLoader.LoadPrefabAsync<BarStatusPresenter>(); 
+
+        if(statusPrefab == null)
+        {
+            Debug.LogError($"{statusPrefab}을 찾을 수 없습니다.");
+            return null; 
+        }
+
+        if (!token.TryGetComponent<TokenView>(out TokenView tokenView))
+        {
+            Debug.LogError($"{tokenView}를 찾을 수 없습니다.");
+            return null;
+        }
+
+        GameObject statusInstance = GameObject.Instantiate(statusPrefab);
+
+        if (!statusInstance.TryGetComponent<StatusPresenter>(out StatusPresenter presenter))
+        {
+            Debug.LogError($"{presenter}를 찾을 수 없습니다.");
+            return null;
+        }
+
+        statusInstance.transform.SetParent(tokenView.Canvas.transform, false);
+        tokenView.Init(textures, presenter, unitData.GetCP(token.Level), unitData.GetMovement(token.Level));
 
         tokenObject.SetActive(true); 
+        
         return token; 
     }
 }

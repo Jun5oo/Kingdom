@@ -159,6 +159,9 @@ public class HandManager : MonoBehaviour
         List<Card> hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
         */
 
+        if (card == null)
+            return; 
+
         GameObject[] slot = playerID == playerManager.Local.PlayerID ? localSlot : remoteSlot;
         Card[] hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
 
@@ -180,7 +183,7 @@ public class HandManager : MonoBehaviour
         }
 
         Vector3 pos = slot[idx].transform.position;
-        float rotationX = 90f;
+        float rotationX = playerID == playerManager.Local.PlayerID ? 90f : -90f;
         float rotationZ = playerID == playerManager.Local.PlayerID ? 0f : 180f;
         Quaternion rotation = Quaternion.Euler(rotationX, 0f, rotationZ);
         Vector3 scale = Vector3.one;
@@ -194,16 +197,20 @@ public class HandManager : MonoBehaviour
     {
         Card[] hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
 
+        if(hand == null)
+        {
+            Debug.LogWarning($"{playerID}의 패를 찾을 수 없습니다.");
+            return; 
+        }
+
         for(int i=0; i< hand.Length; i++)
         {
             if (hand[i] == card)
             {
                 hand[i] = null;
+                // card.gameObject.SetActive(false); 
                 break; 
             }
         }
-
-        Debug.Log("제거하려는 카드를 찾을 수 없습니다. "); 
-        // Destroy(card); 
     }
 }

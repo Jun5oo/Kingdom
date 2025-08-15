@@ -1,18 +1,22 @@
+using Cysharp.Threading.Tasks;
 using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
-    // 현재는 단순히 버튼에 Text를 입혔지만, 추후에는 행동 별 UI 이미지로 대체할 예정 
-    [SerializeField] TextMeshProUGUI actionInitial;
+    [SerializeField] Image iconImage;
+    [SerializeField] TextMeshProUGUI actionInitial;  
 
     private IAction action;
     // ActionSystem에 전달하는 delegate 
     public Action<IAction> OnSelected;
     // ActionDisplayer에 전달하는 delegate 
-    public Action OnClicked; 
+    public Action OnClicked;
+
+    SpriteLoader spriteLoader; 
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -25,23 +29,27 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
     public void Init(IAction action)
     {
         this.action = action;
+        this.spriteLoader = ServiceLocator.Get<SpriteLoader>(); 
 
         transform.localScale = Vector3.one; 
-        OnUpdateText(action);
+
+        OnUdatePopup(action);
     }
 
-    public void OnUpdateText(IAction action)
+    public async UniTask OnUdatePopup(IAction action)
     {
+        Sprite sprite = null; 
+
         switch (action.ActionType)
         {
             case ActionType.Summon:
-                actionInitial.text = "S";
+                sprite = await spriteLoader.LoadSpriteAsync("icon_summon"); 
                 break;
             case ActionType.Move:
-                actionInitial.text = "M";
+                sprite = await spriteLoader.LoadSpriteAsync("icon_move"); 
                 break;
             case ActionType.Attack:
-                actionInitial.text = "A";
+                sprite = await spriteLoader.LoadSpriteAsync("icon_attack"); 
                 break;
             case ActionType.Resurrection:
                 actionInitial.text = "R";
@@ -53,5 +61,7 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
                 actionInitial.text = "N";
                 break;
         }
+
+        this.iconImage.sprite = sprite;
     }
 }

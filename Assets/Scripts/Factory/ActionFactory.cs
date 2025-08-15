@@ -35,7 +35,6 @@ public class ActionFactory
                 }
                 break;
             case ActionType.Upgrade:
-                Debug.Log("UpgradeAction");
                 if(baseObject is Token king)
                 {
                     if(king.Tag == UnitTag.King)

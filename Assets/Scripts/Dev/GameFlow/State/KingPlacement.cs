@@ -16,24 +16,13 @@ public class KingPlacement : IGameState
     public async UniTask Enter()
     {
         Debug.Log("King Placement Phase"); 
-        PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
-        UIManager uiManager = ServiceLocator.Get<UIManager>();
-        TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
-
+        
         await OnPlacement(stateMachine.firstID);
         await OnPlacement(stateMachine.secondID);
 
-        if (tokenManager.TryGetKingTokenFrom(playerManager.Local.PlayerID, out Token localToken))
-            uiManager.SetHUD(playerManager.Local, localToken);
-        else
-            Debug.LogError("로컬 플레이어의 왕이 소환되지 않았습니다.");
-
-        if (tokenManager.TryGetKingTokenFrom(playerManager.Remote.PlayerID, out Token remoteToken))
-            uiManager.SetHUD(playerManager.Remote, remoteToken);
-        else
-            Debug.LogError("상대 플레이어의 왕이 소환되지 않았습니다.");
-
-        uiManager.OnActiveHUD();
+        HUDDisplayer hudDisplayer = ServiceLocator.Get<HUDDisplayer>();
+        hudDisplayer.SetHUD(); 
+        hudDisplayer.ActivateHUD(); 
 
         await UniTask.Delay(WAIT_TIME);
 

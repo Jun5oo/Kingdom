@@ -21,11 +21,11 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     void Update()
     {
         // UI가 있는 경우 
-        if (EventSystem.current.IsPointerOverGameObject())
-        {
-            ExitHover();
-            return; 
-        }
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                ExitHover();
+                return; 
+            }
 
         // Input.mousePosition의 경우 screen position을 반환하기 때문에 world 좌표계 값으로 변경해줘야한다. 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -52,8 +52,8 @@ public class HoverSystem : MonoBehaviour, IGameSystem
 
                 else
                 {
-                    if (currentHoverable != null && Time.time - hoverStartTime >= 1f)
-                        TryShowAttackRange(hit.transform.position); 
+                    if (currentHoverable != null && Time.time - hoverStartTime >= 0.5f)
+                        HighlightHoveredAttackRange(hit.transform.position); 
                 }
             }
         }
@@ -79,27 +79,38 @@ public class HoverSystem : MonoBehaviour, IGameSystem
 
         currentHoverable?.OffHover();
         currentHoverable = null;
-        gridManager.UnhighlightGridCells(HighlightLayer.Hover);
+        gridManager?.UnhighlightGridCells(HighlightLayer.Hover);
     }
     #endregion 
     
     public IHoverable GetCurrentHoverable() => currentHoverable;
 
-    void TryShowAttackRange(Vector3 worldPosition)
+    void HighlightHoveredAttackRange(Vector3 worldPosition)
     {
         if (currentHoverable == null)
             return;
 
         if (!actionSystem.IsActionInProgress())
-            return; 
+            return;
 
         Vector2Int gridPosition = gridManager.GetGridPosition(worldPosition);
         
         if(tokenManager.TryGetTokenFrom(gridPosition, out Token token))
         {
             if (token.AttackRange == null || token.AttackRange.Count <= 0)
-                return; 
+                return;
 
+            IAction currentAction = actionSystem.GetCurrentAction();
+
+            if (currentAction.ActionType == ActionType.Summon)
+                return;
+
+            BaseObject executor = currentAction?.Executor; 
+
+            if (ReferenceEquals(token, executor))
+                return;
+
+            gridManager.UnhighlightGridCells(HighlightLayer.Hover); 
             gridManager.HighlightGridCells((Vector2Int gridPos) =>
             {
                 foreach (var pos in token.AttackRange)

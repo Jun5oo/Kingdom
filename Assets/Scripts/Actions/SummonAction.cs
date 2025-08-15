@@ -18,11 +18,9 @@ public class SummonAction : IAction
     GridManager gridManager;
     HandManager handManager;
     TokenManager tokenManager;
-    TokenFactory tokenFactory;
     SummonSystem summonSystem; 
     
     UnitCard card;
-    Token token;
     ActionPerformer performer;
 
     Vector2Int targetPosition;
@@ -38,6 +36,8 @@ public class SummonAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return card.OwnerID; } }
 
+    public BaseObject Executor => card; 
+
     public SummonAction(UnitCard card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
@@ -47,12 +47,9 @@ public class SummonAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.handManager = ServiceLocator.Get<HandManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
-        this.tokenFactory = ServiceLocator.Get<TokenFactory>(); 
         this.summonSystem = ServiceLocator.Get<SummonSystem>();
 
         this.card = card;
-        this.token = null;
-
         this.performer = performer;
 
         validPositions = new List<Vector2Int>
@@ -146,6 +143,7 @@ public class SummonAction : IAction
     {
         OnActionComplete?.Invoke();
     }
+
     private bool CanSummonAt(Vector2Int pos)
     {
         if (card.Tag == UnitTag.King)

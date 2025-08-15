@@ -6,6 +6,7 @@ public interface IAction
 {
     // 오브젝트 행동 인터페이스 
     public int OwnerID { get; }
+    public BaseObject Executor { get; }
 
     public ActionType ActionType { get; }
     public HighlightLayer HighlightLayer { get; }

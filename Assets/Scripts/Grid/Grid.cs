@@ -47,7 +47,7 @@ public class Grid
 
                 GridCell gridCell = gridObject.GetComponent<GridCell>();
 
-                int idx = i * 7 + j; 
+                int idx = i * width + j; 
 
                 gridCell.Init(gridPos, sprites[idx]);
 

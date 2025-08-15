@@ -18,7 +18,7 @@ public class SummonSystem
         gridManager = ServiceLocator.Get<GridManager>();
     }
 
-    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition, CardData sourceObject = null, List<UnitCardData> sourceObjects = null)
+    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition, CardData sourceObject = null, List<UnitCardData> sourceObjects = null, int spawnLevel = 1)
     {
         if (tokenManager.IsTokenAtGridPosition(targetPosition))
         {
@@ -33,7 +33,7 @@ public class SummonSystem
         PRS prs = new PRS(position, rotation, scale); 
 
         // 1. 생성 
-        Token created = await tokenFactory.CreateToken(unitCardData, playerID, sourceObject, sourceObjects);
+        Token created = await tokenFactory.CreateToken(unitCardData, playerID, sourceObject, sourceObjects, spawnLevel);
         created.transform.position = position + Vector3.up * 10f;
         created.transform.rotation = rotation;
 

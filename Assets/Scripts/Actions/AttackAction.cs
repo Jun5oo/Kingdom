@@ -21,6 +21,7 @@ public class AttackAction : IAction
 
     Token token;
     Token target;
+
     ActionPerformer performer;
 
     Vector2Int targetPosition; 
@@ -36,6 +37,8 @@ public class AttackAction : IAction
     public ResourceType resourceType;
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
+
+    public BaseObject Executor => token; 
 
     public AttackAction(Token token, ActionPerformer performer)
     {

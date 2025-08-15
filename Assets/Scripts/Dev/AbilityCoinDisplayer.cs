@@ -5,7 +5,7 @@ public class AbilityCoinDisplayer : MonoBehaviour
 {
     [SerializeField] TextMeshProUGUI text;
 
-    IResourceSystem abilitySystem;
+    AbilityResourceSystem abilitySystem;
 
     [SerializeField] bool IsLocal;
 
@@ -14,7 +14,7 @@ public class AbilityCoinDisplayer : MonoBehaviour
     void Start()
     {
         PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();    
-        abilitySystem = ServiceLocator.Get<IResourceSystem>();
+        abilitySystem = ServiceLocator.Get<AbilityResourceSystem>();
 
         if (IsLocal)
             playerID = playerManager.Local.PlayerID; 

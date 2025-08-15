@@ -50,7 +50,6 @@ public class ActionDisplayer : MonoBehaviour
         foreach (var actionType in actionTypes)
         {
             IAction action = actionFactory.CreateAction(actionType, baseObject);
-            Debug.Log(action); 
 
             if (action == null)
                 continue;

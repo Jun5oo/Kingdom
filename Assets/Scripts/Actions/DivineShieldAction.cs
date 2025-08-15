@@ -30,6 +30,8 @@ public class DivineShieldAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
 
+    public BaseObject Executor => token; 
+
     public DivineShieldAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.DivineShield;

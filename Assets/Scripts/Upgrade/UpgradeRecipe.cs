@@ -48,7 +48,7 @@ public class UpgradeRecipe
             return false;
 
         int playerID = candidates[0].OwnerID; 
-        IResourceSystem abilityResourceSystem = ServiceLocator.Get<IResourceSystem>();
+        AbilityResourceSystem abilityResourceSystem = ServiceLocator.Get<AbilityResourceSystem>();
 
         // 왕 토큰이 필요한 경우, 플레이어가 소유한 왕 토큰이 충분한지 확인 
         if (abilityResourceSystem.GetCurrentResources(playerID) < abilityCoinRequired)

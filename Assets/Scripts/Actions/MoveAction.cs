@@ -34,6 +34,8 @@ public class MoveAction : IAction
 
     public int OwnerID { get { return token.OwnerID; } }
 
+    public BaseObject Executor => token; 
+
     public MoveAction(Token token, ActionPerformer performer)
     {
         // 이동액션 초기화 

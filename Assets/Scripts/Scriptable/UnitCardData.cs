@@ -24,7 +24,7 @@ public class UnitCardData : CardData
 
     public int Level { get { return level; } }
     public List<int> CP { get { return levelCP; } set { levelCP = value; } }
-    public List<int> Movement { get { return movement; } set { Movement = value; } }
+    public List<int> Movement { get { return movement; } set { movement = value; } }
 
     public UnitTag Tag { get { return tag; } }
     public bool IsKing { get { return isKing; } set { isKing = value; } }

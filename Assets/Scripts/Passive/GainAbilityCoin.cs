@@ -12,20 +12,14 @@ public class GainAbilityCoin : IPassive
         this.baseObject = baseObject;
     }
 
-    public void Activate()
-    {
-        Debug.Log($"{this} event connected"); 
-        damageManager.OnPlayerUnitKilledEnemy += GetAbilityCoin;
-    }
+    public void Activate() => damageManager.OnPlayerUnitKilledEnemy += GetAbilityCoin;
     public void Deactivate() => damageManager.OnPlayerUnitKilledEnemy -= GetAbilityCoin; 
     public void GetAbilityCoin(Token attacker, Token defender)
     {
         if (baseObject.OwnerID != attacker.OwnerID)
             return;
 
-        var abilityResourceSystem = ServiceLocator.Get<IResourceSystem>();
+        var abilityResourceSystem = ServiceLocator.Get<AbilityResourceSystem>();
         abilityResourceSystem.Add(attacker.OwnerID, 1); 
-
-        Debug.Log($"PlayerID {attacker.OwnerID} get ability coin!"); 
     }
 }

@@ -45,6 +45,8 @@ public class UpgradeAction : IAction
     UpgradeState currentState; 
     public UpgradeState UpgradeState { get { return currentState; } }
 
+    public BaseObject Executor => actionOwner; 
+
     GridManager gridManager;
     TokenManager tokenManager; 
     UpgradeSystem upgradeSystem;

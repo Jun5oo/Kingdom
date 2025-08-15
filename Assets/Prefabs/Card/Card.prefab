@@ -50,6 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 461b5f22dd06bda4c9cba627869d85e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentLevel: 0
   currentCP: 0
   view: {fileID: 4832598343463769610}
   interaction: {fileID: 2077332992406354925}
@@ -140,7 +141,7 @@ Transform:
   m_GameObject: {fileID: 3388310844967422216}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.17, z: 0}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

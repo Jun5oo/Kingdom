@@ -7,7 +7,7 @@ public class UpgradeSystem
 {
     List<UpgradeRecipe> recipes;
 
-    CardDatabase database; 
+    CardDatabase database;
     SummonSystem summonSystem; 
     TokenManager tokenManager; 
 
@@ -28,7 +28,7 @@ public class UpgradeSystem
     public List<UpgradeRecipe> GetValidRecipes(int playerID) 
     {
         // 현재 코인의 개수 
-        var coin = ServiceLocator.Get<IResourceSystem>().GetCurrentResources(playerID);
+        var coin = ServiceLocator.Get<AbilityResourceSystem>().GetCurrentResources(playerID);
         // 현재 플레이어의 보드 위 유닛 
         var tokens = tokenManager.GetPlayerToken(playerID);
 
@@ -52,15 +52,43 @@ public class UpgradeSystem
             return;
         }
 
-        UnitCardData cardData = GetRandomValidOutput(sources[0].Race);
+        int baseLevel = sources[0].Level;
+        int nextLevel = baseLevel + 1; 
 
-        await summonSystem.Summon(playerID, cardData, targetPosition, caller); 
+        if(nextLevel > 3)
+        {
+            Debug.Log("더 이상 업그레이드 할 수 없습니다.");
+            return; 
+        }
+
+        UnitCardData cardData = GetRandomValidOutput(sources[0].Race);
+        List<UnitCardData> dataSources = new List<UnitCardData>();  
+
+        foreach(var source in sources)
+            dataSources.Add(source.UnitData); 
+
+        if(recipe.ResourceRequired > 0)
+        {
+            IResourceSystem abilitySystem = ServiceLocator.Get<AbilityResourceSystem>();
+            abilitySystem.Consume(playerID, recipe.ResourceRequired); 
+        }
+
+        await summonSystem.Summon(playerID, cardData, targetPosition, caller, dataSources, nextLevel); 
 
     }
 
     public UnitCardData GetRandomValidOutput(Race race)
     {
-        List<UnitCardData> raceList = database.GetRaceCardList(race).OfType<UnitCardData>().ToList(); 
+        List<UnitCardData> raceList = database.GetRaceCardList(race)
+            .OfType<UnitCardData>().
+            Where(u => u.Tag == UnitTag.Normal).
+            ToList();
+
+        if(raceList.Count == 0)
+        {
+            Debug.Log($"해당 {race}종족의 카드 데이터를 찾을 수 없습니다."); 
+        }
+
         int idx = Random.Range(0, raceList.Count);
         return raceList[idx]; 
     }

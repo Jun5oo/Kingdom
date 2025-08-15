@@ -46,7 +46,7 @@ public class TurnEnd : MonoBehaviour
     void Subscribe()
     {
         turnSystem.OnPlayerTurnStarted += MyTurn;
-        turnSystem.OnOpponentTurnStarted += MyTurn;
+        turnSystem.OnOpponentTurnStarted += OpponentTurn; 
         turnSystem.OnPlayerTurnEnded += EndTurn;
         turnSystem.OnOpponentTurnEnded += EndTurn;
     }

@@ -5,8 +5,8 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 {
     IAction currentAction;
 
-    IActionResourceSystem actionResourceSystem;
-    IResourceSystem abilityResourceSystem; 
+    ActionResourceSystem actionResourceSystem;
+    AbilityResourceSystem abilityResourceSystem; 
 
     public void Init()
     {

@@ -33,6 +33,8 @@ public class ResurrectionAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return actionOwner.OwnerID; } }
 
+    public BaseObject Executor => actionOwner; 
+
     public ResurrectionAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.Resurrection;

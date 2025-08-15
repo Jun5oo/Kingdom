@@ -34,6 +34,8 @@ public class EventQueue
             if (isCanceled)
             {
                 Debug.Log($"{this} canceled");
+                isRunning = false;
+                isCanceled = false; 
                 return; 
             }
 

@@ -1,27 +1,52 @@
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour
 {
+    const string undeadID = "1";
+    const string celestialID = "4"; 
+
     [SerializeField] RectTransform panel; 
 
     [SerializeField] RawImage playerImage;
     [SerializeField] TextMeshProUGUI playerName;
     [SerializeField] TextMeshProUGUI playerCp;
 
-    [SerializeField] Sprite angel;
-    [SerializeField] Sprite undead; 
+    CardTextureLoader loader; 
 
-    public void Init(Player playerData, Token token)
+    public async UniTask Init(Player player, Token token)
     {
+        loader = ServiceLocator.Get<CardTextureLoader>();
+
         token.OnCPUpdate -= OnUpdateCP; 
         token.OnCPUpdate += OnUpdateCP;
 
-        // 나중에 종족별 King Image로 업데이트 
-        // playerImage.sprite = null;
+        string cardID = null; 
 
-        playerName.text = playerData.PlayerName;
+        switch (player.Race)
+        {
+            case Race.Undead:
+                cardID = undeadID; 
+                break;
+            case Race.Celestial:
+                cardID = celestialID;
+                break;
+            default:
+                Debug.Log("아직 구현되지 않은 진영입니다.");
+                return; 
+        }
+
+        Texture2D texture = await loader.LoadArtAsync(cardID);
+
+        float aspect = (float)texture.width / texture.height;
+
+        if (playerImage.gameObject.TryGetComponent<AspectRatioFitter>(out AspectRatioFitter ratioFitter))
+            ratioFitter.aspectRatio = aspect; 
+
+        playerImage.texture = texture; 
+        playerName.text = player.PlayerName;
         playerCp.text = token.CP.ToString(); 
     }
 

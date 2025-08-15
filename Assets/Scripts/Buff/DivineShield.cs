@@ -50,7 +50,11 @@ public class DivineShield : IBuff, IDamageModifierBuff
     public void OnRemove()
     {
         Debug.Log("DivineShield Removed");
+        
         shield.SetActive(false);
+
+        if (shield != null)
+            GameObject.Destroy(shield); 
 
         if (target is BaseObject baseObject)
         {
@@ -59,6 +63,9 @@ public class DivineShield : IBuff, IDamageModifierBuff
             else
                 turnSystem.OnOpponentTurnStarted -= ReduceDuration;
         }
+
+        if (target != null)
+            target.RemoveBuff(this); 
     }
 
     public void ReduceDuration()

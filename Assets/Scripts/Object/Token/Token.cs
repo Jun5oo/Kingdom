@@ -23,7 +23,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     
     public int CP { get { return currentCP; } }
     public int MAXCP { get { return UnitData.GetCP(currentLevel); } }
-    public int Movement { get { return UnitData.GetCP(currentLevel); } }
+    public int Movement { get { return UnitData.GetMovement(currentLevel); } }
     public int Level { get { return currentLevel; } }
     public override int OwnerID { get { return ownerID; } }
 
@@ -40,11 +40,11 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public CardData SourceObject { get { return sourceObject; } }
     public List<UnitCardData> SourceObjects { get { return  sourceObjects; } }
 
-    public void Init(UnitCardData unitData, int playerID, CardData sourceObject, List<UnitCardData> sourceObjects)
+    public void Init(UnitCardData unitData, int playerID, CardData sourceObject = null, List<UnitCardData> sourceObjects = null, int spawnLevel = 1)
     {
         base.Init(unitData);
 
-        this.currentLevel = unitData.Level; 
+        this.currentLevel = spawnLevel; 
         this.currentCP = MAXCP;
         this.ownerID = playerID;
 
