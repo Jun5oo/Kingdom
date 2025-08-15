@@ -6,13 +6,15 @@ using UnityEngine.UI;
 public class PlayerHUD : MonoBehaviour
 {
     const string undeadID = "1";
-    const string celestialID = "4"; 
-
-    [SerializeField] RectTransform panel; 
+    const string celestialID = "4";
+    const int MAX_CP = 40; 
 
     [SerializeField] RawImage playerImage;
     [SerializeField] TextMeshProUGUI playerName;
-    [SerializeField] TextMeshProUGUI playerCp;
+    [SerializeField] TextMeshProUGUI currentCP;
+    [SerializeField] TextMeshProUGUI maxCP; 
+
+    [SerializeField] Slider slider; 
 
     CardTextureLoader loader; 
 
@@ -47,11 +49,19 @@ public class PlayerHUD : MonoBehaviour
 
         playerImage.texture = texture; 
         playerName.text = player.PlayerName;
-        playerCp.text = token.CP.ToString(); 
+        currentCP.text = token.CP.ToString();
+
+        slider.value = 1; 
+        maxCP.text = MAX_CP.ToString();
+        OnUpdateCP(MAX_CP); 
     }
 
     void OnUpdateCP(int cp)
     {
-        playerCp.text = cp.ToString(); 
+        if (cp <= 0)
+            cp = 0;
+
+        currentCP.text = cp.ToString();
+        slider.value = (float)cp / MAX_CP;
     }
 }

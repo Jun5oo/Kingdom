@@ -65,10 +65,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1
+  m_text: 40
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5d20fceab3b1978498ccd226f5cf3965, type: 2}
-  m_sharedMaterial: {fileID: -1471993063551211935, guid: 5d20fceab3b1978498ccd226f5cf3965, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d1b179781c66956409959994caa42c24, type: 2}
+  m_sharedMaterial: {fileID: -8133676637516356063, guid: d1b179781c66956409959994caa42c24, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -84,7 +84,7 @@ MonoBehaviour:
     bottomLeft: {r: 1, g: 1, b: 1, a: 1}
     bottomRight: {r: 1, g: 1, b: 1, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
+  m_spriteAsset: {fileID: 11400000, guid: 5290420c651e54144a5bf20e315a32e9, type: 2}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
   m_TextStyleHashCode: -1183493901
@@ -990,7 +990,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 88.2, y: -135}
+  m_AnchoredPosition: {x: 79.1, y: -135}
   m_SizeDelta: {x: 77.6781, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4706903571129920116
@@ -1021,10 +1021,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1
+  m_text: 40
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5d20fceab3b1978498ccd226f5cf3965, type: 2}
-  m_sharedMaterial: {fileID: -1471993063551211935, guid: 5d20fceab3b1978498ccd226f5cf3965, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d1b179781c66956409959994caa42c24, type: 2}
+  m_sharedMaterial: {fileID: -8133676637516356063, guid: d1b179781c66956409959994caa42c24, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1040,7 +1040,7 @@ MonoBehaviour:
     bottomLeft: {r: 1, g: 1, b: 1, a: 1}
     bottomRight: {r: 1, g: 1, b: 1, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
+  m_spriteAsset: {fileID: 11400000, guid: 5290420c651e54144a5bf20e315a32e9, type: 2}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
   m_TextStyleHashCode: -1183493901
