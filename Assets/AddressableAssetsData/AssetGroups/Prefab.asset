@@ -15,6 +15,16 @@ MonoBehaviour:
   m_GroupName: Prefab
   m_GUID: 5a4d9cd2588f838488cc6a4516352dd9
   m_SerializeEntries:
+  - m_GUID: 2a5c3710385907845be3229e55bc715c
+    m_Address: numberStatusPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2e934621838b9c249b403d0c844cb515
+    m_Address: barStatusPrefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 414cf8f478c49464e95a6853df65cb60
     m_Address: cardPrefab
     m_ReadOnly: 0

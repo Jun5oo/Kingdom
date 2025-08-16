@@ -1,0 +1,8 @@
+CardType ,ID,Name,Description,CP ,Race,IsKing,AttackRange,MovementRange,Passive
+Unit,1001,Lord of Undead,Lord of Undead,40,Undead,TRUE,NULL,(1:0)/(-1:0)/(0:1)/(0:1),GainAbilityCoin:SummonGraveyard
+Unit,1002,Undead Warrior,Basic Melee Unit,10,Undead,FALSE,(1:0)/(-1:0)/(0:1)/(0:1),(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),NULL
+Unit,1003,Undead Ranger,Basic Range Unit,5,Undead,FALSE,(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),(1:0)/(-1:0)/(0:1)/(0:1),NULL
+Unit,1004,Graveyard,Graveyard,1,Undead,FALSE,NULL,NULL,DestroyAfterTurn
+Unit,1101,Lord of Celestial,Lord of Celestial,40,Celestial,TRUE,NULL,(1:0)/(-1:0)/(0:1)/(0:1),GainAbilityCoin
+Unit,1102,Celestial Warrior,Basic Melee Unit,10,Celestial,FALSE,(1:0)/(-1:0)/(0:1)/(0:1),(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),NULL
+Unit,1103,Celestial Ranger,Basic Range Unit,5,Celestial,FALSE,(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),(1:0)/(-1:0)/(0:1)/(0:1),NULL

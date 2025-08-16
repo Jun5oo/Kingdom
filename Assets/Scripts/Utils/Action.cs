@@ -4,7 +4,8 @@ public enum ActionType
     Move, 
     Attack,
     Resurrection, 
-    DivineShield
+    DivineShield, 
+    Upgrade, 
 }
 
 public enum ActionPerformer
@@ -17,7 +18,7 @@ public enum ActionPerformer
 public enum SummonState
 {
     Prepare,
-    Animation,
+    Summon,
     Placing,
     Done
 }
@@ -36,4 +37,10 @@ public enum AttackState
     Attack,
     Placing,
     Done
+}
+
+public enum ResourceType
+{
+    Action, 
+    Ability 
 }

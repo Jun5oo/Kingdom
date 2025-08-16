@@ -32,9 +32,15 @@ public class Bootstrapper : MonoBehaviour
     CardTextureLoader cardTextureLoader;
     TokenTextureLoader tokenTextureLoader; 
     PrefabLoader prefabLoader;
+    SpriteLoader spriteLoader; 
 
     EventQueue eventQueue;
-    [SerializeField] CardDatabase database; 
+    [SerializeField] CardDatabase database;
+
+    [SerializeField] HUDDisplayer hudDisplayer; 
+
+    SummonSystem summonSystem;
+    UpgradeSystem upgradeSystem; 
 
     void Awake()
     {
@@ -65,8 +71,12 @@ public class Bootstrapper : MonoBehaviour
         cardTextureLoader = new CardTextureLoader();
         tokenTextureLoader = new TokenTextureLoader();
         prefabLoader = new PrefabLoader();
+        spriteLoader = new SpriteLoader(); 
 
         eventQueue = new EventQueue(); 
+
+        summonSystem = new SummonSystem();
+        upgradeSystem = new UpgradeSystem();
 
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(damageManager);
@@ -92,9 +102,15 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(cardTextureLoader);
         ServiceLocator.Register(tokenTextureLoader);
         ServiceLocator.Register(prefabLoader);
+        ServiceLocator.Register(spriteLoader); 
 
         ServiceLocator.Register(eventQueue);
         ServiceLocator.Register(database);
+
+        ServiceLocator.Register(summonSystem);
+        ServiceLocator.Register(upgradeSystem);
+        
+        ServiceLocator.Register(hudDisplayer);
     }
 
     public async UniTask Initialization()
@@ -108,6 +124,7 @@ public class Bootstrapper : MonoBehaviour
 
         cardTextureLoader.Init();
         tokenTextureLoader.Init();
+        spriteLoader.Init(); 
         
         await cardFactory.Init();
         await tokenFactory.Init();
@@ -123,7 +140,11 @@ public class Bootstrapper : MonoBehaviour
 
         await poolManager.InitAsync();
 
-        database.Init(); 
+        database.Init();
+        summonSystem.Init();
+        upgradeSystem.Init();
+
+        hudDisplayer.Init(); 
     }
 
 }

@@ -34,6 +34,8 @@ public class EventQueue
             if (isCanceled)
             {
                 Debug.Log($"{this} canceled");
+                isRunning = false;
+                isCanceled = false; 
                 return; 
             }
 
@@ -45,7 +47,7 @@ public class EventQueue
             }
             catch (Exception ex)
             {
-                Debug.LogError("Event 실행 중 오류 발생"); 
+                Debug.LogError($"Event 실행 중 오류 발생{ex}"); 
             }
         }
 
