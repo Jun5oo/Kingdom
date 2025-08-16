@@ -28,7 +28,7 @@ public class CardFactory
             VisualTexture textures = await loader.LoadAllTextures(cardData);
 
             if (card.TryGetComponent<CardView>(out CardView cardView))
-                cardView.Init(textures);
+                cardView.Init(textures, cardData);
         }
 
         else

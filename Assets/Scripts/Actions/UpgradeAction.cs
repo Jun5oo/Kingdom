@@ -1,9 +1,7 @@
 using Cysharp.Threading.Tasks;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public enum UpgradeState
 {

@@ -52,13 +52,13 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
                 sprite = await spriteLoader.LoadSpriteAsync("icon_attack"); 
                 break;
             case ActionType.Resurrection:
-                actionInitial.text = "R";
+                sprite = await spriteLoader.LoadSpriteAsync("icon_ability"); 
                 break;
             case ActionType.DivineShield:
-                actionInitial.text = "D";
+                sprite =  await spriteLoader.LoadSpriteAsync("icon_ability"); 
                 break; 
             default:
-                actionInitial.text = "N";
+                sprite = await spriteLoader.LoadSpriteAsync("icon_upgrade"); 
                 break;
         }
 

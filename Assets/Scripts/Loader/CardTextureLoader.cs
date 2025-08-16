@@ -83,7 +83,7 @@ public class CardTextureLoader : TextureLoader
         }
 
         if (cardData is UnitCardData unitData)
-            type = unitData.IsKing ? "king" : "normal";
+            type = unitData.Tag == UnitTag.King ? "king" : "normal";
 
         Texture2D art = await LoadArtAsync($"{cardID}");
         Texture2D artMask = await LoadArtMaskAsync(race, type);

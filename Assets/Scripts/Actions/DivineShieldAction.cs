@@ -105,7 +105,6 @@ public class DivineShieldAction : IAction
     public bool IsValid()
     {
         return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
 }

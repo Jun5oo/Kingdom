@@ -35,14 +35,24 @@ public class Preview : MonoBehaviour
         else
             CenterAlignment(); 
 
-        if(baseObject is Token token)
+        if(baseObject is UnitCard card)
         {
-            cp.enabled = true;
-            movement.enabled = true; 
+            cp.text = card.CP.ToString();
+            movement.text = card.Movement.ToString();
 
+            cp.enabled = true;
+            movement.enabled = true;
+        }
+
+        else if (baseObject is Token token)
+        {
             cp.text = token.CP.ToString();
             movement.text = token.Movement.ToString();
+
+            cp.enabled = true;
+            movement.enabled = true;
         }
+
         else
         {
             cp.enabled = false; 

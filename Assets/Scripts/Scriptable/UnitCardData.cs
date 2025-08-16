@@ -13,7 +13,6 @@ public class UnitCardData : CardData
 
     // 추후 IsKing이 아닌 Tag로 교체 예정     
     [SerializeField] UnitTag tag;
-    [SerializeField] bool isKing;
 
     // 공격가능한 벡터 (사거리) 
     [SerializeField] List<Vector2Int> attackRange;
@@ -26,8 +25,7 @@ public class UnitCardData : CardData
     public List<int> CP { get { return levelCP; } set { levelCP = value; } }
     public List<int> Movement { get { return movement; } set { movement = value; } }
 
-    public UnitTag Tag { get { return tag; } }
-    public bool IsKing { get { return isKing; } set { isKing = value; } }
+    public UnitTag Tag { get { return tag; } set { tag = value; } }
     
     public List<Vector2Int> MoveRange { get { return moveRange; } set { moveRange = value; } }
     public List<Vector2Int> AttackRange { get { return attackRange; } set { attackRange = value; } }

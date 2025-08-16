@@ -85,7 +85,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
         List<IBuff> removeList = new List<IBuff>(); 
 
-        foreach(var buff in buffs)
+        foreach(var buff in buffs.ToArray())
         {
             if (buff is IDamageModifierBuff dmgModifier && !buff.IsExpired()) 
                 damage = dmgModifier.ModifyDamage(damage);

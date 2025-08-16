@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -83.7, y: -135}
-  m_SizeDelta: {x: 77.6781, y: 50}
+  m_AnchoredPosition: {x: -70, y: -130}
+  m_SizeDelta: {x: 70, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6808807869408344630
 CanvasRenderer:
@@ -108,7 +108,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -990,8 +990,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 79.1, y: -135}
-  m_SizeDelta: {x: 77.6781, y: 50}
+  m_AnchoredPosition: {x: 70, y: -130}
+  m_SizeDelta: {x: 70, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4706903571129920116
 CanvasRenderer:
@@ -1021,7 +1021,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 40
+  m_text: 10
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d1b179781c66956409959994caa42c24, type: 2}
   m_sharedMaterial: {fileID: -8133676637516356063, guid: d1b179781c66956409959994caa42c24, type: 2}

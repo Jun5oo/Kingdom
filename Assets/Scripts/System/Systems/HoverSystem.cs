@@ -21,11 +21,11 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     void Update()
     {
         // UI가 있는 경우 
-            if (EventSystem.current.IsPointerOverGameObject())
-            {
-                ExitHover();
-                return; 
-            }
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            ExitHover();
+            return; 
+        }
 
         // Input.mousePosition의 경우 screen position을 반환하기 때문에 world 좌표계 값으로 변경해줘야한다. 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -126,5 +126,9 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     }
 
     public void EnableSystem() => enabled = true;
-    public void DisableSystem() => enabled = false; 
+    public void DisableSystem()
+    {
+        enabled = false;
+        ExitHover(); 
+    }
 }

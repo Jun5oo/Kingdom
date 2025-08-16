@@ -15,11 +15,23 @@ MonoBehaviour:
   m_GroupName: Sprite
   m_GUID: 653cba445ac5ac549a45156773c36830
   m_SerializeEntries:
+  - m_GUID: 0dd711810ea146a45baf0b3d873b1f13
+    m_Address: icon_ability
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Icon
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1de5d5dcc6c763a4aa95889a6e6e8dd9
     m_Address: coin_celestial
     m_ReadOnly: 0
     m_SerializedLabels:
     - Coin
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2af2e7b62cae54543adef4b0fb8cd70b
+    m_Address: icon_upgrade
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Icon
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 63210745964c49a4fbadcf53127b031d
     m_Address: icon_attack
