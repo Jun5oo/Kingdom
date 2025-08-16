@@ -26,10 +26,9 @@ public class CardFactory
             card.Init(cardData, playerID);
 
             VisualTexture textures = await loader.LoadAllTextures(cardData);
-            Debug.Log("CardTexture Load Complete");
 
             if (card.TryGetComponent<CardView>(out CardView cardView))
-                cardView.Init(textures);
+                cardView.Init(textures, cardData);
         }
 
         else

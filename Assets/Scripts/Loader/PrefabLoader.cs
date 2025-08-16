@@ -24,8 +24,12 @@ public class PrefabLoader
         // 이곳에 미리 Prefab을 등록해줘야 사용이 가능하다. 다만 이는 MonoBehaviour 타입을 가지는 프리팹만 가능하다. (MonoBehaviour 타입이 아닌 경우 밑 LoadPrefabAsync(string) 함수를 사용하고 Address key를 사용해야한다.) 
         prefabDictionary.Add(typeof(Card), "cardPrefab");
         prefabDictionary.Add(typeof(Token), "tokenPrefab");
+
         prefabDictionary.Add(typeof(ActionPopup), "actionPrefab");
         prefabDictionary.Add(typeof(DamagePopup), "damagePrefab");
+
+        prefabDictionary.Add(typeof(NumberStatusPresenter), "numberStatusPrefab");
+        prefabDictionary.Add(typeof(BarStatusPresenter), "barStatusPrefab");
 
         typeCache = new Dictionary<Type, GameObject>();
         stringCache = new Dictionary<string, GameObject>(); 

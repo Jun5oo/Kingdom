@@ -8,21 +8,39 @@ public class DamagePopup : MonoBehaviour, IPoolable
 {
     [SerializeField] TextMeshProUGUI damage;
 
+    Sequence sequence; 
+
     public void Init(int damage)
     {
         this.damage.text = damage.ToString();
+        sequence = DOTween.Sequence();
+
+        ResetSettings(); 
     }
 
     public void Play(Action onCompleteCallback)
     {
         this.gameObject.SetActive(true);
+        sequence.Append(damage.transform.DOScale(1.3f, 0.5f).SetEase(Ease.OutBack))
+            .AppendInterval(1.5f)
+            .Append(damage.DOFade(0f, 0.5f).SetEase(Ease.InOutSine))
+            .OnComplete(() =>
+            {
+                this.gameObject.SetActive(false);
+                onCompleteCallback?.Invoke();
+                ResetSettings();
+            }
+        );
+    }
 
-        damage.DOFade(1f, 1f).SetEase(Ease.InOutSine).OnComplete(() =>
-        {
-            damage.DOFade(0f, 1f).SetDelay(1f);
-            this.gameObject.SetActive(false);
-            onCompleteCallback?.Invoke(); 
-        });
+    public void ResetSettings()
+    {
+        damage.transform.localScale = Vector3.one * 0.5f;
+        
+        Color color = damage.color;
+        color.a = 1f;
+
+        damage.color = color; 
     }
 
 }

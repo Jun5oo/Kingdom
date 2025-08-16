@@ -11,9 +11,9 @@ public abstract class CardData : ScriptableObject
 
     [SerializeField] List<ActionType> actions;
 
-    public int ID { get { return cardID; } }
-    public string Name {  get { return cardName; } }
-    public string Description { get { return description; } }
-    public Race Race { get { return race; } }
-    public List<ActionType> Actions { get { return actions; } }
+    public int ID { get { return cardID; } set { cardID = value; } }
+    public string Name {  get { return cardName; } set { cardName = value; } }
+    public string Description { get { return description; } set { description = value; } }
+    public Race Race { get { return race; } set { race = value; } }
+    public List<ActionType> Actions { get { return actions; } set { actions = value; } }
 }

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class DamageDisplayer 
 {
+    // 데미지 팝업 Displayer. 데미지 텍스트를 풀링, Play
     PoolManager poolManager;
 
     public DamageDisplayer()

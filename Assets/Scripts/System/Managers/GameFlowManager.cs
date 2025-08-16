@@ -7,6 +7,7 @@ public class GameFlowManager
     TurnSelection turnSelection;
     GameOver gameOver;
 
+    PlayerManager playerManager;
     UIManager uiManager; 
     DamageManager damageManager; 
 
@@ -17,6 +18,7 @@ public class GameFlowManager
         turnSelection = new TurnSelection(stateMachine);
         gameOver = new GameOver();
 
+        playerManager = ServiceLocator.Get<PlayerManager>(); 
         uiManager = ServiceLocator.Get<UIManager>(); 
         damageManager = ServiceLocator.Get<DamageManager>();
 
@@ -32,6 +34,10 @@ public class GameFlowManager
     public void GameOver(int loserID)
     {
         stateMachine.Enter(gameOver);
-        uiManager.OnNotification($"playerID {loserID} lose"); 
+
+        if (loserID == playerManager.Local.PlayerID)
+            uiManager.OnNotification("패배");
+        else
+            uiManager.OnNotification("승리"); 
     }
 }
