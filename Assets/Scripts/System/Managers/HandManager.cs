@@ -111,6 +111,26 @@ public class HandManager : MonoBehaviour
         return playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
     }
 
+    public List<Card> GetHandCardsList(int playerID)
+    {
+        if (!playerHands.ContainsKey(playerID))
+        {
+            Debug.LogError("Invalid playerID");
+            return null; 
+        }
+
+        Card[] handCards = GetHandCards(playerID);
+        List<Card> handList = new List<Card>();
+
+        foreach (var card in handCards)
+        {
+            if (card != null)
+                handList.Add(card);
+        }
+
+        return handList;
+    }
+
     #region CardAlignment 
     void CardAlignment(List<Card> handList, Transform hand, Transform left, Transform right, int cardCount, int playerID)
     {

@@ -3286,8 +3286,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonRenderer: {fileID: 512803169}
-  myTurn: {fileID: 2800000, guid: 9c324b26b7356914f802013750130a5a, type: 3}
-  opponentTurn: {fileID: 2800000, guid: 7f553e8b8f3ae0b408bdfdfb867da6dd, type: 3}
+  myTurn: {fileID: 0}
+  opponentTurn: {fileID: 0}
 --- !u!65 &1429493837
 BoxCollider:
   m_ObjectHideFlags: 0

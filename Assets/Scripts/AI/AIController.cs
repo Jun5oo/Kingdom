@@ -12,12 +12,15 @@ public class AIController
     HandManager handManager;
 
     TokenManager tokenManager;
+    AbilityResourceSystem abilitySystem;
 
     ActionType[] actionTypes;
 
     AISummonStrategy aiSummonStrategy;
     AIMoveStrategy aiMoveStrategy;
     AIAttackStrategy aiAttackStrategy;
+    AIResurrectionStrategy aiResurrectionStrategy;
+    AIDivineShieldStrategy aiDivineShieldStrategy;
 
     ActionSystem actionSystem;
 
@@ -31,9 +34,13 @@ public class AIController
 
         tokenManager = ServiceLocator.Get<TokenManager>();
 
+        abilitySystem = ServiceLocator.Get<AbilityResourceSystem>();
+
         aiSummonStrategy = new AISummonStrategy(handManager, actionFactory, tokenManager);
         aiMoveStrategy = new AIMoveStrategy(actionFactory, tokenManager);
         aiAttackStrategy = new AIAttackStrategy(actionFactory, tokenManager);
+        aiResurrectionStrategy = new AIResurrectionStrategy(actionFactory, tokenManager, abilitySystem);
+        aiDivineShieldStrategy = new AIDivineShieldStrategy(actionFactory, tokenManager, abilitySystem);
 
         actionSystem = ServiceLocator.Get<ActionSystem>();
     }
@@ -57,12 +64,31 @@ public class AIController
 
         while (actionCount > 0)
         {
+            if (tokenManager.GetPlayerToken(currentPlayerID).Count == 0)
+            {
+                if (aiSummonStrategy.CanSummonAction(currentPlayerID, out SummonAction summon, out List<Vector2Int> validGridPosList))
+                {
+                    actionCount--;
+                    await aiSummonStrategy.SummonRandomPos(summon, validGridPosList);
+                    continue;
+                }
+                else
+                {
+                    Debug.LogWarning("No tokens available for AI to perform actions.");
+                    break;
+                }
+            }
+
             bool canSummon = aiSummonStrategy.CanSummonAction(currentPlayerID, out SummonAction summonAction,
                 out List<Vector2Int> validGridPosListForSummon);
             bool canMove = aiMoveStrategy.CanMoveAction(currentPlayerID, out MoveAction moveAction,
                 out List<Vector2Int> validGridPosListForMove);
             bool canAttack = aiAttackStrategy.CanAttackAction(currentPlayerID, out AttackAction attackAction,
                 out List<Vector2Int> validGridPosListForAttack);
+            bool canResurrection = aiResurrectionStrategy.CanResurrectionAction(currentPlayerID, out ResurrectionAction resurrectionAction,
+                out Vector2Int validGridPosForResurrection);
+            bool canDivineShield = aiDivineShieldStrategy.CanDivineShieldAction(currentPlayerID, out DivineShieldAction divineShieldAction,
+                out Vector2Int validGridPosForDivineShield);
 
             if (canSummon)
             {
@@ -75,6 +101,14 @@ public class AIController
             if (canAttack)
             {
                 availableActions.Add(ActionType.Attack);
+            }
+            if (canResurrection)
+            {
+                availableActions.Add(ActionType.Resurrection);
+            }
+            if (canDivineShield)
+            {
+                availableActions.Add(ActionType.DivineShield);
             }
             if (availableActions.Count == 0)
             {
@@ -97,6 +131,13 @@ public class AIController
                 case ActionType.Attack:
                     await aiAttackStrategy.AttackRandomTarget(attackAction, validGridPosListForAttack);
                     // 현재 자신의 필드 내 유닛들을 검사하여 공격이 가능한지 체크 후 실행
+                    break;
+                case ActionType.Resurrection:
+                    // 현재는 AI가 부활 액션을 수행하지 않음
+                    await aiResurrectionStrategy.ResurrectionUnit(resurrectionAction, validGridPosForResurrection);
+                    break;
+                case ActionType.DivineShield:
+                    await aiDivineShieldStrategy.DivineShieldUnit(divineShieldAction, validGridPosForDivineShield);
                     break;
             }
 

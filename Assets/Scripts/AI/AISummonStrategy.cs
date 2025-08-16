@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
 using UnityEngine;
 
 public class AISummonStrategy
@@ -25,7 +26,7 @@ public class AISummonStrategy
 
     public bool CanSummonAction(int currentPlayerID, out SummonAction summonAction, out List<Vector2Int> validGridPosList)
     {
-        List<Card> cards = handManager.GetHandCards(currentPlayerID).ToList();
+        List<Card> cards = handManager.GetHandCardsList(currentPlayerID);
         // 테스트
 
         if (cards.Count == 0)
