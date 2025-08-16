@@ -19,10 +19,9 @@ public class SummonAction : IAction
     GridManager gridManager;
     HandManager handManager;
     TokenManager tokenManager;
-    TokenFactory tokenFactory; 
+    SummonSystem summonSystem; 
     
     UnitCard card;
-    Token token;
     ActionPerformer performer;
 
     Vector2Int targetPosition;
@@ -35,6 +34,11 @@ public class SummonAction : IAction
     public int Cost { get { return currentCost; } }
 
     public SummonState CurrentSummonState { get; private set; } = SummonState.Prepare;
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+    public int OwnerID { get { return card.OwnerID; } }
+
+    public BaseObject Executor => card; 
 
     public SummonAction(UnitCard card, ActionPerformer performer)
     {
@@ -45,11 +49,9 @@ public class SummonAction : IAction
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.handManager = ServiceLocator.Get<HandManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
-        this.tokenFactory = ServiceLocator.Get<TokenFactory>(); 
-        
-        this.card = card;
-        this.token = null;
+        this.summonSystem = ServiceLocator.Get<SummonSystem>();
 
+        this.card = card;
         this.performer = performer;
 
         ValidPositions = new List<Vector2Int>
@@ -64,7 +66,9 @@ public class SummonAction : IAction
             new Vector2Int(0, -1)
         };
 
-        currentCost = 1; 
+        currentCost = 1;
+
+        resourceType = ResourceType.Action; 
     }
     public void Enter()
     {
@@ -84,7 +88,8 @@ public class SummonAction : IAction
     public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
     public bool IsValid()
     {
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
     }
     async UniTask Transition(SummonState state)
     {
@@ -93,7 +98,7 @@ public class SummonAction : IAction
             case SummonState.Prepare:
                 await Prepare(); 
                 break;
-            case SummonState.Animation:
+            case SummonState.Summon:
                 await Summon(); 
                 break;
             case SummonState.Placing:
@@ -126,43 +131,15 @@ public class SummonAction : IAction
         });
 
         await taskCompletion.Task; 
-        await Transition(SummonState.Animation);
+        await Transition(SummonState.Summon);
     }
     async UniTask Summon()
     {
-        Vector3 worldPosition = gridManager.GetWorldPosition(targetPosition); 
-
-        Vector3 targetPos = worldPosition + (Vector3.up * 0.1f);
-        Vector3 eulerAngles = new Vector3(90f, 0f, 0f);
-        Quaternion quaternion = Quaternion.Euler(eulerAngles);
-        Vector3 scale = Vector3.one;
-
-        PRS prs = new PRS(targetPos, quaternion, scale);
-
-        Token token = await tokenFactory.CreateToken(card.UnitData, card.OwnerID);
-        Debug.Log("Token Summon Complete");
-
-        token.transform.position = targetPos + (Vector3.up * 10);
-        token.transform.rotation = quaternion; 
-        this.token = token;
-    
-        if (token.IsKing)
-            tokenManager.AddKingToken(card.OwnerID, token);
-
-        var taskCompletion = new UniTaskCompletionSource(); 
-
-        TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
-        tokenMovement.MoveTransform(prs, 1f, false, () => 
-        {
-            taskCompletion.TrySetResult();
-        });
-
-        await taskCompletion.Task;
+        await summonSystem.Summon(card.OwnerID, card.UnitData, targetPosition); 
         await Transition(SummonState.Placing);
     }
     async UniTask Placing()
     {
-        tokenManager.PlaceTokenTo(token, targetPosition); 
         await Transition(SummonState.Done); 
     }
     void Done()
@@ -180,7 +157,7 @@ public class SummonAction : IAction
 
     public bool CanSummonAt(Vector2Int pos)
     {
-        if (card.IsKing)
+        if (card.Tag == UnitTag.King)
         {
             return pos.y == GetGridPosYForKing();
         }

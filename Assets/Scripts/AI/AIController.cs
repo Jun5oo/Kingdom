@@ -52,7 +52,7 @@ public class AIController
         // 2. 새로운 유닛 소환
         // 3. 영웅 능력 사용 (현재는 제외)
 
-        int actionCount = actionSystem.GetCurrentActionCount();
+        int actionCount = actionSystem.GetCurrentActionCount(currentPlayerID);
         List<ActionType> availableActions = new List<ActionType>();
 
         while (actionCount > 0)

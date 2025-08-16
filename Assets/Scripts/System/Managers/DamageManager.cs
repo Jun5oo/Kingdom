@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class DamageManager
 {
+    // 데미지 뿐만 아니라, 한 전투에서의 과정(유닛 처치, 사망 등)을 관리하므로 CombatManager로 클래스 이름을 변경해줄 예정 
+
     PlayerManager playerManager; 
     TokenManager tokenManager;
     DamageDisplayer displayer;
 
     public Action<int> OnKingDefeated;
 
+    // 플레이어의 유닛이 사망했을 때, 사전 준비작업을 하기 위한 이벤트 
+    public Action<int, Token> OnPrepareUnitDeath; 
     // 플레이어의 유닛이 사망했을 때 
     public Action<int, Token> OnPlayerUnitDead;
     // 플레이어의 유닛이 유닛을 처치했을 때  
@@ -34,9 +38,9 @@ public class DamageManager
 
         return damage; 
     }
-    public void ProcessKingDamage(Token token, int damage)
+    public void ProcessIndirectDamage(Token token, int damage)
     {
-        if (token.IsKing)
+        if (token.Tag == UnitTag.King)
             return; 
 
         if(tokenManager.TryGetKingTokenFrom(token.OwnerID, out Token king))
@@ -65,19 +69,28 @@ public class DamageManager
         Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
         Vector2Int attackerPos = tokenManager.GetGridPositionOfToken((attacker));
 
-
+        // 반격 가능 여부 확인
+        bool canCounter = false;
         foreach (var position in defender.AttackRange)
         {
             if (defenderPos + position == attackerPos)
             {
-                int damage = damageable.TakeDamage(defenderCP, false);
-                displayer.Display(damage, attacker);
-
-                return damage; 
+                canCounter = true;
+                break;
             }
         }
 
-        return 0; 
+        if (!canCounter)
+        {
+            Debug.Log("반격 불가능: 공격 범위 밖");
+            return 0;
+        }
+
+        // 반격 데미지 적용
+        int damage = damageable.TakeDamage(defenderCP, false);
+        displayer.Display(damage, attacker);
+
+        return damage; 
     }
     public void IsKingDefeated()
     {
@@ -111,13 +124,17 @@ public class DamageManager
             return; 
     }
 
-    public async UniTask ProcessUnitDeath(Token killer, Token victim)
+    public void ProcessUnitDeath(Token killer, Token victim)
     {
         if(killer.OwnerID == victim.OwnerID)
         {
             Debug.Log("현재 시스템에서는 같은 팀을 처치할 수 없습니다. 뭔가 문제가 발생했습니다.");
             return; 
         }
+
+        OnPrepareUnitDeath?.Invoke(victim.OwnerID, victim);
+
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
         OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
         OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);

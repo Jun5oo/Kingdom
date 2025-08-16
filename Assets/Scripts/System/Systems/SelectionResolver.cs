@@ -3,8 +3,7 @@ using UnityEngine;
 public class SelectionResolver {
 
     TokenManager tokenManager;
-
-    ActionSystem actionSystem; 
+    ActionSystem actionSystem;
 
     public SelectionResolver()
     {
@@ -40,6 +39,9 @@ public class SelectionResolver {
             return false;
 
         if (!selectable.IsSelectable())
+            return false;
+
+        if (selectable.BaseObject == null)
             return false;
 
         return true;

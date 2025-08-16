@@ -25,7 +25,7 @@ public class AISummonStrategy
 
     public bool CanSummonAction(int currentPlayerID, out SummonAction summonAction, out List<Vector2Int> validGridPosList)
     {
-        List<Card> cards = handManager.GetHandCards(currentPlayerID);
+        List<Card> cards = handManager.GetHandCards(currentPlayerID).ToList();
         // 테스트
 
         if (cards.Count == 0)

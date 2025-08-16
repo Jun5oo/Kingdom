@@ -3,4 +3,5 @@ public enum PassiveType
 {
     GainAbilityCoin, 
     SummonGraveyard, 
+    DestroyAfterTurn
 }

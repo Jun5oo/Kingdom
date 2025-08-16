@@ -1,38 +1,14 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("PlayerHUD")]
-    [SerializeField] PlayerHUD localHUD;
-    [SerializeField] PlayerHUD remoteHUD;
-
     [Header("Notification UI")]
     [SerializeField] CanvasGroup notificationPanel;
     [SerializeField] TextMeshProUGUI notificationUI;
 
-    #region HUD 
-    public void SetHUD(Player playerData, Token kingToken)
-    {
-        PlayerHUD hud = null;
-
-        if (playerData.IsLocal)
-            hud = localHUD;
-        else
-            hud = remoteHUD;
-
-        hud.Init(playerData, kingToken); 
-        
-    }
-    public void OnActiveHUD()
-    {
-        localHUD.gameObject.SetActive(true);
-        remoteHUD.gameObject.SetActive(true);
-    }
-    #endregion
 
     #region Notification
     Coroutine notificationRoutine; 

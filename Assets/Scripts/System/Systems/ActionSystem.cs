@@ -5,7 +5,8 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 {
     IAction currentAction;
 
-    [SerializeField] int actionCount = 2; 
+    ActionResourceSystem actionResourceSystem;
+    AbilityResourceSystem abilityResourceSystem; 
 
     public void Init()
     {
@@ -17,6 +18,15 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
         gridManager.OnGridCellSelected -= Execute; 
         gridManager.OnGridCellSelected += Execute;
+
+        actionResourceSystem = new ActionResourceSystem();
+        abilityResourceSystem = new AbilityResourceSystem(); 
+
+        actionResourceSystem.Init(); 
+        abilityResourceSystem.Init();
+
+        ServiceLocator.Register(actionResourceSystem); 
+        ServiceLocator.Register(abilityResourceSystem);
     }
 
     void Update()
@@ -63,7 +73,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
     void OnActionCanceled()
     {
-        Debug.Log("Invalid action target");
+        Debug.Log("Action Canceled");
         Exit(); 
     }
     void OnActionComplete()
@@ -74,11 +84,22 @@ public class ActionSystem : MonoBehaviour, IGameSystem
             return; 
         }
 
-        actionCount -= currentAction.Cost; 
+        IResourceSystem resourceSystem = (currentAction.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
+        resourceSystem.Consume(currentAction.OwnerID, currentAction.Cost); 
+
         Exit();
     }
-    public int GetCurrentActionCount() => actionCount; 
-    public void ResetActionCount() => actionCount = 2; 
+
+    public bool CanPerformAction(IAction action, int playerID)
+    {
+        IResourceSystem resourceSystem = (action.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
+        return resourceSystem.IsEnoughResources(playerID, action.Cost); 
+    }
+
+    public int GetCurrentActionCount(int playerID) => actionResourceSystem.GetCurrentResources(playerID);
+    public int GetCurrentAbilityCount(int playerID) => abilityResourceSystem.GetCurrentResources(playerID);
+    public void ResetActionCount(int playerID) => actionResourceSystem.ResetResources(playerID); 
+   
     public void EnableSystem() => enabled = true; 
     public void DisableSystem() => enabled = false;
 }

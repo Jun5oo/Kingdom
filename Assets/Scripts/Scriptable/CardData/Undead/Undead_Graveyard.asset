@@ -17,9 +17,11 @@ MonoBehaviour:
   description: 
   race: 1
   actions: 0200000001000000
-  cp: 1
-  movement: 0
+  level: 1
+  levelCP: 01000000
+  movement: 00000000
+  tag: 3
   isKing: 0
-  moveRange: []
   attackRange: []
+  moveRange: []
   passives: 

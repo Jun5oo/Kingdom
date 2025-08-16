@@ -51,25 +51,25 @@ public class TurnSystem : IGameSystem
     }
     public async UniTask BeginTurnLoop()
     {
-        Debug.Log("Start TurnLoop!"); 
+        Debug.Log("TurnLoop"); 
         await StartTurn(); 
     }
     public async UniTask StartTurn()
     {
         if (TurnState == TurnState.Unable)
-            return; 
+            return;
 
-        actionSystem.ResetActionCount(); 
+        actionSystem.ResetActionCount(currentPlayerID); 
 
         if (playerManager.Local.PlayerID == currentPlayerID)
-            uiManager.OnNotification("My Turn!", () => 
+            uiManager.OnNotification("내 턴", () => 
             { 
                 currentTurnState = TurnState.PlayerTurn;
                 OnPlayerTurnStarted?.Invoke(); 
             });
 
         else
-            uiManager.OnNotification("Enemy Turn!", () => 
+            uiManager.OnNotification("상대 턴", () => 
             { 
                 currentTurnState = TurnState.EnemyTurn;
                 StartAITurn(currentPlayerID);
@@ -77,6 +77,10 @@ public class TurnSystem : IGameSystem
             });
 
         Card card = await drawManager.Draw(currentPlayerID);
+
+        if (card == null)
+            return; 
+
         handManager.AddCardToHand(currentPlayerID, card); 
     }
 

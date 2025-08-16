@@ -3,7 +3,9 @@ using UnityEngine;
 
 public class PreviewDisplayer : MonoBehaviour
 {
+    // 카드 Preview Displayer, 카드의 정보를 프리뷰로 보여줌 
     [SerializeField] Preview previewUI;
+
     SelectionSystem selectionSystem;
     CardTextureLoader loader; 
 

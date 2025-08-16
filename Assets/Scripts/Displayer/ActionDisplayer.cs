@@ -51,23 +51,33 @@ public class ActionDisplayer : MonoBehaviour
         {
             IAction action = actionFactory.CreateAction(actionType, baseObject);
 
-            if (action != null)
+            if (action == null)
+                continue;
+
+            if (!action.IsValid())
             {
-                if (action.IsValid())
-                {
-                    ActionPopup actionPopup = poolManager.Pop<ActionPopup>(); 
-                    actionPopup.Init(action);
-                    actionPopup.gameObject.transform.SetParent(layout.transform, true);
-
-                    actionPopup.OnSelected -= actionSystem.Enter;
-                    actionPopup.OnSelected += actionSystem.Enter;
-
-                    actionPopup.OnClicked -= Clear; 
-                    actionPopup.OnClicked += Clear;
-
-                    pooled.Add(actionPopup);
-                }
+                Debug.Log($"{action} invalid"); 
+                continue;
             }
+
+
+            if (!actionSystem.CanPerformAction(action, baseObject.OwnerID))
+            {
+                Debug.Log($"cannot perform {action}");
+                continue; 
+            }
+
+            ActionPopup actionPopup = poolManager.Pop<ActionPopup>();
+            actionPopup.Init(action);
+            actionPopup.gameObject.transform.SetParent(layout.transform, true);
+
+            actionPopup.OnSelected -= actionSystem.Enter;
+            actionPopup.OnSelected += actionSystem.Enter;
+
+            actionPopup.OnClicked -= Clear;
+            actionPopup.OnClicked += Clear;
+
+            pooled.Add(actionPopup);
         }
     }
     public void Clear()

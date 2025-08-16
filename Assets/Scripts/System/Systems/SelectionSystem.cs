@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SelectionSystem : MonoBehaviour, IGameSystem
 {
@@ -7,6 +8,8 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
     SelectionResolver resolver;
     SelectionInputHandler handler;
+
+    TurnSystem turnSystem; 
 
     // Preview Displayer에 전달 
     public Action<BaseObject> onSelected;
@@ -23,10 +26,12 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
     public void Init()
     {
+        this.currentSelectable = null;
+
         this.resolver = new SelectionResolver();
         this.handler = new SelectionInputHandler(resolver, TrySelect);
 
-        currentSelectable = null;
+        this.turnSystem = ServiceLocator.Get<TurnSystem>(); 
     }
     void Update()
     {
@@ -58,6 +63,7 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
         isSelectionLocked = true; 
 
+        // Preview 
         onSelected?.Invoke(selectable.BaseObject); 
 
         currentSelectable = selectable;
@@ -80,7 +86,11 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
         if (baseObject == null)
             return;
 
-        onSelectedComplete?.Invoke(baseObject);
+        int currentTurnPlayer = turnSystem.GetCurrentTurnPlayerID();
+
+        // Display Playable Actions 
+        if (baseObject.OwnerID == currentTurnPlayer)
+            onSelectedComplete?.Invoke(baseObject);
     }
 
     public void OnExitSelected()
@@ -96,6 +106,8 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
         isSelectionLocked = false; 
     }
+
+    public ISelectable GetCurrentSelected() => currentSelectable; 
 
     public void EnableSystem()
     {

@@ -4,6 +4,7 @@ using UnityEngine;
 public class UnitCard : Card
 {
     [Header("RunTime Data")]
+    [SerializeField] int currentLevel;
     [SerializeField] int currentCP;
     
     [Header("Components")]
@@ -14,9 +15,12 @@ public class UnitCard : Card
     public UnitCardData UnitData { get { return Data as UnitCardData; } }
 
     public int CP { get { return currentCP; } }
-    public int MAXCP { get { return UnitData.CP; } }
-    public int Movement { get { return UnitData.Movement; } }
-    public bool IsKing { get { return UnitData.IsKing; } }
+    public int MAXCP { get { return UnitData.GetCP(currentLevel); } }
+    public int Movement { get { return UnitData.GetMovement(currentLevel); } }
+    public int Level { get { return currentLevel; } }
+
+    public UnitTag Tag { get { return UnitData.Tag; } } 
+
     public List<Vector2Int> MoveableRange { get { return UnitData.MoveRange; } }
     public List<Vector2Int> AttackRange { get { return UnitData.AttackRange; } }
 
@@ -24,7 +28,8 @@ public class UnitCard : Card
     {
         base.Init(unitCardData, playerID);
 
-        this.currentCP = CP;
+        this.currentLevel = 1; 
+        this.currentCP = UnitData.GetCP(1); 
 
         interaction.Init(this);
         movement.Init();

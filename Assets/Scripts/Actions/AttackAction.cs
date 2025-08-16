@@ -21,6 +21,7 @@ public class AttackAction : IAction
 
     Token token;
     Token target;
+
     ActionPerformer performer;
 
     Vector2Int targetPosition; 
@@ -32,6 +33,12 @@ public class AttackAction : IAction
 
     int currentCost; 
     public int Cost { get { return currentCost; } }
+
+    public ResourceType resourceType;
+    public ResourceType ResourceType { get { return resourceType; } }
+    public int OwnerID { get { return token.OwnerID; } }
+
+    public BaseObject Executor => token; 
 
     public AttackAction(Token token, ActionPerformer performer)
     {
@@ -49,7 +56,8 @@ public class AttackAction : IAction
 
         AttackablePositions = token.AttackRange;
 
-        currentCost = 1; 
+        currentCost = 1;
+        resourceType = ResourceType.Action; 
     }
 
     public void Enter()
@@ -140,6 +148,7 @@ public class AttackAction : IAction
 
         int damage = token.CP;
         int counterDamage = target.CP;
+        bool counterAttackOccurred = false; // 반격이 실제로 발생했는지 추적
 
         // 공격 애니메이션 및 데미지 처리
         eventQueue.Enqueue(async () =>
@@ -183,43 +192,96 @@ public class AttackAction : IAction
             await end.Task; 
         });
 
-        // 반격 데미지 계산 
-        eventQueue.Enqueue(() =>
+        // 반격 애니메이션 및 데미지 처리
+        eventQueue.Enqueue(async () =>
         {
-            Debug.Log($"반격 데미지 처리: {target} -> {token}, 데미지: {counterDamage}");
-            counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
-            Debug.Log($"실제 반격 데미지: {counterDamage}, 공격자 HP: {token.CP}, 공격자 사망: {token.IsDead}");
-            return UniTask.CompletedTask; 
+            // 반격 가능 여부 미리 확인
+            bool canCounter = CanCounterAttack(target, token);
+            
+            if (canCounter && counterDamage > 0)
+            {
+                counterAttackOccurred = true; // 반격이 발생함을 표시
+                var counterHit = new UniTaskCompletionSource();
+                var counterEnd = new UniTaskCompletionSource();
+
+                Vector3 attackerPosition = gridManager.GetWorldPosition(tokenManager.GetGridPositionOfToken(token));
+                TokenMovement targetMovement = target.GetComponent<TokenMovement>();
+                PRS targetPRS = targetMovement.PRS;
+
+                // 근접/원거리 반격 구분
+                bool isMeleeCounter = IsMeleeCounterAttack(target); // 반격은 타겟의 유닛 타입으로 판단
+                
+                if (isMeleeCounter)
+                {
+                    targetMovement.MeleeAttackTargetFrom(attackerPosition, targetPRS, onHitCallback: () =>
+                    {
+                        Debug.Log("반격 칼 휘두르기 히트!");
+                        counterHit.TrySetResult();
+                    }, onCompleteCallback: () =>
+                    {
+                        Debug.Log($"반격 데미지 처리: {target} -> {token}, 데미지: {counterDamage}");
+                        counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
+                        Debug.Log($"실제 반격 데미지: {counterDamage}, 공격자 HP: {token.CP}, 공격자 사망: {token.IsDead}");
+                        counterEnd.TrySetResult();
+                    });
+                }
+                else
+                {
+                    targetMovement.RangeAttackTargetFrom(attackerPosition, targetPRS, onHitCallback: () =>
+                    {
+                        Debug.Log("반격 화살 히트!");
+                        counterHit.TrySetResult();
+                    }, onCompleteCallback: () =>
+                    {
+                        Debug.Log($"반격 데미지 처리: {target} -> {token}, 데미지: {counterDamage}");
+                        counterDamage = damageManager.ProcessCounterDamage(target, token, counterDamage);
+                        Debug.Log($"실제 반격 데미지: {counterDamage}, 공격자 HP: {token.CP}, 공격자 사망: {token.IsDead}");
+                        counterEnd.TrySetResult();
+                    });
+                }
+
+                await counterHit.Task;
+                await counterEnd.Task;
+            }
+            else
+            {
+                Debug.Log("반격 불가능: 공격 범위 밖이거나 반격할 수 없는 상황");
+            }
         });
 
         // 왕에게의 간접 데미지 계산 
         eventQueue.Enqueue(() =>
         {
-            damageManager.ProcessKingDamage(token, counterDamage);
-            damageManager.ProcessKingDamage(target, damage);
+            // 공격 데미지는 항상 타겟에게 간접 데미지 적용
+            damageManager.ProcessIndirectDamage(token, counterDamage);
+            damageManager.ProcessIndirectDamage(target, damage);
             return UniTask.CompletedTask;
         });
 
-        // 사망 처리 (왕의 HP 확인 전에)
+        // 사망여부확인 (Defender) 
         eventQueue.Enqueue(async () =>
         {
             // 타겟이 죽었는지 확인하고 처리
             if(target.TryGetComponent<IDestructible>(out IDestructible destructibleTarget))
             {
-                if (target.IsDead)
+                if (destructibleTarget.IsDead)
                 {
                     Debug.Log($"타겟 {target} 사망 처리");
-                    await damageManager.ProcessUnitDeath(token, target); 
+                    damageManager.ProcessUnitDeath(token, target); 
                 }
             }
+        });
 
+        // 사망여부확인 (Attacker) 
+        eventQueue.Enqueue(async () =>
+        {
             // 공격자가 죽었는지 확인하고 처리
             if (token.TryGetComponent<IDestructible>(out IDestructible destructibleAttacker))
             {
-                if (token.IsDead)
+                if (destructibleAttacker.IsDead)
                 {
                     Debug.Log($"공격자 {token} 사망 처리");
-                    await damageManager.ProcessUnitDeath(target, token); 
+                    damageManager.ProcessUnitDeath(target, token);
                 }
             }
         });
@@ -253,6 +315,16 @@ public class AttackAction : IAction
     // 근접/원거리 공격 구분
     bool IsMeleeAttack()
     {
+        // 원거리 유닛인지 확인 (AttackRange에 2 이상의 거리가 포함되어 있으면 원거리 유닛)
+        bool isRangedUnit = IsRangedUnit(token);
+        
+        if (isRangedUnit)
+        {
+            // 원거리 유닛은 항상 화살을 쏨
+            return false;
+        }
+        
+        // 근접 유닛은 거리로 판단
         Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
         Vector2Int targetGridPosition = this.targetPosition;
         int distance = Mathf.Abs(targetGridPosition.x - currentGridPosition.x) + 
@@ -260,11 +332,73 @@ public class AttackAction : IAction
         return distance == 1;
     }
 
+    // 원거리 유닛인지 확인
+    bool IsRangedUnit(Token unit)
+    {
+        if (unit.AttackRange == null || unit.AttackRange.Count == 0)
+            return false;
+            
+        // AttackRange에 2 이상의 거리가 포함되어 있으면 원거리 유닛
+        foreach (var range in unit.AttackRange)
+        {
+            int distance = Mathf.Abs(range.x) + Mathf.Abs(range.y);
+            if (distance >= 2)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    // 반격 시 근접/원거리 구분
+    bool IsMeleeCounterAttack(Token defender)
+    {
+        // 원거리 유닛인지 확인
+        bool isRangedUnit = IsRangedUnit(defender);
+        
+        if (isRangedUnit)
+        {
+            // 원거리 유닛은 항상 화살을 쏨
+            return false;
+        }
+        
+        // 근접 유닛은 거리로 판단
+        Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
+        Vector2Int attackerPos = tokenManager.GetGridPositionOfToken(token);
+        int distance = Mathf.Abs(attackerPos.x - defenderPos.x) + 
+                       Mathf.Abs(attackerPos.y - defenderPos.y);
+        return distance == 1;
+    }
+
+    // 반격 가능 여부 확인
+    bool CanCounterAttack(Token defender, Token attacker)
+    {
+        if (defender.AttackRange == null || defender.AttackRange.Count == 0)
+        {
+            return false;
+        }
+
+        Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
+        Vector2Int attackerPos = tokenManager.GetGridPositionOfToken(attacker);
+
+        foreach (var position in defender.AttackRange)
+        {
+            if (defenderPos + position == attackerPos)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public bool IsValid()
     {
         if(AttackablePositions.Count == 0) 
             return false;
 
-        return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true; 
+        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 }

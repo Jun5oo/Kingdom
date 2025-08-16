@@ -17,14 +17,11 @@ MonoBehaviour:
   description: RANGE
   race: 1
   actions: 000000000100000002000000
-  cp: 4
-  movement: 1
+  level: 1
+  levelCP: 04000000060000000a000000
+  movement: 020000000200000003000000
+  tag: 0
   isKing: 0
-  moveRange:
-  - {x: 1, y: 0}
-  - {x: 0, y: 1}
-  - {x: -1, y: 0}
-  - {x: 0, y: -1}
   attackRange:
   - {x: 1, y: 0}
   - {x: -1, y: 0}
@@ -34,4 +31,9 @@ MonoBehaviour:
   - {x: 0, y: 2}
   - {x: 2, y: 0}
   - {x: -2, y: 0}
+  moveRange:
+  - {x: 1, y: 0}
+  - {x: 0, y: 1}
+  - {x: -1, y: 0}
+  - {x: 0, y: -1}
   passives: 
