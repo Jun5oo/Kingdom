@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
-    const int HEIGHT = 7; 
-    const int WIDTH = 7;
+    public const int HEIGHT = 7; 
+    public const int WIDTH = 7; 
 
-    // Vector3 originPos = Vector3.zero; 
     Vector3 originPos = Vector3.left * 8; 
 
     Grid grid;
@@ -58,6 +57,23 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+
+    public List<Vector2Int> GetSummonableGridCells(Predicate<Vector2Int> predicate)
+    {
+        List<Vector2Int> summonablePosList = new List<Vector2Int>();
+
+        foreach (GridCell gridCell in grid.GetAllCells())
+        {
+            Vector2Int gridPos = gridCell.GetGridPosition();
+            if (predicate(gridPos))
+            {
+                summonablePosList.Add(gridPos);
+            }
+        }
+
+        return summonablePosList;
+    }
+
     public void UnhighlightGridCells(HighlightLayer layer)
     {
         List<GridCell> highlightedCells = highlightLayerToGridCells[layer];
@@ -73,5 +89,7 @@ public class GridManager : MonoBehaviour
     public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
     public Vector2Int GetGridPosition(Vector3 worldPosition) => grid.GetGridPosition(worldPosition);
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition);
+    public int GetRandomGridXPos() => UnityEngine.Random.Range(0, WIDTH - 1);
+    public int GetRandomGridYPos() => UnityEngine.Random.Range(0, HEIGHT - 1);
     #endregion
 }

@@ -19,6 +19,8 @@ public class TurnSystem : IGameSystem
     DrawManager drawManager; 
     ActionSystem actionSystem;
 
+    AIController aiController;
+
     TurnState currentTurnState; 
     public TurnState TurnState { get { return currentTurnState; } }
 
@@ -37,6 +39,7 @@ public class TurnSystem : IGameSystem
         this.uiManager = ServiceLocator.Get<UIManager>();
         this.handManager = ServiceLocator.Get<HandManager>(); 
         this.actionSystem = ServiceLocator.Get<ActionSystem>();
+        aiController = ServiceLocator.Get<AIController>();
 
         DisableSystem(); 
     }
@@ -69,6 +72,7 @@ public class TurnSystem : IGameSystem
             uiManager.OnNotification("상대 턴", () => 
             { 
                 currentTurnState = TurnState.EnemyTurn;
+                StartAITurn(currentPlayerID);
                 OnOpponentTurnStarted?.Invoke(); 
             });
 
@@ -79,6 +83,12 @@ public class TurnSystem : IGameSystem
 
         handManager.AddCardToHand(currentPlayerID, card); 
     }
+
+    private void StartAITurn(int currentPlayerID)
+    {
+        aiController.InvokeRandomAction(currentPlayerID, () => EndTurn());
+    }
+
     public async UniTask EndTurn()
     {
         if (TurnState == TurnState.Unable)

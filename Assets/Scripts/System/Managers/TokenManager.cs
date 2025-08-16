@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 
 public class TokenManager
@@ -10,6 +11,9 @@ public class TokenManager
 
     Dictionary<int, List<Token>> playerToken;
     Dictionary<int, Token> playerKingToken;
+
+    List<Token> playerTokens = new List<Token>();
+    List<Token> aiTokens = new List<Token>();
 
     public void Init()
     {
@@ -32,12 +36,14 @@ public class TokenManager
     public void MoveTokenTo(Token token, Vector2Int to)
     {
         RemoveToken(token);
-        PlaceTokenTo(token, to); 
+        PlaceTokenTo(token, to);
     }
     public void AddToken(Vector2Int gridPosition, Token token)
     {
         gridToken[gridPosition] = token;
         tokenGrid[token] = gridPosition;
+        List<Token> tokens = GetTokens(token.OwnerID);
+        tokens.Add(token);
 
         if (!playerToken.ContainsKey(token.OwnerID))
             playerToken[token.OwnerID] = new List<Token>();
@@ -53,6 +59,8 @@ public class TokenManager
         Vector2Int gridPosition = tokenGrid[token]; 
         gridToken.Remove(gridPosition);
         tokenGrid.Remove(token);
+        List<Token> tokens = GetTokens(token.OwnerID);
+        tokens.Remove(token);
         playerToken[token.OwnerID].Remove(token);
     }
     public void DestroyToken(Token token)
@@ -97,6 +105,11 @@ public class TokenManager
         }
 
         return false; 
+    }
+
+    public List<Token> GetTokens(int playerId)
+    {
+        return playerId == playerManager.Local.PlayerID ? playerTokens : aiTokens;
     }
     public List<Token> GetPlayerToken(int playerID) => playerToken[playerID]; 
 }

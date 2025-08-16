@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class SummonAction : IAction
 {
@@ -24,7 +25,7 @@ public class SummonAction : IAction
     ActionPerformer performer;
 
     Vector2Int targetPosition;
-    List<Vector2Int> validPositions;
+    public List<Vector2Int> ValidPositions { get; private set; }
 
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
@@ -32,6 +33,7 @@ public class SummonAction : IAction
     int currentCost; 
     public int Cost { get { return currentCost; } }
 
+    public SummonState CurrentSummonState { get; private set; } = SummonState.Prepare;
     public ResourceType resourceType;
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return card.OwnerID; } }
@@ -52,7 +54,7 @@ public class SummonAction : IAction
         this.card = card;
         this.performer = performer;
 
-        validPositions = new List<Vector2Int>
+        ValidPositions = new List<Vector2Int>
         {
             new Vector2Int(1, 1),
             new Vector2Int(1, 0),
@@ -103,6 +105,7 @@ public class SummonAction : IAction
                 await Placing(); 
                 break;
             case SummonState.Done:
+                CurrentSummonState = SummonState.Done;
                 Done(); 
                 break; 
         }
@@ -144,23 +147,24 @@ public class SummonAction : IAction
         OnActionComplete?.Invoke();
     }
 
-    private bool CanSummonAt(Vector2Int pos)
+    public int GetGridPosYForKing()
+    {
+        if (handManager.IsMyCard(card))
+            return 0;
+        else
+            return 6;
+    }
+
+    public bool CanSummonAt(Vector2Int pos)
     {
         if (card.Tag == UnitTag.King)
         {
-            if(handManager.IsMyCard(card))
-                return pos.y < 1;
-            else
-                return pos.y >= 6; 
+            return pos.y == GetGridPosYForKing();
         }
 
-        int playerID = card.OwnerID;
-
-        if (tokenManager.TryGetKingTokenFrom(playerID, out Token kingToken))
+        if (TryGetKingTokenPos(out Vector2Int gridPos))
         {
-            Vector2Int gridPos = tokenManager.GetGridPositionOfToken(kingToken);
-
-            foreach (var validPos in validPositions)
+            foreach (var validPos in ValidPositions)
             {
                 Vector2Int availablePos = gridPos + validPos; 
                 if (!tokenManager.IsTokenAtGridPosition(availablePos) && availablePos == pos)
@@ -177,5 +181,18 @@ public class SummonAction : IAction
             OnActionCanceled?.Invoke(); 
             return false;
         }
+    }
+
+    public bool TryGetKingTokenPos(out Vector2Int gridPos)
+    {
+        int playerID = card.OwnerID;
+        if (tokenManager.TryGetKingTokenFrom(playerID, out Token kingToken))
+        {
+            gridPos = tokenManager.GetGridPositionOfToken(kingToken);
+            return true;
+        }
+
+        gridPos = Vector2Int.zero;
+        return false;
     }
 }

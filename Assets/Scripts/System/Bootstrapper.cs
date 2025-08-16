@@ -24,36 +24,37 @@ public class Bootstrapper : MonoBehaviour
     CardFactory cardFactory;
     TokenFactory tokenFactory;
     ActionFactory actionFactory;
-    PassiveFactory passiveFactory; 
+    PassiveFactory passiveFactory;
+
+    AIController aiController;
 
     [SerializeField] DeckManager deckManager;
     DrawManager drawManager;
 
     CardTextureLoader cardTextureLoader;
-    TokenTextureLoader tokenTextureLoader; 
+    TokenTextureLoader tokenTextureLoader;
     PrefabLoader prefabLoader;
-    SpriteLoader spriteLoader; 
+    SpriteLoader spriteLoader;
 
     EventQueue eventQueue;
     [SerializeField] CardDatabase database;
 
-    [SerializeField] HUDDisplayer hudDisplayer; 
+    [SerializeField] HUDDisplayer hudDisplayer;
 
     SummonSystem summonSystem;
-    UpgradeSystem upgradeSystem; 
+    UpgradeSystem upgradeSystem;
 
     void Awake()
     {
-        RegisterServices(); 
+        RegisterServices();
     }
 
-    async void Start()
+    void Start()
     {
-        await Initialization();
         gameFlowManager.GameStart();
     }
 
-    public void RegisterServices()
+    public async void RegisterServices()
     {
         gameFlowManager = new GameFlowManager();
         playerManager = new PlayerManager();
@@ -61,19 +62,20 @@ public class Bootstrapper : MonoBehaviour
         damageManager = new DamageManager();
         drawManager = new DrawManager();
 
+        aiController = new AIController();
         cardFactory = new CardFactory();
         tokenFactory = new TokenFactory();
         actionFactory = new ActionFactory();
-        passiveFactory = new PassiveFactory(); 
+        passiveFactory = new PassiveFactory();
 
         turnSystem = new TurnSystem();
 
         cardTextureLoader = new CardTextureLoader();
         tokenTextureLoader = new TokenTextureLoader();
         prefabLoader = new PrefabLoader();
-        spriteLoader = new SpriteLoader(); 
+        spriteLoader = new SpriteLoader();
 
-        eventQueue = new EventQueue(); 
+        eventQueue = new EventQueue();
 
         summonSystem = new SummonSystem();
         upgradeSystem = new UpgradeSystem();
@@ -94,29 +96,34 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(cardFactory);
         ServiceLocator.Register(tokenFactory);
         ServiceLocator.Register(actionFactory);
-        ServiceLocator.Register(passiveFactory); 
-        
+        ServiceLocator.Register(passiveFactory);
+
         ServiceLocator.Register(drawManager);
         ServiceLocator.Register(deckManager);
+
+        ServiceLocator.Register(aiController);
 
         ServiceLocator.Register(cardTextureLoader);
         ServiceLocator.Register(tokenTextureLoader);
         ServiceLocator.Register(prefabLoader);
-        ServiceLocator.Register(spriteLoader); 
+
+        ServiceLocator.Register(spriteLoader);
 
         ServiceLocator.Register(eventQueue);
         ServiceLocator.Register(database);
 
         ServiceLocator.Register(summonSystem);
         ServiceLocator.Register(upgradeSystem);
-        
+
         ServiceLocator.Register(hudDisplayer);
+
+        await Initialization();
     }
 
     public async UniTask Initialization()
     {
         playerManager.Init();
-        gameFlowManager.Init(); 
+        gameFlowManager.Init();
         tokenManager.Init();
         gridManager.Init();
         actionSystem.Init();
@@ -124,8 +131,8 @@ public class Bootstrapper : MonoBehaviour
 
         cardTextureLoader.Init();
         tokenTextureLoader.Init();
-        spriteLoader.Init(); 
-        
+        await spriteLoader.Init();
+
         await cardFactory.Init();
         await tokenFactory.Init();
 
@@ -137,14 +144,15 @@ public class Bootstrapper : MonoBehaviour
 
         deckManager.Init();
         drawManager.Init();
-
-        await poolManager.InitAsync();
+        aiController.Init();
 
         database.Init();
         summonSystem.Init();
         upgradeSystem.Init();
 
-        hudDisplayer.Init(); 
+        hudDisplayer.Init();
+
+        await poolManager.InitAsync();
     }
 
 }

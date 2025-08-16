@@ -7,11 +7,14 @@ public class KingPlacement : IGameState
     // 왕을 배치하는 State. 
     const int WAIT_TIME = 500;
 
+    AIController aiController;
+
     GameFlowStateMachine stateMachine; 
 
     public KingPlacement(GameFlowStateMachine stateMachine)
     {
         this.stateMachine = stateMachine; 
+        aiController = ServiceLocator.Get<AIController>();
     }
     public async UniTask Enter()
     {
@@ -37,6 +40,8 @@ public class KingPlacement : IGameState
         ActionSystem actionSystem = ServiceLocator.Get<ActionSystem>();
         ActionFactory actionFactory = ServiceLocator.Get<ActionFactory>();
 
+        bool isAI = playerID != playerManager.Local.PlayerID;
+
         if (playerID != playerManager.Local.PlayerID)
             uiManager.OnNotification("상대 플레이어의 선택을 기다리는 중입니다.");
 
@@ -53,10 +58,19 @@ public class KingPlacement : IGameState
         else
             card = stateMachine.secondCard;
 
-        IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System); 
+        IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System);
         summon.OnActionComplete += completeCallback;
 
-        actionSystem.Enter(summon);
+        if (isAI)
+        {
+            uiManager.OnNotification("상대 플레이어의 선택을 기다리는 중입니다.");
+            aiController.DecideKingPlacement(summon as SummonAction);
+        }
+        else
+        {
+            uiManager.OnNotification("왕을 소환할 곳을 선택해주세요.");
+            actionSystem.Enter(summon);
+        }
 
         await UniTask.WaitUntil(() => done);
         Debug.Log($"{playerID}: KingPlacement Complete"); 

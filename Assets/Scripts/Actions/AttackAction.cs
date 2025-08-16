@@ -26,7 +26,7 @@ public class AttackAction : IAction
 
     Vector2Int targetPosition; 
 
-    List<Vector2Int> attackablePositions;
+    public List<Vector2Int> AttackablePositions { get; private set; }
 
     public event Action OnActionComplete;
     public event Action OnActionCanceled;
@@ -54,7 +54,7 @@ public class AttackAction : IAction
         this.token = token;
         this.performer = performer;
 
-        attackablePositions = token.AttackRange;
+        AttackablePositions = token.AttackRange;
 
         currentCost = 1;
         resourceType = ResourceType.Action; 
@@ -69,7 +69,7 @@ public class AttackAction : IAction
             if (currentGridPosition == -Vector2Int.one)
                 return false; 
 
-            foreach (Vector2Int position in attackablePositions)
+            foreach (Vector2Int position in AttackablePositions)
             {
                 Vector2Int availablePosition = currentGridPosition + position;
                 if (availablePosition == gridPosition)
@@ -127,7 +127,7 @@ public class AttackAction : IAction
                 await Attack(); 
                 break;
             case AttackState.Placing:
-                Placing(); 
+                await Placing(); 
                 break;
             case AttackState.Done:
                 Done(); 
@@ -252,14 +252,7 @@ public class AttackAction : IAction
         // 왕에게의 간접 데미지 계산 
         eventQueue.Enqueue(() =>
         {
-            // 반격이 실제로 발생했을 때만 공격자에게 간접 데미지 적용
-            if (counterAttackOccurred)
-            {
-                damageManager.ProcessKingDamage(token, counterDamage);
-            }
-            
             // 공격 데미지는 항상 타겟에게 간접 데미지 적용
-            damageManager.ProcessKingDamage(target, damage);
             damageManager.ProcessIndirectDamage(token, counterDamage);
             damageManager.ProcessIndirectDamage(target, damage);
             return UniTask.CompletedTask;
@@ -402,7 +395,7 @@ public class AttackAction : IAction
 
     public bool IsValid()
     {
-        if(attackablePositions.Count == 0) 
+        if(AttackablePositions.Count == 0) 
             return false;
 
         return true; 
