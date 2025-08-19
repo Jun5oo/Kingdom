@@ -14,6 +14,8 @@ public class KingDraw : IGameState
 
     public async UniTask Enter()
     {
+        await UniTask.Delay(WAIT_TIME_MS);
+
         HandManager handManager = ServiceLocator.Get<HandManager>();
         DrawManager drawManager = ServiceLocator.Get<DrawManager>();
 

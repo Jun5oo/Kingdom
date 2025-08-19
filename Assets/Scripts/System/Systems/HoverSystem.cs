@@ -32,7 +32,7 @@ public class HoverSystem : MonoBehaviour, IGameSystem
         RaycastHit hit;
 
         // Collider를 탐지했을 경우 
-        if (Physics.Raycast(ray, out hit, 100f))
+        if (Physics.Raycast(ray, out hit, 300f))
         {
             if (hit.transform.gameObject.TryGetComponent<IHoverable>(out IHoverable hoverable))
             {

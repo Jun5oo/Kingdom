@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
+  m_Name: 1001
+  m_EditorClassIdentifier: 
+  ID: 1001
+  Name: Lord of Undead
+  Description: Lord of Undead
+  Race: 1
+  Tag: 2
+  MaxLevel: 1
+  CP: 280000002800000028000000
+  AttackType: 000000000000000000000000
+  AttackRange: 000000000000000000000000
+  MoveType: 000000000000000000000000
+  MoveRange: 010000000100000001000000
+  Effects:
+  - effectType: 3
+    trigger: 2
+    target: 0
+    value: 1
+    parameter1: AbilityResource
+    parameter2: 
+    groupID: 0
+  - effectType: 1
+    trigger: 1
+    target: 0
+    value: 1
+    parameter1: Graveyard
+    parameter2: 
+    groupID: 0
+  - effectType: 4
+    trigger: 0
+    target: 2
+    value: 1
+    parameter1: Graveyard
+    parameter2: 
+    groupID: 1
+  - effectType: 1
+    trigger: 0
+    target: 2
+    value: 1
+    parameter1: Graveyard_Source
+    parameter2: 
+    groupID: 1

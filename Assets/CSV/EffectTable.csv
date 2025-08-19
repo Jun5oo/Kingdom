@@ -1,0 +1,8 @@
+CardID,EffectType,GroupID,Trigger ,Target,Value,Param1
+1001,Gain,0,OnEnemyDead,,1,AbilityResource
+1001,Summon,0,OnAllyDead,,1,Graveyard
+1001,Destroy,1,OnPlay,Ally,1,Graveyard
+1001,Summon,1,OnPlay,Ally,1,Graveyard_Source
+1004,Destroy,0,OnTurnStarted,,1,
+1101,Gain,0,OnEnemyDead,,1,AbilityResource
+1101,Buff,1,OnPlay,Ally,1,DivineShield

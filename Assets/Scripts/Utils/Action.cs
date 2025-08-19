@@ -39,8 +39,3 @@ public enum AttackState
     Done
 }
 
-public enum ResourceType
-{
-    Action, 
-    Ability 
-}

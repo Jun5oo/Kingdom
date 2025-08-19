@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class CardFactory 
 {
+    // 카드데이터를 바탕으로 카드오브젝트를 생성하는 클래스 
     GameObject cardPrefab;
     CardTextureLoader loader;
     PrefabLoader prefabLoader; 
