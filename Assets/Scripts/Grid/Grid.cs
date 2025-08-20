@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Grid
 {
+    const float OFFSET = 0.5f; 
+
     private int height;
     private int width;
 
@@ -23,7 +25,7 @@ public class Grid
         this.originPos = originPos; 
         this.prefab = prefab;
 
-        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x; 
+        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x + OFFSET; 
     }
 
     #region Create Grid 

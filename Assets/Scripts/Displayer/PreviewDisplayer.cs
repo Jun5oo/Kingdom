@@ -7,13 +7,11 @@ public class PreviewDisplayer : MonoBehaviour
     [SerializeField] Preview previewUI;
 
     HoverSystem hoverSystem; 
-    SelectionSystem selectionSystem;
     CardTextureLoader loader; 
 
     public void Start()
     {
         hoverSystem = ServiceLocator.Get<HoverSystem>(); 
-        selectionSystem = ServiceLocator.Get<SelectionSystem>();
         loader = ServiceLocator.Get<CardTextureLoader>();
 
         Subscribe(); 
@@ -22,17 +20,17 @@ public class PreviewDisplayer : MonoBehaviour
     void Subscribe()
     {
         Unsubscribe();
-        selectionSystem.onSelected += OnSelectedHandler;
-        selectionSystem.onDeselected += UnDisplay; 
+        hoverSystem.onHoverStart += OnHoverHandler;
+        hoverSystem.onHoverExit += UnDisplay; 
     }
 
     void Unsubscribe()
     {
-        selectionSystem.onSelected -= OnSelectedHandler;
-        selectionSystem.onDeselected -= UnDisplay;
+        hoverSystem.onHoverStart -= OnHoverHandler;
+        hoverSystem.onHoverExit -= UnDisplay;
     }
 
-    void OnSelectedHandler(BaseObject baseObject)
+    void OnHoverHandler(BaseObject baseObject)
     {
         // Fire and Forget 
         Display(baseObject).Forget(); 
@@ -47,10 +45,11 @@ public class PreviewDisplayer : MonoBehaviour
 
         VisualTexture textures = await loader.LoadAllTextures(baseObject.Data);
 
-        previewUI.OnUpdate(baseObject, textures); 
-        previewUI.gameObject.SetActive(true); 
+        previewUI.UpdatePreview(baseObject, textures); 
+        previewUI.gameObject.SetActive(true);
+        previewUI.Show(); 
 
     }
 
-    void UnDisplay() => previewUI.gameObject.SetActive(false);
+    void UnDisplay() => previewUI.Hide(); 
 }

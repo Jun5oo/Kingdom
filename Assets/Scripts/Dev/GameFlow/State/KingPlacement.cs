@@ -85,8 +85,7 @@ public class KingPlacement : IGameState
             actionSystem.Enter(summon);
         }
 
-        await UniTask.WaitUntil(() => done).Timeout(TimeSpan.FromSeconds(10));
-        Debug.Log($"{playerID}: KingPlacement Complete"); 
+        await UniTask.WaitUntil(() => done);
         summon.OnActionComplete -= completeCallback;
     }
 }

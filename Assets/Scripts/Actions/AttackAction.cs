@@ -148,6 +148,7 @@ public class AttackAction : IAction
 
         int damage = token.CP;
         int counterDamage = target.CP;
+
         bool counterAttackOccurred = false; // 반격이 실제로 발생했는지 추적
 
         // 공격 애니메이션 및 데미지 처리
@@ -173,6 +174,7 @@ public class AttackAction : IAction
                     end.TrySetResult(); 
                 });
             }
+
             else
             {
                 tokenMovement.RangeAttackTargetFrom(targetPosition, prs, onHitCallback: () =>
@@ -201,6 +203,7 @@ public class AttackAction : IAction
             if (canCounter && counterDamage > 0)
             {
                 counterAttackOccurred = true; // 반격이 발생함을 표시
+
                 var counterHit = new UniTaskCompletionSource();
                 var counterEnd = new UniTaskCompletionSource();
 
@@ -246,6 +249,7 @@ public class AttackAction : IAction
             else
             {
                 Debug.Log("반격 불가능: 공격 범위 밖이거나 반격할 수 없는 상황");
+                counterDamage = 0; 
             }
         });
 

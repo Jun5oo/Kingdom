@@ -53,13 +53,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
         attackVectors = resolver.Resolve(Data.AttackType[Level-1], Data.AttackRange[Level-1]);
         moveVectors = resolver.Resolve(Data.MoveType[Level - 1], Data.MoveRange[Level - 1]);
 
-        Debug.Log($"{this} : " + attackVectors.Count);
-        
-        foreach(Vector2Int vec in attackVectors)
-        {
-            Debug.Log($"!{this} : " + vec);
-
-        }
+        Debug.Log($"{this.Data.name} : " + attackVectors.Count);
 
         buffs = new List<IBuff>();
         
