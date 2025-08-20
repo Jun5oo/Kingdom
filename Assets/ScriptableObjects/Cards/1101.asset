@@ -12,27 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
   m_Name: 1101
   m_EditorClassIdentifier: 
-  ID: 1101
-  Name: Lord of Celestial
-  Description: Lord of Celestial
-  Race: 0
-  Tag: 2
-  MaxLevel: 1
-  CP: 280000002800000028000000
-  AttackType: 000000000000000000000000
-  AttackRange: 000000000000000000000000
-  MoveType: 000000000000000000000000
-  MoveRange: 010000000100000001000000
-  Effects:
+  id: 1101
+  cardName: Lord of Celestial
+  race: 0
+  tag: 2
+  maxLevel: 1
+  cp: 280000002800000028000000
+  attackType: 000000000000000000000000
+  attackRange: 000000000000000000000000
+  moveType: 010000000100000001000000
+  moveRange: 010000000100000001000000
+  effects:
   - effectType: 3
-    trigger: 2
+    trigger: 3
     target: 0
     value: 1
     parameter1: AbilityResource
     parameter2: 
     groupID: 0
   - effectType: 2
-    trigger: 0
+    trigger: 1
     target: 2
     value: 1
     parameter1: DivineShield

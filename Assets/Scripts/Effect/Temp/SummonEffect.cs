@@ -19,6 +19,6 @@ public class SummonEffect : IEffect
         // 데이터베이스에서 Summon할 카드의 데이터를 찾고 cardData를 받은 후에 
 
         CardData summonData = database.GetCardData<CardData>(data.parameter1);
-        await summonSystem.Summon(effectOwner.OwnerID, summonData as UnitCardData, targetPosition, effectOwner.Data); 
+        await summonSystem.Summon(effectOwner.OwnerID, summonData, targetPosition, effectOwner.Data); 
     }
 }

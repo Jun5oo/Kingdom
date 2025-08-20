@@ -12,20 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
   m_Name: 1004
   m_EditorClassIdentifier: 
-  ID: 1004
-  Name: Graveyard
-  Description: Graveyard
-  Race: 1
-  Tag: 3
-  MaxLevel: 1
-  CP: 000000000000000000000000
-  AttackType: 000000000000000000000000
-  AttackRange: 000000000000000000000000
-  MoveType: 000000000000000000000000
-  MoveRange: 000000000000000000000000
-  Effects:
+  id: 1004
+  cardName: Graveyard
+  race: 1
+  tag: 3
+  maxLevel: 1
+  cp: 000000000000000000000000
+  attackType: 000000000000000000000000
+  attackRange: 000000000000000000000000
+  moveType: 000000000000000000000000
+  moveRange: 000000000000000000000000
+  effects:
   - effectType: 4
-    trigger: 3
+    trigger: 4
     target: 0
     value: 1
     parameter1: 

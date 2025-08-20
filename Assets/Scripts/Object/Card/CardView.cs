@@ -16,15 +16,9 @@ public class CardView : BaseView
     {
         SetCardView(textures.Art, textures.Mask, textures.Frame, textures.Background, textures.Back);
 
-        UnitCardData unitData;
-
-        if (cardData is UnitCardData)
-            unitData = cardData as UnitCardData;
-        else
-            return;
-
-        SetCardCP(unitData.CP[unitData.Level-1]);
-        SetCardMovement(unitData.Movement[unitData.Level-1]); 
+        // 현재 카드의 경우 레벨 1이라고 가정 
+        SetCardCP(cardData.CP[0]);
+        SetCardMovement(cardData.MoveRange[0]);
     }
 
     public void SetCardView(Texture2D art, Texture2D mask, Texture2D frame, Texture2D background, Texture2D back)

@@ -12,7 +12,6 @@ public class GridManager : MonoBehaviour
     Grid grid;
 
     [SerializeField] GameObject gridPrefab;
-    [SerializeField] List<Sprite> gridCellSprite;
 
     Dictionary<HighlightLayer, List<GridCell>> highlightLayerToGridCells; 
 
@@ -20,7 +19,7 @@ public class GridManager : MonoBehaviour
     {
         grid = new Grid();
         grid.Init(HEIGHT, WIDTH, originPos, gridPrefab);
-        grid.CreateGridMap(transform, gridCellSprite);
+        grid.CreateGridMap(transform);
 
         foreach (GridCell gridCell in grid.GetAllCells())
             gridCell.OnClicked += TrySelectGridCell;

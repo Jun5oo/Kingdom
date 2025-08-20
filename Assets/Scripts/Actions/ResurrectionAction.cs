@@ -66,7 +66,7 @@ public class ResurrectionAction : IAction
             {
                 if (!token.IsAllies(this.actionOwner.OwnerID))
                     return false;
-                if (token.UnitData.Tag == UnitTag.Graveyard)
+                if (token.Data.Tag == UnitTag.Graveyard)
                     return true; 
             }
 
@@ -105,7 +105,7 @@ public class ResurrectionAction : IAction
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
 
-        var unitData = new List<UnitCardData>(targetToken.SourceObjects);
+        var unitData = new List<CardData>(targetToken.SourceObjects);
         
         tokenManager.DestroyToken(targetToken);
        

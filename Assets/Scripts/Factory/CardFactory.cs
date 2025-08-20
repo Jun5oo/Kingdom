@@ -8,6 +8,7 @@ public class CardFactory
     CardTextureLoader loader;
     PrefabLoader prefabLoader; 
 
+
     public async UniTask Init()
     {
         loader = ServiceLocator.Get<CardTextureLoader>();

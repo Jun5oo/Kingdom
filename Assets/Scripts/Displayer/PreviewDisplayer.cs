@@ -6,11 +6,13 @@ public class PreviewDisplayer : MonoBehaviour
     // 카드 Preview Displayer, 카드의 정보를 프리뷰로 보여줌 
     [SerializeField] Preview previewUI;
 
+    HoverSystem hoverSystem; 
     SelectionSystem selectionSystem;
     CardTextureLoader loader; 
 
     public void Start()
     {
+        hoverSystem = ServiceLocator.Get<HoverSystem>(); 
         selectionSystem = ServiceLocator.Get<SelectionSystem>();
         loader = ServiceLocator.Get<CardTextureLoader>();
 

@@ -258,7 +258,7 @@ public class UpgradeAction : IAction
             {
                 foreach(var pickedToken in picked)
                 {
-                    if (pickedToken.ID == token.ID)
+                    if (pickedToken.Data.ID == token.Data.ID)
                         continue; 
                 }
             }

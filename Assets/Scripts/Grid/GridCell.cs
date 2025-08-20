@@ -32,7 +32,7 @@ public class GridCell : MonoBehaviour, IHoverable
     public Action UnHovered;
     public Action<GridCell> OnClicked;
 
-    public void Init(Vector2Int gridPosition, Sprite sprite)
+    public void Init(Vector2Int gridPosition)
     {
         this.gridPosition = gridPosition;
         

@@ -68,7 +68,7 @@ public static class ReadCSVFile
             return; 
         }
 
-        Dictionary<string, CardDataSO> cardDict = new Dictionary<string, CardDataSO>();
+        Dictionary<string, CardData> cardDict = new Dictionary<string, CardData>();
 
         #region Parsing CardData 
         string[] dataLines = File.ReadAllLines(CARD_CSV_PATH);
@@ -92,7 +92,7 @@ public static class ReadCSVFile
             string name = GetValue(dataHeaders, values, CARD_NAME);
             string description = GetValue(dataHeaders, values, CARD_DESCRIPTION);
             
-            CardDataSO card = ScriptableObject.CreateInstance<CardDataSO>();
+            CardData card = ScriptableObject.CreateInstance<CardData>();
 
             card.ID = id;
             card.Name = name;
@@ -159,7 +159,7 @@ public static class ReadCSVFile
 
             string cardID = GetValue(effectHeaders, values, CARD_ID);
 
-            if (string.IsNullOrEmpty(cardID) || !cardDict.TryGetValue(cardID, out CardDataSO dataSO))
+            if (string.IsNullOrEmpty(cardID) || !cardDict.TryGetValue(cardID, out CardData dataSO))
                 continue;
 
             var effectSO = new EffectData();

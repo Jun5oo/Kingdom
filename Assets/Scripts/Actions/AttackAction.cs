@@ -252,6 +252,7 @@ public class AttackAction : IAction
         // 왕에게의 간접 데미지 계산 
         eventQueue.Enqueue(() =>
         {
+            Debug.Log("카운터 데미지 확인" + counterDamage); 
             // 공격 데미지는 항상 타겟에게 간접 데미지 적용
             damageManager.ProcessIndirectDamage(token, counterDamage);
             damageManager.ProcessIndirectDamage(target, damage);

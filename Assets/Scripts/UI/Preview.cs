@@ -33,30 +33,26 @@ public class Preview : MonoBehaviour
         if (viewPort.rect.height < preferredHeight)
             TopAlignment();
         else
-            CenterAlignment(); 
+            CenterAlignment();
 
-        if(baseObject is UnitCard card)
+        cp.enabled = true;
+        movement.enabled = true;
+
+        switch (baseObject)
         {
-            cp.text = card.CP.ToString();
-            movement.text = card.Movement.ToString();
+            case Card card:
+                cp.text = card.CP.ToString();
+                movement.text = card.Movement.ToString();
+                break;
+            case Token token:
+                cp.text = token.CP.ToString();
+                movement.text = token.Movement.ToString();
+                break;
 
-            cp.enabled = true;
-            movement.enabled = true;
-        }
-
-        else if (baseObject is Token token)
-        {
-            cp.text = token.CP.ToString();
-            movement.text = token.Movement.ToString();
-
-            cp.enabled = true;
-            movement.enabled = true;
-        }
-
-        else
-        {
-            cp.enabled = false; 
-            movement.enabled = false; 
+            default:
+                cp.enabled = false;
+                movement.enabled = false;
+                break;
         }
     }
 

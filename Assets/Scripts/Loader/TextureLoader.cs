@@ -17,8 +17,16 @@ public abstract class TextureLoader
             return cached; 
 
         string address = CardAddress(cardID);
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        artCache[cardID] = texture; 
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);  
+
+        if(texture != null)
+            artCache[cardID] = texture; 
+        else
+            Debug.LogError($"{texture}를 Load하지 못했습니다.");
+
+        Addressables.Release(handle); 
+
         return texture; 
     }
     public abstract UniTask<VisualTexture> LoadAllTextures(CardData cardData); 

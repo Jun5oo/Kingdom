@@ -9,7 +9,7 @@ public class ActionFactory
         switch (actionType)
         {
             case ActionType.Summon:
-                if (baseObject is UnitCard card)
+                if (baseObject is Card card)
                     action = new SummonAction(card, performer);
                 break;
             case ActionType.Move:

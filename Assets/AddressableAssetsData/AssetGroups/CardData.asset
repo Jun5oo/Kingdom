@@ -14,49 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: CardData
   m_GUID: c312d4657733997458ed691c4214802d
-  m_SerializeEntries:
-  - m_GUID: 267f66a09b5c5d14cbf6750b575aac20
-    m_Address: Data/Cards/1101
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 301e1c505ec633541b739e7e796aa8cc
-    m_Address: Data/Cards/1102
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 32630151aa3e0954899c9780e2f7d6c0
-    m_Address: Data/Cards/1001
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3ca3b11c8ba4f1e4e887b2f887075a35
-    m_Address: Data/Cards/1004
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 70bb93b28b44c704d8f380c0187e4cf5
-    m_Address: Data/Cards/1003
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 97927e0a3150f1b418f1f7477cf406f9
-    m_Address: Data/Cards/1103
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fbb6e0f9e7e8a6840bf29cab4c8b8a66
-    m_Address: Data/Cards/1002
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - CardData
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}
   m_SchemaSet:

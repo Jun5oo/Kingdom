@@ -27,7 +27,7 @@ public class Grid
     }
 
     #region Create Grid 
-    public void CreateGridMap(Transform gridParent, List<Sprite> sprites)
+    public void CreateGridMap(Transform gridParent)
     {
         positionToCell = new Dictionary<Vector2Int, GridCell>(); 
 
@@ -49,7 +49,7 @@ public class Grid
 
                 int idx = i * width + j; 
 
-                gridCell.Init(gridPos, sprites[idx]);
+                gridCell.Init(gridPos);
 
                 gridCell.OnClicked += OnClicked; 
                 positionToCell.Add(gridPos, gridCell);

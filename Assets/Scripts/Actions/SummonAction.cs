@@ -21,7 +21,7 @@ public class SummonAction : IAction
     TokenManager tokenManager;
     SummonSystem summonSystem; 
     
-    UnitCard card;
+    Card card;
     ActionPerformer performer;
 
     Vector2Int targetPosition;
@@ -40,7 +40,7 @@ public class SummonAction : IAction
 
     public BaseObject Executor => card; 
 
-    public SummonAction(UnitCard card, ActionPerformer performer)
+    public SummonAction(Card card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
         highlightLayer = HighlightLayer.Action; 
@@ -120,7 +120,7 @@ public class SummonAction : IAction
         
         CardMovement cardMovement = card.GetComponent<CardMovement>();  
         PRS prs = cardMovement.PRS;
-        prs.position += Vector3.forward * 2f;
+        prs.position += Vector3.up * 2f;
 
         var taskCompletion = new UniTaskCompletionSource(); 
 
@@ -135,7 +135,7 @@ public class SummonAction : IAction
     }
     async UniTask Summon()
     {
-        await summonSystem.Summon(card.OwnerID, card.UnitData, targetPosition); 
+        await summonSystem.Summon(card.OwnerID, card.Data, targetPosition); 
         await Transition(SummonState.Placing);
     }
     async UniTask Placing()
