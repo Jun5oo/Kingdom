@@ -1,9 +1,13 @@
 using System;
+using System.Threading;
 using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
 {
     IAction currentAction;
+
+    GridSelection gridSelection;
+    CancellationTokenSource selectCts; 
 
     ActionResourceSystem actionResourceSystem;
     AbilityResourceSystem abilityResourceSystem; 
@@ -14,11 +18,6 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         
         this.currentAction = null;
 
-        GridManager gridManager = ServiceLocator.Get<GridManager>();
-
-        gridManager.OnGridCellSelected -= Execute; 
-        gridManager.OnGridCellSelected += Execute;
-
         actionResourceSystem = new ActionResourceSystem();
         abilityResourceSystem = new AbilityResourceSystem(); 
 
@@ -27,6 +26,9 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
         ServiceLocator.Register(actionResourceSystem); 
         ServiceLocator.Register(abilityResourceSystem);
+
+        gridSelection = new GridSelection();
+        gridSelection.Init(); 
     }
 
     void Update()
@@ -38,32 +40,45 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
     }
 
-    public void Enter(IAction action)
+    public async void Enter(IAction action)
     {
-        currentAction = action; 
-        currentAction?.Enter();
+        // 진행할 Action 세팅 
+        currentAction = action;
+        selectCts?.Cancel(); 
+        selectCts = new CancellationTokenSource();
 
         currentAction.OnActionCanceled -= OnActionCanceled;
         currentAction.OnActionCanceled += OnActionCanceled;
-    }
-    public void Execute(Vector2Int gridPosition)
-    {
-        if(currentAction != null)
+
+        // 하이라이트 
+        currentAction?.Enter();
+
+        bool succeeded = false; 
+
+        try
         {
-            currentAction.OnActionCanceled -= OnActionCanceled;
-
-            currentAction.OnActionComplete -= OnActionComplete;
-            currentAction.OnActionComplete += OnActionComplete;
-
-            currentAction?.Execute(gridPosition);
+            var pos = await gridSelection.WaitGridSelectionAsync(currentAction.Validation, currentAction.HighlightType, currentAction.HighlightLayer, selectCts.Token);
+            await currentAction.Execute(pos);
+            succeeded = true; 
         }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Action이 취소되었습니다."); 
+        }
+        finally
+        {
+            if (succeeded)
+                OnActionComplete(); 
+        }
+
     }
+
     public void Exit()
     {
         if(currentAction != null)
         {
+            selectCts.Cancel(); 
             currentAction.OnActionCanceled -= OnActionCanceled; 
-            currentAction.OnActionComplete -= OnActionComplete;
             currentAction?.Exit();
             currentAction = null;
         }
@@ -76,6 +91,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         Debug.Log("Action Canceled");
         Exit(); 
     }
+
     void OnActionComplete()
     {
         if (currentAction?.Performer == ActionPerformer.System)

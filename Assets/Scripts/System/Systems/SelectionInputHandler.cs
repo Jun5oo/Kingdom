@@ -32,6 +32,7 @@ public class SelectionInputHandler
             if (Physics.Raycast(ray, out hit, 300f))
             {
                 ISelectable selectable = resolver.Resolve(hit);
+                Debug.Log($"{selectable} selected!"); 
                 onSelect?.Invoke(selectable); 
             }
         }

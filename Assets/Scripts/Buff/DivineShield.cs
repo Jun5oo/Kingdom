@@ -4,12 +4,13 @@ using UnityEngine;
 public class DivineShield : IBuff, IDamageModifierBuff
 {
     TurnSystem turnSystem;
-    PlayerManager playerManager;
+    
     IBuffable target;
 
     GameObject shield = null; 
 
     public IBuffable Target { get { return target; } }
+    
     int duration = 2;
 
     public DivineShield(IBuffable target)
@@ -17,20 +18,10 @@ public class DivineShield : IBuff, IDamageModifierBuff
         this.target = target;
 
         this.turnSystem = ServiceLocator.Get<TurnSystem>();
-        this.playerManager = ServiceLocator.Get<PlayerManager>();
 
-        turnSystem.OnPlayerTurnStarted -= ReduceDuration;
-        turnSystem.OnOpponentTurnStarted -= ReduceDuration; 
-
-        if(target is BaseObject baseObject)
-        {
-            if (baseObject.OwnerID == playerManager.Local.PlayerID)
-                turnSystem.OnPlayerTurnStarted += ReduceDuration;
-            else
-                turnSystem.OnOpponentTurnStarted += ReduceDuration; 
-        } 
+        turnSystem.onTurnStarted -= ReduceHandler;
+        turnSystem.onTurnStarted += ReduceHandler; 
     }
-
 
     public async UniTask OnApply()
     {
@@ -54,15 +45,10 @@ public class DivineShield : IBuff, IDamageModifierBuff
         shield.SetActive(false);
 
         if (shield != null)
-            GameObject.Destroy(shield); 
+            GameObject.Destroy(shield);
 
         if (target is BaseObject baseObject)
-        {
-            if (baseObject.OwnerID == playerManager.Local.PlayerID)
-                turnSystem.OnPlayerTurnStarted -= ReduceDuration;
-            else
-                turnSystem.OnOpponentTurnStarted -= ReduceDuration;
-        }
+            turnSystem.onTurnStarted -= ReduceHandler;
 
         if (target != null)
             target.RemoveBuff(this); 
@@ -70,11 +56,23 @@ public class DivineShield : IBuff, IDamageModifierBuff
 
     public void ReduceDuration()
     {
-        Debug.Log("Reduced"); 
-        duration -= 1;
+        duration -= 1; 
 
         if (IsExpired())
             OnRemove(); 
+    }
+
+    public void ReduceHandler(int playerID)
+    {
+        int ownerID = -1;
+
+        if (target is BaseObject baseObject)
+            ownerID = baseObject.OwnerID;
+        else
+            Debug.Log($"{target} is not baseObject"); 
+
+        if (playerID == ownerID)
+            ReduceDuration(); 
     }
 
     public bool IsExpired()

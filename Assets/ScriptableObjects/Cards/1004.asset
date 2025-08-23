@@ -23,10 +23,13 @@ MonoBehaviour:
   moveType: 000000000000000000000000
   moveRange: 000000000000000000000000
   effects:
-  - effectType: 4
-    trigger: 4
-    target: 0
-    value: 1
-    parameter1: 
-    parameter2: 
+  - effectType: 5
     groupID: 0
+    abilityName: 
+    description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uD134\uC5D0 \uD30C\uAD34\uB429\uB2C8\uB2E4."
+    trigger: 3
+    target: 1
+    value: 1
+    cost: 0
+    parameter1: None
+    parameter2: None

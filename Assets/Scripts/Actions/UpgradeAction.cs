@@ -43,7 +43,9 @@ public class UpgradeAction : IAction
     UpgradeState currentState; 
     public UpgradeState UpgradeState { get { return currentState; } }
 
-    public BaseObject Executor => actionOwner; 
+    public BaseObject Executor => actionOwner;
+
+    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
     GridManager gridManager;
     TokenManager tokenManager; 

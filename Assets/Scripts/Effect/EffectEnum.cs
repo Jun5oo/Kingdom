@@ -1,7 +1,8 @@
 public enum EffectType
 {
     Damage, 
-    Summon, 
+    Summon,
+    Resurrect, 
     Buff, 
     Gain,
     Destroy,
@@ -10,14 +11,12 @@ public enum EffectType
 
 public enum Trigger 
 {
-    // 발동했을 때
     Active, 
-    // 소환되었을 때
-    OnPlay, 
     OnAllyDead, 
     OnEnemyDead, 
     OnTurnStarted, 
-    OnTurnEnded 
+    OnTurnEnded,
+    OnUnitDead, 
 }
 
 public enum Target
@@ -33,4 +32,12 @@ public enum Target
 public enum BuffType
 {
     DivineShield
+}
+
+
+public enum SelectionMode 
+{
+    Default, 
+    Select, 
+    Random 
 }

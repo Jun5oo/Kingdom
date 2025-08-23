@@ -15,7 +15,7 @@ public class CardDatabase : MonoBehaviour
         dictionary = new Dictionary<string, CardData>();
         
         foreach(CardData data in database)
-            dictionary[data.Name] = data; 
+            dictionary[data.ID] = data; 
 
         raceDictionary = new Dictionary<Race, List<CardData>>();  
         

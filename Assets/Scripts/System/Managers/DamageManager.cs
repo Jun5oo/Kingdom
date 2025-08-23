@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class DamageManager
@@ -134,8 +135,11 @@ public class DamageManager
 
         OnPrepareUnitDeath?.Invoke(victim.OwnerID, victim);
 
-        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+        Vector2Int killerPosition = tokenManager.GetGridPositionOfToken(killer);
+        Vector2Int victimPosition = tokenManager.GetGridPositionOfToken(victim);
 
+        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent { killer = killer, victim = victim , victimPosition = victimPosition, killerPosition = killerPosition }); 
+        
         OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
         OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);
 

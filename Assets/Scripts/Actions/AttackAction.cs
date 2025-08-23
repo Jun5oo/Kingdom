@@ -28,8 +28,8 @@ public class AttackAction : IAction
 
     public List<Vector2Int> AttackablePositions { get; private set; }
 
-    public event Action OnActionComplete;
     public event Action OnActionCanceled;
+    public event Action OnActionComplete;
 
     int currentCost; 
     public int Cost { get { return currentCost; } }
@@ -38,7 +38,9 @@ public class AttackAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token; 
+    public BaseObject Executor => token;
+
+    public Predicate<Vector2Int> Validation => CanAttack;
 
     public AttackAction(Token token, ActionPerformer performer)
     {
@@ -62,24 +64,25 @@ public class AttackAction : IAction
 
     public void Enter()
     {
-        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
-        {
-            Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
 
-            if (currentGridPosition == -Vector2Int.one)
-                return false; 
+    }
+    bool CanAttack(Vector2Int gridPosition)
+    {
+        Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
 
-            foreach (Vector2Int position in AttackablePositions)
-            {
-                Vector2Int availablePosition = currentGridPosition + position;
-                if (availablePosition == gridPosition)
-                    return true;
-            }
-
+        if (currentGridPosition == -Vector2Int.one)
             return false;
 
-        }, HighlightType.AttackHighlight, HighlightLayer.Action);
+        foreach (Vector2Int position in AttackablePositions)
+        {
+            Vector2Int availablePosition = currentGridPosition + position;
+            if (availablePosition == gridPosition)
+                return true;
+        }
+
+        return false;
     }
+
     public async UniTask Execute(Vector2Int targetPosition)
     {
         var target = tokenManager.GetTokenFrom(targetPosition);
@@ -112,8 +115,7 @@ public class AttackAction : IAction
 
     public void Exit()
     {
-        gridManager?.UnhighlightGridCells(HighlightLayer.Action);
-        gridManager?.UnhighlightGridCells(HighlightLayer.Hover); 
+
     }
 
     async UniTask Transition(AttackState state)
@@ -193,7 +195,6 @@ public class AttackAction : IAction
             await hit.Task; 
             await end.Task; 
         });
-
         // 반격 애니메이션 및 데미지 처리
         eventQueue.Enqueue(async () =>
         {
@@ -252,7 +253,6 @@ public class AttackAction : IAction
                 counterDamage = 0; 
             }
         });
-
         // 왕에게의 간접 데미지 계산 
         eventQueue.Enqueue(() =>
         {
@@ -262,7 +262,6 @@ public class AttackAction : IAction
             damageManager.ProcessIndirectDamage(target, damage);
             return UniTask.CompletedTask;
         });
-
         // 사망여부확인 (Defender) 
         eventQueue.Enqueue(async () =>
         {
@@ -276,7 +275,6 @@ public class AttackAction : IAction
                 }
             }
         });
-
         // 사망여부확인 (Attacker) 
         eventQueue.Enqueue(async () =>
         {
@@ -290,7 +288,6 @@ public class AttackAction : IAction
                 }
             }
         });
-
         // 왕의 HP 확인 (사망 처리 후)
         eventQueue.Enqueue(() =>
         {
@@ -314,7 +311,6 @@ public class AttackAction : IAction
 
     void Done()
     {
-        OnActionComplete?.Invoke();
     }
 
     // 근접/원거리 공격 구분
@@ -336,7 +332,6 @@ public class AttackAction : IAction
                        Mathf.Abs(targetGridPosition.y - currentGridPosition.y);
         return distance == 1;
     }
-
     // 원거리 유닛인지 확인
     bool IsRangedUnit(Token unit)
     {
@@ -355,7 +350,6 @@ public class AttackAction : IAction
         
         return false;
     }
-
     // 반격 시 근접/원거리 구분
     bool IsMeleeCounterAttack(Token defender)
     {
@@ -375,7 +369,6 @@ public class AttackAction : IAction
                        Mathf.Abs(attackerPos.y - defenderPos.y);
         return distance == 1;
     }
-
     // 반격 가능 여부 확인
     bool CanCounterAttack(Token defender, Token attacker)
     {
@@ -404,6 +397,5 @@ public class AttackAction : IAction
             return false;
 
         return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 }

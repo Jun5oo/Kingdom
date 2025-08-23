@@ -34,7 +34,7 @@ public class Preview : MonoBehaviour
         this.gameObject.SetActive(false);
     }
 
-    public void UpdatePreview   (BaseObject baseObject, VisualTexture textures)
+    public void UpdatePreview(BaseObject baseObject, VisualTexture textures)
     {
         art.texture = textures.Art;
         background.texture = textures.Background; 

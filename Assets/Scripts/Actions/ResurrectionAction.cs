@@ -33,7 +33,9 @@ public class ResurrectionAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return actionOwner.OwnerID; } }
 
-    public BaseObject Executor => actionOwner; 
+    public BaseObject Executor => actionOwner;
+
+    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
     public ResurrectionAction(Token token, ActionPerformer performer)
     {

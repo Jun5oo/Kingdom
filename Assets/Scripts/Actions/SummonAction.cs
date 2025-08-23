@@ -27,8 +27,8 @@ public class SummonAction : IAction
     Vector2Int targetPosition;
     public List<Vector2Int> ValidPositions { get; private set; }
 
-    public event Action OnActionComplete;
     public event Action OnActionCanceled;
+    public event Action OnActionComplete;
 
     int currentCost; 
     public int Cost { get { return currentCost; } }
@@ -38,7 +38,9 @@ public class SummonAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return card.OwnerID; } }
 
-    public BaseObject Executor => card; 
+    public BaseObject Executor => card;
+
+    public Predicate<Vector2Int> Validation => CanSummonAt;
 
     public SummonAction(Card card, ActionPerformer performer)
     {
@@ -74,11 +76,10 @@ public class SummonAction : IAction
     {
         if(card == null)
         {
-            Debug.LogError("The subject of the action is not exits");
+            Debug.LogError("null 인 카드입니다.");
             return; 
         }
 
-        gridManager?.HighlightGridCells((Vector2Int gridPosition) => CanSummonAt(gridPosition), highlightType, highlightLayer); 
     }
     public async UniTask Execute(Vector2Int targetPosition)
     {
@@ -89,7 +90,6 @@ public class SummonAction : IAction
     public bool IsValid()
     {
         return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
     }
     async UniTask Transition(SummonState state)
     {
@@ -144,7 +144,7 @@ public class SummonAction : IAction
     }
     void Done()
     {
-        OnActionComplete?.Invoke();
+        OnActionComplete?.Invoke(); 
     }
 
     public int GetGridPosYForKing()

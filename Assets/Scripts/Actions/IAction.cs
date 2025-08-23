@@ -12,7 +12,7 @@ public interface IAction
     public HighlightLayer HighlightLayer { get; }
     public HighlightType HighlightType { get; }
     public ActionPerformer Performer { get; }
-
+    public Predicate<Vector2Int> Validation { get; }
     public ResourceType ResourceType { get; }
 
     public void Enter();

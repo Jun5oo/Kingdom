@@ -23,8 +23,8 @@ public class MoveAction : IAction
 
     Vector2Int targetPosition; 
 
-    public event Action OnActionComplete;
     public event Action OnActionCanceled;
+    public event Action OnActionComplete;
 
     int currentCost;
     public int Cost { get { return currentCost; } }
@@ -34,7 +34,9 @@ public class MoveAction : IAction
 
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token; 
+    public BaseObject Executor => token;
+
+    public Predicate<Vector2Int> Validation => CanMoveTo;
 
     public MoveAction(Token token, ActionPerformer performer)
     {
@@ -57,21 +59,6 @@ public class MoveAction : IAction
 
     public void Enter()
     {
-        Exit();
-
-        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
-        {
-            Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token); 
-
-            foreach(Vector2Int position in MoveablePositions)
-            {
-                Vector2Int availablePosition = currentGridPosition + position; 
-                if (availablePosition == gridPosition && !tokenManager.IsTokenAtGridPosition(gridPosition))
-                    return true; 
-            }
-
-            return false; 
-        }, HighlightType.MoveHighlight, HighlightLayer.Action);
 
     }
     public async UniTask Execute(Vector2Int gridPosition)
@@ -87,7 +74,7 @@ public class MoveAction : IAction
     }
     public void Exit()
     {
-        gridManager.UnhighlightGridCells(HighlightLayer.Action); 
+
     }
 
     public bool IsValid()
@@ -96,7 +83,6 @@ public class MoveAction : IAction
             return false;
 
         return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
     }
 
     async UniTask Transition(MoveState state)
@@ -123,7 +109,7 @@ public class MoveAction : IAction
 
     async UniTask Prepare()
     {
-        Exit(); 
+        // Exit(); 
         await Transition(MoveState.Animation);
     }
     async UniTask Move()
@@ -150,8 +136,24 @@ public class MoveAction : IAction
         await Transition(MoveState.Done);
     }
 
+    bool CanMoveTo(Vector2Int pos)
+    {
+        if (token == null || tokenManager == null)
+            return false; 
+
+        var currentPos = tokenManager.GetGridPositionOfToken(token);
+
+        foreach (Vector2Int delta in MoveablePositions)
+        {
+            Vector2Int availablePosition = currentPos + delta;
+            if (availablePosition == pos && !tokenManager.IsTokenAtGridPosition(pos))
+                return true;
+        }
+
+        return false;
+    }
+
     void Done()
     {
-        OnActionComplete?.Invoke(); 
     }
 }

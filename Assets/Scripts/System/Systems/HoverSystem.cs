@@ -10,7 +10,7 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     TokenManager tokenManager;
     ActionSystem actionSystem;
 
-    float hoverPreviewDelay = 0.5f; 
+    float hoverPreviewDelay = 0.7f; 
     float hoverStartTime;
 
     bool isPreviewHovered; 
@@ -126,6 +126,9 @@ public class HoverSystem : MonoBehaviour, IGameSystem
 
         if (!actionSystem.IsActionInProgress())
             return;
+
+        if (tokenManager == null)
+            return; 
 
         Vector2Int gridPosition = gridManager.GetGridPosition(worldPosition);
         

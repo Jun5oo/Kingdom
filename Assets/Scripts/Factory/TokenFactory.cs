@@ -7,12 +7,16 @@ public class TokenFactory
     GameObject tokenPrefab;
 
     TokenTextureLoader textureLoader;
-    PrefabLoader prefabLoader; 
+    PrefabLoader prefabLoader;
+
+    AbilityFactory abilityFactory;
 
     public async UniTask Init()
     {
         textureLoader = ServiceLocator.Get<TokenTextureLoader>();
         prefabLoader = ServiceLocator.Get<PrefabLoader>();
+
+        abilityFactory = new AbilityFactory(); 
 
         tokenPrefab = await prefabLoader.LoadPrefabAsync<Token>(); 
     }
@@ -27,7 +31,11 @@ public class TokenFactory
 
         // Token Component가 있는지 확인 후 초기화 
         if (tokenObject.TryGetComponent<Token>(out Token token))
-            token.Init(cardData, playerID, sourceObject, sourceObjects, spawnLevel);
+        {
+            List<Ability> abilities = abilityFactory.CreateAbilityAsync(cardData, token); 
+            
+            token.Init(cardData, playerID, sourceObject, sourceObjects, spawnLevel, abilities);
+        }
 
         // 토큰 이미지 Load 
         VisualTexture textures = await textureLoader.LoadAllTextures(cardData);
