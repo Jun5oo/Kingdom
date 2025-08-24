@@ -1,13 +1,14 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public enum ContextKey
 {
     None, 
-    Selected, 
-    LastDestroyed, 
-    Random, 
-    All
+    Selected,
+    Attacker,
+    AttackerPos, 
+    Defender,
+    DefenderPos
+    
 }
 
 public struct EffectContext

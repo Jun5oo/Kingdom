@@ -30,10 +30,9 @@ MonoBehaviour:
       1\uAC1C \uD68D\uB4DD\uD569\uB2C8\uB2E4."
     trigger: 2
     target: 0
-    value: 1
+    value: 0
     cost: 0
-    parameter1: None
-    parameter2: Ability
+    parameter: '{ resourceType : ability, amount : 1 }'
   - effectType: 3
     groupID: 1
     abilityName: "\uC5EC\uC2E0\uC758 \uC131\uC5ED"
@@ -41,7 +40,6 @@ MonoBehaviour:
       \uCD94\uAC00 \uBC0F \uC0AC\uB9DD\uBA74\uC5ED \uBD80\uC5EC"
     trigger: 0
     target: 2
-    value: 2
+    value: 0
     cost: 2
-    parameter1: Selected
-    parameter2: DivineShield
+    parameter: '{ id : DivineShield }'

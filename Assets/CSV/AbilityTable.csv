@@ -1,9 +1,9 @@
-﻿CardID,EffectType,GroupID,AbilityName,Description,Trigger ,Target,Cost,Value,Parameter1,Parameter2
-1001,Gain,0,언데드 왕의 저주,"""적군 영웅이 사망할 경우 데스카운트 1을 획득하고, 아군 영웅이 사망할 경우 해당 블록에 무덤을 소환합니다.""",OnEnemyDead,None,0,1,None,Ability
-1001,Summon,0,언데드 왕의 저주,"""적군 영웅이 사망할 경우 데스카운트 1을 획득하고, 아군 영웅이 사망할 경우 해당 블록에 무덤을 소환합니다.""",OnAllyDead,None,0,1,None,1004
-1001,Destroy,1,희생 ,"""한 턴에 한 번, 스스로를 희생할 수 있으며 데스카운트를 획득합니다.""",Active,Ally,0,1,Selected,Ability
-1001,Summon,1,일어나라,"""데스카운트를 소모하여 지정한 언데드 영웅을 부활시킵니다.""",Active,Ally,2,1,Selected,
-1001,Destroy,0,일어나라,"""데스카운트를 소모하여 지정한 언데드 영웅을 부활시킵니다.""",Active,None,2,1,Selected,Source
-1004,Destroy,0,,"""다음 자신의 턴에 파괴됩니다.""",OnTurnStarted,Self,0,1,None,None
-1101,Gain,0,여신의 영역,"""적 영웅 처치 시 여신 카운트를 1개 획득합니다. """,OnEnemyDead,None,0,1,None,Ability
-1101,Buff,1,여신의 성역,"""피격시 피해량 절반 감소 추가 및 사망면역 부여""",Active,Ally,2,2,Selected,DivineShield
+﻿CardID,EffectType,GroupID,AbilityName,Description,Trigger ,Target,Cost,Parameter
+1001,Gain,0,언데드 왕의 저주,"적군 영웅이 사망할 경우 데스카운트 1을 획득하고, 아군 영웅이 사망할 경우 해당 블록에 무덤을 소환합니다. ",OnEnemyDead,None,0,"{ ""resourceType"" : ""Ability"", ""amount"" : 1 }"
+1001,Summon,0,언데드 왕의 저주,"적군 영웅이 사망할 경우 데스카운트 1을 획득하고, 아군 영웅이 사망할 경우 해당 블록에 무덤을 소환합니다. ",OnAllyDead,None,0,"{ ""id"" : ""1004"" , ""amount"" : 1, ""position"" : ""Destroyed"" } "
+1001,Destroy,1,희생 ,"한 턴에 한 번, 스스로를 희생할 수 있으며 데스카운트를 획득합니다.",Active,Ally,0,"{ ""resourceType"" : ""Ability"", ""amount"" : 1 }"
+1001,Destroy,2,일어나라,데스카운트를 소모하여 지정한 언데드 영웅을 부활시킵니다.,Active,Ally,2,"{ ""tag"" : ""Graveyard"" }"
+1001,Summon,2,일어나라,데스카운트를 소모하여 지정한 언데드 영웅을 부활시킵니다.,Active,Ally,2,"{ ""id"" : ""Source"", ""amount"" : 1, ""position"" : ""Selected"" }"
+1004,Destroy,0,부식,내 다음 턴에 파괴됩니다.,OnTurnStarted,Self,0,"{ ""duration"" : 1 }"
+1101,Gain,0,여신의 영역,적 영웅 처치 시 여신 카운트를 1개 획득합니다. ,OnEnemyDead,None,0,"{ ""resourceType"" : ""ability"", ""amount"" : 1 }"
+1101,Buff,1,여신의 성역,피격시 피해량 절반 감소 추가 및 사망면역 부여,Active,Ally,2,"{ ""id"" : ""DivineShield"" }"

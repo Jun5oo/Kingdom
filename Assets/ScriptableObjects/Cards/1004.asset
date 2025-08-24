@@ -25,11 +25,10 @@ MonoBehaviour:
   effects:
   - effectType: 5
     groupID: 0
-    abilityName: 
-    description: "\uB2E4\uC74C \uC790\uC2E0\uC758 \uD134\uC5D0 \uD30C\uAD34\uB429\uB2C8\uB2E4."
+    abilityName: "\uBD80\uC2DD"
+    description: "\uB0B4 \uB2E4\uC74C \uD134\uC5D0 \uD30C\uAD34\uB429\uB2C8\uB2E4."
     trigger: 3
     target: 1
-    value: 1
+    value: 0
     cost: 0
-    parameter1: None
-    parameter2: None
+    parameter: '{ duration : 1 }'

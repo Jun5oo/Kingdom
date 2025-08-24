@@ -71,9 +71,8 @@ public class Ability
     {
         if (eventData.playerID == abilityOwner.OwnerID)
         {
-            EffectContext context = new EffectContext();
-
-            Execute(context);
+            EffectContext context = new EffectContext(); 
+            Execute(context).Forget();
         }
 
         Debug.Log($"{this} TurnStart 실행? "); 
@@ -83,7 +82,7 @@ public class Ability
         if (eventData.playerID == abilityOwner.OwnerID)
         {
             EffectContext context = new EffectContext();
-            Execute(context);
+            Execute(context).Forget();
         }
 
         Debug.Log($"{this} TurnEnd 실행? ");
@@ -92,12 +91,13 @@ public class Ability
     {
         if(eventData.victim.OwnerID == abilityOwner.OwnerID)
         {
-            EffectContext context = new EffectContext
-            {
-                // targetPosition = eventData.victimPosition
-            };
+            EffectContext context = new EffectContext();
             
-            Execute(context);
+            // context.Set<BaseObject>(ContextKey.Attacker, eventData.killer);
+            // context.Set<BaseObject>(ContextKey.Defender, eventData.victim); 
+            
+            Execute(context).Forget();
+            Debug.Log($"{this} AllyDead 실행? ");
         }
     }
     void EnemyDead(UnitDeadEvent eventData)
@@ -105,10 +105,13 @@ public class Ability
         if (eventData.victim.OwnerID != abilityOwner.OwnerID)
         {
             EffectContext context = new EffectContext();
-            Execute(context);
-        }
+            // context.Set<BaseObject>(ContextKey.Attacker, eventData.killer);
+            // context.Set<BaseObject>(ContextKey.Defender, eventData.victim);
 
-        Debug.Log($"{this} EnemyDead 실행? ");
+            Execute(context).Forget();
+            Debug.Log($"{this} EnemyDead 실행? ");
+
+        }
     }
     #endregion 
 

@@ -173,7 +173,6 @@ public static class ReadCSVFile
             effectSO.description = GetValue(effectHeaders, values, DESCRIPTION); 
             effectSO.target = ParseEnum<Target>(GetValue(effectHeaders, values, TARGET), Target.None);
             effectSO.trigger = ParseEnum<Trigger>(GetValue(effectHeaders, values, TRIGGER));
-            effectSO.value = int.Parse(GetValue(effectHeaders, values, VALUE));
             effectSO.cost = int.Parse(GetValue(effectHeaders, values, COST)); 
             effectSO.parameter = (GetValue(effectHeaders, values, PARAM));
 

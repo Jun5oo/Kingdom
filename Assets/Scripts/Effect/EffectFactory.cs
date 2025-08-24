@@ -12,8 +12,8 @@ public class EffectFactory
 
         effects.Add(EffectType.Summon, (effectData, effectOwner) => {  return new SummonEffect(effectData, effectOwner); }); 
         effects.Add(EffectType.Gain, (effectData, effectOwner) => { return new GainEffect(effectData, effectOwner); });
-        // effects.Add(EffectType.Buff, (effectData, effectOwner) => { return new BuffEffect(effectData); }); 
-        // effects.Add(EffectType.Destroy, (effectData, effectOwner) => { return new DestroyEffect(effectData); });
+        effects.Add(EffectType.Buff, (effectData, effectOwner) => { return new BuffEffect(effectData, effectOwner); }); 
+        effects.Add(EffectType.Destroy, (effectData, effectOwner) => { return new DestroyEffect(effectData, effectOwner); });
     }
 
     public IEffect CreateEffect(EffectData effectData, BaseObject effectOwner)
