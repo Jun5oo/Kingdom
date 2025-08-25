@@ -90,6 +90,15 @@ public class HoverSystem : MonoBehaviour, IGameSystem
         if (currentHoverable == null)
             return;
 
+        if (actionSystem == null)
+            return;
+
+        if (gridManager == null)
+            return;
+
+        if (tokenManager == null)
+            return; 
+
         if (!actionSystem.IsActionInProgress())
             return;
 

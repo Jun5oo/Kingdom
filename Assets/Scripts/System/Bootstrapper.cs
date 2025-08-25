@@ -7,6 +7,9 @@ public class Bootstrapper : MonoBehaviour
     // 게임에 필요한 매니저, 시스템, 팩토리, 로더 클래스들을 생성하고 ServiceLocator에 등록하는 가장 먼저 실행되어야 하는 클래스
     // ExecutionOrder를 통해서 가장 먼저 실행 
 
+    [SerializeField] PlayerConfig config; 
+
+    [SerializeField] PlayerManager playerManager; 
     [SerializeField] UIManager uiManager;
     [SerializeField] GridManager gridManager;
     [SerializeField] HandManager handManager;
@@ -15,7 +18,6 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] ActionSystem actionSystem;
 
     GameFlowManager gameFlowManager;
-    PlayerManager playerManager;
     TokenManager tokenManager;
     TurnSystem turnSystem;
     DamageManager damageManager;
@@ -57,7 +59,6 @@ public class Bootstrapper : MonoBehaviour
     public async void RegisterServices()
     {
         gameFlowManager = new GameFlowManager();
-        playerManager = new PlayerManager();
         tokenManager = new TokenManager();
         damageManager = new DamageManager();
         drawManager = new DrawManager();
