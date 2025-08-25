@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class PlayerHUD : MonoBehaviour
 {
-    const string undeadID = "1";
-    const string celestialID = "4";
     const int MAX_CP = 40; 
 
     [SerializeField] RawImage playerImage;
@@ -25,22 +23,7 @@ public class PlayerHUD : MonoBehaviour
         token.OnCPUpdate -= OnUpdateCP; 
         token.OnCPUpdate += OnUpdateCP;
 
-        string cardID = null; 
-
-        switch (player.Race)
-        {
-            case Race.Undead:
-                cardID = undeadID; 
-                break;
-            case Race.Celestial:
-                cardID = celestialID;
-                break;
-            default:
-                Debug.Log("아직 구현되지 않은 진영입니다.");
-                return; 
-        }
-
-        Texture2D texture = await loader.LoadArtAsync(cardID);
+        Texture2D texture = await loader.LoadArtAsync(token.Data.ID);
 
         float aspect = (float)texture.width / texture.height;
 

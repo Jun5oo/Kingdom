@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Grid
 {
+    const float OFFSET = 0.5f; 
+
     private int height;
     private int width;
 
@@ -23,11 +25,11 @@ public class Grid
         this.originPos = originPos; 
         this.prefab = prefab;
 
-        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x; 
+        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x + OFFSET; 
     }
 
     #region Create Grid 
-    public void CreateGridMap(Transform gridParent, List<Sprite> sprites)
+    public void CreateGridMap(Transform gridParent)
     {
         positionToCell = new Dictionary<Vector2Int, GridCell>(); 
 
@@ -49,7 +51,7 @@ public class Grid
 
                 int idx = i * width + j; 
 
-                gridCell.Init(gridPos, sprites[idx]);
+                gridCell.Init(gridPos);
 
                 gridCell.OnClicked += OnClicked; 
                 positionToCell.Add(gridPos, gridCell);

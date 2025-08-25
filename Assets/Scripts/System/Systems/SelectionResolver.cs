@@ -33,16 +33,28 @@ public class SelectionResolver {
     public bool IsValid(ISelectable selectable)
     {
         if (selectable == null)
+        {
+            Debug.Log($"{selectable}은 null 입니다.");
             return false;
+        }
 
         if (actionSystem.IsActionInProgress())
+        {
+            Debug.Log("현재 Action이 InProgress 상태입니다."); 
             return false;
+        }
 
         if (!selectable.IsSelectable())
+        {
+            Debug.Log($"{selectable}이 InSelectable 상태입니다."); 
             return false;
+        }
 
         if (selectable.BaseObject == null)
+        {
+            Debug.Log($"{selectable}의 BaseObject가 존재하지 않습니다."); 
             return false;
+        }
 
         return true;
     }

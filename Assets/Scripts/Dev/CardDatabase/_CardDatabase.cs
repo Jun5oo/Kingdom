@@ -6,13 +6,13 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class _CardDatabase 
 {
-    Dictionary<int, AssetReferenceT<CardData>> index;
-    Dictionary<int, CardData> cache;
+    Dictionary<string, AssetReferenceT<CardData>> index;
+    Dictionary<string, CardData> cache;
 
     public _CardDatabase(CardIndex index)
     {
-        this.index = new Dictionary<int, AssetReferenceT<CardData>>();
-        this.cache = new Dictionary<int, CardData>();
+        this.index = new Dictionary<string, AssetReferenceT<CardData>>();
+        this.cache = new Dictionary<string, CardData>();
 
         foreach(var entry in index.entries)
         {
@@ -21,9 +21,9 @@ public class _CardDatabase
         }
     }
 
-    public bool TryGetCached(int id, out CardData data) => cache.TryGetValue(id, out data);
+    public bool TryGetCached(string id, out CardData data) => cache.TryGetValue(id, out data);
 
-    public UniTask<CardData> GetAsync(int id)
+    public UniTask<CardData> GetAsync(string id)
     {
         if (cache.TryGetValue(id, out CardData data))
             return UniTask.FromResult(data); 

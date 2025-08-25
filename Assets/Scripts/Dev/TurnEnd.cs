@@ -1,19 +1,21 @@
 using DG.Tweening;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class TurnEnd : MonoBehaviour
 {
-    TurnSystem turnSystem; 
+    TurnSystem turnSystem;
+    PlayerManager playerManager; 
 
     [SerializeField] Renderer buttonRenderer;
 
-    [SerializeField] Texture2D myTurn;
-    [SerializeField] Texture2D opponentTurn; 
+    [SerializeField] Texture2D localTurn;
+    [SerializeField] Texture2D remoteTurn; 
 
     void Start()
     {
         turnSystem = ServiceLocator.Get<TurnSystem>();
+        playerManager = ServiceLocator.Get<PlayerManager>();
 
         this.transform.localScale = Vector3.zero; 
 
@@ -21,35 +23,29 @@ public class TurnEnd : MonoBehaviour
         Subscribe(); 
     }
 
-    public void MyTurn()
+    public void StartTurn(int playerID)
     {
-        OnUpdateTexture(myTurn);
-        DoExpand(); 
-    }
-    public void OpponentTurn()
-    {
-        OnUpdateTexture(opponentTurn);
+        Texture2D texture = null;
+
+        if (playerID == playerManager.Local.PlayerID)
+            texture = localTurn; 
+        else
+            texture = remoteTurn; 
+
+        UpdateButton(texture);
         DoExpand();
     }
-    public void EndTurn()
-    {
-        DoShrink(); 
-    }
+    public void EndTurn(int playerID) => DoShrink(); 
 
-    public void OnUpdateTexture(Texture2D texture)
+    public void UpdateButton(Texture2D texture)
     {
         Material mat = buttonRenderer.sharedMaterial;
         if (mat.HasProperty("_BaseMap"))
             mat.SetTexture("_BaseMap", texture); 
     }
-    public void DoExpand()
-    {
-        transform.DOScale(Vector3.one, 0.2f); 
-    }
-    public void DoShrink()
-    {
-        transform.DOScale(Vector3.zero, 0.2f); 
-    }
+
+    public void DoExpand() => transform.DOScale(Vector3.one, 0.2f); 
+    public void DoShrink() => transform.DOScale(Vector3.zero, 0.2f);
 
     public void OnMouseDown()
     {
@@ -61,17 +57,13 @@ public class TurnEnd : MonoBehaviour
 
     void Subscribe()
     {
-        turnSystem.OnPlayerTurnStarted += MyTurn;
-        turnSystem.OnOpponentTurnStarted += OpponentTurn; 
-        turnSystem.OnPlayerTurnEnded += EndTurn;
-        turnSystem.OnOpponentTurnEnded += EndTurn;
+        turnSystem.onTurnStarted += StartTurn;
+        turnSystem.onTurnEnded += EndTurn; 
     }
 
     void Unsubscribe()
     {
-        turnSystem.OnPlayerTurnStarted -= MyTurn;
-        turnSystem.OnOpponentTurnStarted -= OpponentTurn;
-        turnSystem.OnPlayerTurnEnded -= EndTurn;
-        turnSystem.OnOpponentTurnEnded -= EndTurn;
+        turnSystem.onTurnStarted -= StartTurn;
+        turnSystem.onTurnEnded -= EndTurn;
     }
 }

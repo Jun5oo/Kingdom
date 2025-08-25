@@ -71,7 +71,7 @@ public class HandManager : MonoBehaviour
         card.gameObject.SetActive(true); 
 
         CardAlignmentOnBoardSide(playerID, card);
-  
+
         /*
         PlayerHand playerHand = playerHands[playerID];
         playerHand.AddCard(card);

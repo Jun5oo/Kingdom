@@ -12,29 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
   m_Name: 1101
   m_EditorClassIdentifier: 
-  ID: 1101
-  Name: Lord of Celestial
-  Description: Lord of Celestial
-  Race: 0
-  Tag: 2
-  MaxLevel: 1
-  CP: 280000002800000028000000
-  AttackType: 000000000000000000000000
-  AttackRange: 000000000000000000000000
-  MoveType: 000000000000000000000000
-  MoveRange: 010000000100000001000000
-  Effects:
-  - effectType: 3
+  id: 1101
+  cardName: Lord of Celestial
+  race: 0
+  tag: 2
+  maxLevel: 1
+  cp: 280000002800000028000000
+  attackType: 000000000000000000000000
+  attackRange: 000000000000000000000000
+  moveType: 010000000100000001000000
+  moveRange: 010000000100000001000000
+  effects:
+  - effectType: 4
+    groupID: 0
+    abilityName: "\uC5EC\uC2E0\uC758 \uC601\uC5ED"
+    description: "\uC801 \uC601\uC6C5 \uCC98\uCE58 \uC2DC \uC5EC\uC2E0 \uCE74\uC6B4\uD2B8\uB97C
+      1\uAC1C \uD68D\uB4DD\uD569\uB2C8\uB2E4."
     trigger: 2
     target: 0
-    value: 1
-    parameter1: AbilityResource
-    parameter2: 
-    groupID: 0
-  - effectType: 2
+    value: 0
+    cost: 0
+    parameter: '{ resourceType : ability, amount : 1 }'
+  - effectType: 3
+    groupID: 1
+    abilityName: "\uC5EC\uC2E0\uC758 \uC131\uC5ED"
+    description: "\uD53C\uACA9\uC2DC \uD53C\uD574\uB7C9 \uC808\uBC18 \uAC10\uC18C
+      \uCD94\uAC00 \uBC0F \uC0AC\uB9DD\uBA74\uC5ED \uBD80\uC5EC"
     trigger: 0
     target: 2
-    value: 1
-    parameter1: DivineShield
-    parameter2: 
-    groupID: 1
+    value: 0
+    cost: 2
+    parameter: '{ id : DivineShield }'

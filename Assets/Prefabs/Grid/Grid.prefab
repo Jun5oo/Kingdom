@@ -50,7 +50,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hoverRenderer: {fileID: 6121286038020990677}
   highlightRenderer: {fileID: 3685030103879734732}
-  gridCellRenderer: {fileID: 0}
   onHoverMaterial: {fileID: 2100000, guid: 4d5e7e564c8a95c4d8277fcd24a7b3de, type: 2}
   offHoverMaterial: {fileID: 2100000, guid: dd2fe57ae842daf4980c286c27bf4101, type: 2}
   attackMaterial: {fileID: 2100000, guid: 3addcd786052cb2418e91f4d5bd67547, type: 2}
@@ -76,7 +75,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 8, y: 8, z: 1.35}
+  m_Size: {x: 7.5, y: 7.5, z: 1.35}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4906085455193627297
 GameObject:

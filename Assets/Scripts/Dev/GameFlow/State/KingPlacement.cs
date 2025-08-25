@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+    using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
@@ -58,8 +58,21 @@ public class KingPlacement : IGameState
         else
             card = stateMachine.secondCard;
 
+        if (card == null)
+        {
+            Debug.LogError($"KingPlacement: Card is null for player {playerID}");
+            return; // 또는 throw
+        }
+
+
         IAction summon = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System);
         summon.OnActionComplete += completeCallback;
+
+        if (summon == null)
+        {
+            Debug.LogError("KingPlacement: Summon action is null");
+            return;
+        }
 
         if (isAI)
         {
@@ -73,7 +86,6 @@ public class KingPlacement : IGameState
         }
 
         await UniTask.WaitUntil(() => done);
-        Debug.Log($"{playerID}: KingPlacement Complete"); 
         summon.OnActionComplete -= completeCallback;
     }
 }

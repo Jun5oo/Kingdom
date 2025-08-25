@@ -11,8 +11,6 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
 
     TurnSystem turnSystem; 
 
-    // Preview Displayer에 전달 
-    public Action<BaseObject> onSelected;
     // ActionDisplayer에 전달 
     public Action<BaseObject> onSelectedComplete;
     public Action onDeselected;
@@ -41,13 +39,20 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
     public void TrySelect(ISelectable selectable)
     {
         if (isSelectionLocked)
-            return; 
+        {
+            Debug.Log("SelectionLocked 상태입니다."); 
+            return;
+        }
 
         if (selectable == currentSelectable)
+        {
+            Debug.Log("selectable == currentSelectable"); 
             return;
+        }
 
         if (!resolver.IsValid(selectable))
         {
+            Debug.Log($"{selectable}은 Valid하지 않은 상태입니다.");
             OnExitSelected();
             return;
         }
@@ -61,10 +66,8 @@ public class SelectionSystem : MonoBehaviour, IGameSystem
         if (selectable == null)
             return;
 
+        Debug.Log("Check"); 
         isSelectionLocked = true; 
-
-        // Preview 
-        onSelected?.Invoke(selectable.BaseObject); 
 
         currentSelectable = selectable;
 

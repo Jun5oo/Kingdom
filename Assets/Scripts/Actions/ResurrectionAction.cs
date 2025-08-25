@@ -33,7 +33,9 @@ public class ResurrectionAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return actionOwner.OwnerID; } }
 
-    public BaseObject Executor => actionOwner; 
+    public BaseObject Executor => actionOwner;
+
+    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
     public ResurrectionAction(Token token, ActionPerformer performer)
     {
@@ -66,7 +68,7 @@ public class ResurrectionAction : IAction
             {
                 if (!token.IsAllies(this.actionOwner.OwnerID))
                     return false;
-                if (token.UnitData.Tag == UnitTag.Graveyard)
+                if (token.Data.Tag == UnitTag.Graveyard)
                     return true; 
             }
 
@@ -105,7 +107,7 @@ public class ResurrectionAction : IAction
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
 
-        var unitData = new List<UnitCardData>(targetToken.SourceObjects);
+        var unitData = new List<CardData>(targetToken.SourceObjects);
         
         tokenManager.DestroyToken(targetToken);
        

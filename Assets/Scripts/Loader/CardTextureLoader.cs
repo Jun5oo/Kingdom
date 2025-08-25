@@ -26,8 +26,17 @@ public class CardTextureLoader : TextureLoader
             return cached;
 
         string address = $"card_artmask_{race}_{type}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        artMaskCache[(race, type)] = texture;
+        
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+        
+        if (texture != null)
+            artMaskCache[(race, type)] = texture;
+        else
+            Debug.LogError($"{texture}를 Load하지 못했습니다.");
+
+        Addressables.Release(handle);
+
         return texture;
     }
     public async UniTask<Texture2D> LoadFrameAsync(string race, string type)
@@ -36,8 +45,16 @@ public class CardTextureLoader : TextureLoader
             return cached;
 
         string address = $"card_frame_{race}_{type}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        frameCache[(race, type)] = texture;
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+
+        if (texture != null)
+            frameCache[(race, type)] = texture;
+        else
+            Debug.LogError($"{texture}를 Load하지 못했습니다.");
+        
+        Addressables.Release(handle);
+
         return texture;
     }
     public async UniTask<Texture2D> LoadCardBackgroundAsync(string race)
@@ -46,8 +63,14 @@ public class CardTextureLoader : TextureLoader
             return cached;
 
         string address = $"card_bg_{race}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        backgroundCache[race] = texture;
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+        if (texture != null)
+            backgroundCache[race] = texture;
+        else
+            Debug.LogError($"{texture}를 Load하지 못했습니다.");
+
+        Addressables.Release(handle);
 
         return texture; 
     }
@@ -57,35 +80,27 @@ public class CardTextureLoader : TextureLoader
             return cached;
 
         string address = $"card_back_{back}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        backCache[back] = texture;
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+        if (texture != null)
+            backCache[back] = texture;
+        else
+            Debug.LogError($"{texture}를 Load하지 못했습니다.");
+
+        Addressables.Release(handle);
 
         return texture; 
     }
 
     public override async UniTask<VisualTexture> LoadAllTextures(CardData cardData)
     {
-        string cardID = $"{cardData.ID}";
-        string race = null;
-        string type = null;
+        string cardID = cardData.ID;
+        string race = cardData.Race.ToString().ToLower(); 
+        string type = cardData.Tag == UnitTag.King ? "king" : "normal";
 
-        switch (cardData.Race)
-        {
-            case Race.Undead:
-                race = "undead";
-                break;
-            case Race.Celestial:
-                race = "celestial";
-                break;
-            default:
-                race = "default";
-                break;
-        }
+        Debug.Log($"{cardID}, {race}, {type}"); 
 
-        if (cardData is UnitCardData unitData)
-            type = unitData.Tag == UnitTag.King ? "king" : "normal";
-
-        Texture2D art = await LoadArtAsync($"{cardID}");
+        Texture2D art = await LoadArtAsync(cardID);
         Texture2D artMask = await LoadArtMaskAsync(race, type);
         Texture2D frame = await LoadFrameAsync(race, type);
         Texture2D background = await LoadCardBackgroundAsync(race);

@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class DamageManager
@@ -60,7 +61,7 @@ public class DamageManager
             return 0; 
         }
 
-        if (defender.AttackRange == null || defender.AttackRange.Count == 0)
+        if (defender.AttackRange == null || defender.AttackRange.Count == 0 )
         {
             Debug.Log("이 유닛은 반격이 불가능합니다.");
             return 0; 
@@ -134,8 +135,11 @@ public class DamageManager
 
         OnPrepareUnitDeath?.Invoke(victim.OwnerID, victim);
 
-        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+        Vector2Int killerPosition = tokenManager.GetGridPositionOfToken(killer);
+        Vector2Int victimPosition = tokenManager.GetGridPositionOfToken(victim);
 
+        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent { killer = killer, victim = victim , victimPosition = victimPosition, killerPosition = killerPosition }); 
+        
         OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
         OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);
 

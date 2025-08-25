@@ -25,7 +25,7 @@ public class AIResurrectionStrategy
     public bool CanResurrectionAction(int currentPlayerID, out ResurrectionAction resurrectionAction, out Vector2Int validGridPosForResurrection)
     {
         List<Token> tokens = tokenManager.GetTokens(currentPlayerID);
-        List<Token> graveyardTokens = tokens.Where(t => t.UnitData.Tag == UnitTag.Graveyard).ToList();
+        List<Token> graveyardTokens = tokens.Where(t => t.Data.Tag == UnitTag.Graveyard).ToList();
 
         if (tokenManager.TryGetKingTokenFrom(currentPlayerID, out Token kingToken))
         {

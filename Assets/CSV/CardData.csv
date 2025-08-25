@@ -1,8 +1,8 @@
-CardID,Name,Description,Race,Tag,MaxLevel,Level1CP,Level2CP,Level3CP,AttackType1,AttackRange1,AttackType2,AttackRange2,AttackType3,AttackRange3,MoveType1,MoveRange1,MoveType2,MoveRange2, MoveType3,MoveRange3
-1001,Lord of Undead,Lord of Undead,Undead,King,1,40,40,40,None ,0,None ,0,None ,0,None ,1,None ,1,None ,1
+﻿CardID,Name,Description,Race,Tag,MaxLevel,Level1CP,Level2CP,Level3CP,AttackType1,AttackRange1,AttackType2,AttackRange2,AttackType3,AttackRange3,MoveType1,MoveRange1,MoveType2,MoveRange2, MoveType3,MoveRange3
+1001,Lord of Undead,Lord of Undead,Undead,King,1,40,40,40,None ,0,None ,0,None ,0,Straight,1,Straight,1,Straight,1
 1002,Undead Warrior,Basic Melee Unit,Undead,Normal,3,10,12,20,Straight,1,Straight,1,Straight,2,Straight,2,Straight,2,Straight,3
 1003,Undead Ranger,Basic Range Unit,Undead,Normal,3,4,6,15,Straight,2,Straight,2,Straight,2,Straight,1,Straight,1,Straight,2
 1004,Graveyard,Graveyard,Undead,Graveyard,1,0,0,0,None ,0,None ,0,None ,0,None ,0,None ,0,None ,0
-1101,Lord of Celestial,Lord of Celestial,Celestial,King,1,40,40,40,None ,0,None ,0,None ,0,None ,1,None ,1,None ,1
+1101,Lord of Celestial,Lord of Celestial,Celestial,King,1,40,40,40,None ,0,None ,0,None ,0,Straight,1,Straight,1,Straight,1
 1102,Celestial Warrior,Basic Melee Unit,Celestial,Normal,3,10,12,20,Straight,1,Straight,1,Straight,2,Straight,2,Straight,2,Straight,3
 1103,Celestial Ranger,Basic Range Unit,Celestial,Normal,3,4,6,15,Straight,2,Straight,2,Straight,2,Straight,1,Straight,1,Straight,2

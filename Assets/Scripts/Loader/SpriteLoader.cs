@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -43,8 +44,16 @@ public class SpriteLoader
         if (spriteCache.TryGetValue(spriteID, out Sprite cached))
             return cached;
 
-        var sprite = await Addressables.LoadAssetAsync<Sprite>(spriteID).ToUniTask();
-        spriteCache[spriteID] = sprite;
+        var handle = Addressables.LoadAssetAsync<Sprite>(spriteID);
+        var sprite = await handle.ToUniTask(cancellationToken: default);
+
+        if (sprite != null)
+            spriteCache[spriteID] = sprite;
+        else
+            Debug.LogError($"{sprite}를 Load 하지 못했습니다.");
+
+        Addressables.Release(handle);
+
         return sprite; 
     }
 

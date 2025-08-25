@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems; 
 
@@ -9,13 +10,21 @@ public class HoverSystem : MonoBehaviour, IGameSystem
     TokenManager tokenManager;
     ActionSystem actionSystem;
 
-    float hoverStartTime; 
+    float hoverPreviewDelay = 0.7f; 
+    float hoverStartTime;
+
+    bool isPreviewHovered; 
+
+    public Action<BaseObject> onHoverStart;
+    public Action onHoverExit; 
 
     public void Init()
     {
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
         this.actionSystem = ServiceLocator.Get<ActionSystem>();
+
+        isPreviewHovered = false;
     }
 
     void Update()
@@ -24,9 +33,8 @@ public class HoverSystem : MonoBehaviour, IGameSystem
         if (EventSystem.current.IsPointerOverGameObject())
         {
             ExitHover();
-            return; 
+            return;
         }
-
         // Input.mousePosition의 경우 screen position을 반환하기 때문에 world 좌표계 값으로 변경해줘야한다. 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -46,12 +54,35 @@ public class HoverSystem : MonoBehaviour, IGameSystem
                     if (hoverable.IsHoverable())
                     {
                         EnterHover(hoverable);
-                        hoverStartTime = Time.time; 
+
+                        hoverStartTime = Time.time;
+                        isPreviewHovered = false; 
                     }
                 }
 
                 else
                 {
+                    // Preview 호출 
+                    if(Time.time - hoverStartTime >= hoverPreviewDelay && !isPreviewHovered)
+                    {
+                        isPreviewHovered = true;
+
+                        if (hit.transform.TryGetComponent<BaseObject>(out BaseObject baseObject))
+                            onHoverStart?.Invoke(baseObject);
+
+                        else if (hit.transform.TryGetComponent<GridCell>(out GridCell gridCell))
+                        {
+                            if (tokenManager == null)
+                                return; 
+
+                            if (tokenManager.TryGetTokenFrom(gridCell.GetGridPosition(), out Token token))
+                                onHoverStart?.Invoke(token as BaseObject);
+                        }
+
+                        else
+                            isPreviewHovered = false; 
+                    }
+
                     if (currentHoverable != null && Time.time - hoverStartTime >= 0.5f)
                         HighlightHoveredAttackRange(hit.transform.position); 
                 }
@@ -79,6 +110,9 @@ public class HoverSystem : MonoBehaviour, IGameSystem
 
         currentHoverable?.OffHover();
         currentHoverable = null;
+
+        onHoverExit?.Invoke();
+
         gridManager?.UnhighlightGridCells(HighlightLayer.Hover);
     }
     #endregion 
@@ -101,6 +135,9 @@ public class HoverSystem : MonoBehaviour, IGameSystem
 
         if (!actionSystem.IsActionInProgress())
             return;
+
+        if (tokenManager == null)
+            return; 
 
         Vector2Int gridPosition = gridManager.GetGridPosition(worldPosition);
         

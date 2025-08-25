@@ -6,12 +6,12 @@ public class PreviewDisplayer : MonoBehaviour
     // 카드 Preview Displayer, 카드의 정보를 프리뷰로 보여줌 
     [SerializeField] Preview previewUI;
 
-    SelectionSystem selectionSystem;
+    HoverSystem hoverSystem; 
     CardTextureLoader loader; 
 
     public void Start()
     {
-        selectionSystem = ServiceLocator.Get<SelectionSystem>();
+        hoverSystem = ServiceLocator.Get<HoverSystem>(); 
         loader = ServiceLocator.Get<CardTextureLoader>();
 
         Subscribe(); 
@@ -20,17 +20,17 @@ public class PreviewDisplayer : MonoBehaviour
     void Subscribe()
     {
         Unsubscribe();
-        selectionSystem.onSelected += OnSelectedHandler;
-        selectionSystem.onDeselected += UnDisplay; 
+        hoverSystem.onHoverStart += OnHoverHandler;
+        hoverSystem.onHoverExit += UnDisplay; 
     }
 
     void Unsubscribe()
     {
-        selectionSystem.onSelected -= OnSelectedHandler;
-        selectionSystem.onDeselected -= UnDisplay;
+        hoverSystem.onHoverStart -= OnHoverHandler;
+        hoverSystem.onHoverExit -= UnDisplay;
     }
 
-    void OnSelectedHandler(BaseObject baseObject)
+    void OnHoverHandler(BaseObject baseObject)
     {
         // Fire and Forget 
         Display(baseObject).Forget(); 
@@ -45,10 +45,11 @@ public class PreviewDisplayer : MonoBehaviour
 
         VisualTexture textures = await loader.LoadAllTextures(baseObject.Data);
 
-        previewUI.OnUpdate(baseObject, textures); 
-        previewUI.gameObject.SetActive(true); 
+        previewUI.UpdatePreview(baseObject, textures); 
+        previewUI.gameObject.SetActive(true);
+        previewUI.Show(); 
 
     }
 
-    void UnDisplay() => previewUI.gameObject.SetActive(false);
+    void UnDisplay() => previewUI.Hide(); 
 }

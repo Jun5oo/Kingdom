@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.InputSystem;
 
 public class PrefabLoader
 {
@@ -46,8 +47,16 @@ public class PrefabLoader
             return null; 
         }
 
-        GameObject prefab = await Addressables.LoadAssetAsync<GameObject>(key);
-        typeCache.Add(typeof(T), prefab); 
+        var handle = Addressables.LoadAssetAsync<GameObject>(key);
+        var prefab = await handle.ToUniTask(cancellationToken: default);
+
+        if (prefab != null)
+            typeCache.Add(typeof(T), prefab);
+        else
+            Debug.LogError($"{prefab}을 Load할 수 없습니다.");
+
+        Addressables.Release(handle);
+
         return prefab; 
     }
 
@@ -57,8 +66,17 @@ public class PrefabLoader
         if (stringCache.TryGetValue(addressKey, out GameObject cached))
             return cached;
 
-        GameObject prefab = await Addressables.LoadAssetAsync<GameObject>(addressKey); 
-        stringCache.Add(addressKey, prefab);
+        var handle = Addressables.LoadAssetAsync<GameObject>(addressKey);
+        var prefab = await handle.ToUniTask(cancellationToken: default);
+
+        if (prefab != null)
+            stringCache.Add(addressKey, prefab);
+
+        else
+            Debug.LogError($"{prefab}을 Load할 수 없습니다.");
+        
+        Addressables.Release(handle);
+
         return prefab; 
     }
 }

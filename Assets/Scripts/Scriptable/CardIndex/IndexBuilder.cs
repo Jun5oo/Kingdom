@@ -1,11 +1,8 @@
 #if UNITY_EDITOR
 
-using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEditor.AddressableAssets;
-using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -48,7 +45,7 @@ public class IndexBuilder : MonoBehaviour
 
         var guids = AssetDatabase.FindAssets("t:CardData", new[] { DATA_PATH });
         var newEntries = new List<CardIndex.Entry>();
-        var seen = new HashSet<int>(); 
+        var seen = new HashSet<string>(); 
 
         foreach(var guid in guids)
         {

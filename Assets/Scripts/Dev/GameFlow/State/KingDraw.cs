@@ -19,11 +19,11 @@ public class KingDraw : IGameState
         HandManager handManager = ServiceLocator.Get<HandManager>();
         DrawManager drawManager = ServiceLocator.Get<DrawManager>();
 
-        Debug.Log("Draw King Phase"); 
-
         Card firstCard = await drawManager.DrawKing(stateMachine.firstID);
+
         handManager.AddCardToHand(stateMachine.firstID, firstCard); 
         Card secondCard = await drawManager.DrawKing(stateMachine.secondID);
+
         handManager.AddCardToHand(stateMachine.secondID, secondCard);
 
         stateMachine.firstCard = firstCard; 

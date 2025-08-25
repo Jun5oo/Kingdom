@@ -2,10 +2,8 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using static UnityEngine.Rendering.VirtualTexturing.Debugging;
 public class TokenTextureLoader : TextureLoader 
 {
-    PlayerManager playerManager; 
 
     Dictionary<string, Texture2D> artMaskCache;
     Dictionary<string, Texture2D> frameCache;
@@ -13,8 +11,6 @@ public class TokenTextureLoader : TextureLoader
     public override void Init()
     {
         base.Init(); 
-
-        playerManager = ServiceLocator.Get<PlayerManager>();
 
         artMaskCache = new Dictionary<string, Texture2D>(); 
         frameCache = new Dictionary<string, Texture2D>();
@@ -34,7 +30,6 @@ public class TokenTextureLoader : TextureLoader
             var sprite = await _handle.Task;
 
             artMaskCache[location.PrimaryKey] = sprite;
-            // handle.Add(_handle);
         }
 
         Addressables.Release(locationHandle);
@@ -46,8 +41,17 @@ public class TokenTextureLoader : TextureLoader
             return cached;
 
         string address = $"token_artmask_{type}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        artMaskCache[type] = texture;
+
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+
+        if (texture != null)
+            artMaskCache[type] = texture;
+        else
+            Debug.LogError($"{texture}를 Load 할 수 없습니다.");
+
+        Addressables.Release(handle);
+
         return texture; 
     }
     public async UniTask<Texture2D> LoadFrameAsync(string type)
@@ -56,18 +60,26 @@ public class TokenTextureLoader : TextureLoader
             return cached;
 
         string address = $"token_frame_{type}";
-        var texture = await Addressables.LoadAssetAsync<Texture2D>(address).ToUniTask();
-        frameCache[type] = texture;
+
+        var handle = Addressables.LoadAssetAsync<Texture2D>(address);
+        var texture = await handle.ToUniTask(cancellationToken: default);
+
+
+        if (texture != null)
+            frameCache[type] = texture;
+
+        else
+            Debug.LogError($"{texture}를 Load 할 수 없습니다.");
+
+        Addressables.Release(handle);
+
         return texture; 
     }
 
     public override async UniTask<VisualTexture> LoadAllTextures(CardData cardData)
     {
         string cardID = $"{cardData.ID}";
-        string type = null; 
-
-        if (cardData is UnitCardData unitData)
-            type = unitData.Tag == UnitTag.King ? "king" : "normal";  
+        string type = cardData.Tag == UnitTag.King ? "king" : "normal";
 
         Texture2D art = await LoadArtAsync($"{cardID}");
         Texture2D artMask = await LoadArtMaskAsync(type); 

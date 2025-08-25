@@ -12,43 +12,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
   m_Name: 1001
   m_EditorClassIdentifier: 
-  ID: 1001
-  Name: Lord of Undead
-  Description: Lord of Undead
-  Race: 1
-  Tag: 2
-  MaxLevel: 1
-  CP: 280000002800000028000000
-  AttackType: 000000000000000000000000
-  AttackRange: 000000000000000000000000
-  MoveType: 000000000000000000000000
-  MoveRange: 010000000100000001000000
-  Effects:
-  - effectType: 3
+  id: 1001
+  cardName: Lord of Undead
+  race: 1
+  tag: 2
+  maxLevel: 1
+  cp: 280000002800000028000000
+  attackType: 000000000000000000000000
+  attackRange: 000000000000000000000000
+  moveType: 010000000100000001000000
+  moveRange: 010000000100000001000000
+  effects:
+  - effectType: 4
+    groupID: 0
+    abilityName: "\uC5B8\uB370\uB4DC \uC655\uC758 \uC800\uC8FC"
+    description: "\uC801\uAD70 \uC601\uC6C5\uC774 \uC0AC\uB9DD\uD560 \uACBD\uC6B0
+      \uB370\uC2A4\uCE74\uC6B4\uD2B8 1\uC744 \uD68D\uB4DD\uD558\uACE0, \uC544\uAD70
+      \uC601\uC6C5\uC774 \uC0AC\uB9DD\uD560 \uACBD\uC6B0 \uD574\uB2F9 \uBE14\uB85D\uC5D0
+      \uBB34\uB364\uC744 \uC18C\uD658\uD569\uB2C8\uB2E4."
     trigger: 2
     target: 0
-    value: 1
-    parameter1: AbilityResource
-    parameter2: 
-    groupID: 0
+    value: 0
+    cost: 0
+    parameter: '{ resourceType : Ability, amount : 1 }'
   - effectType: 1
+    groupID: 0
+    abilityName: "\uC5B8\uB370\uB4DC \uC655\uC758 \uC800\uC8FC"
+    description: "\uC801\uAD70 \uC601\uC6C5\uC774 \uC0AC\uB9DD\uD560 \uACBD\uC6B0
+      \uB370\uC2A4\uCE74\uC6B4\uD2B8 1\uC744 \uD68D\uB4DD\uD558\uACE0, \uC544\uAD70
+      \uC601\uC6C5\uC774 \uC0AC\uB9DD\uD560 \uACBD\uC6B0 \uD574\uB2F9 \uBE14\uB85D\uC5D0
+      \uBB34\uB364\uC744 \uC18C\uD658\uD569\uB2C8\uB2E4."
     trigger: 1
     target: 0
-    value: 1
-    parameter1: Graveyard
-    parameter2: 
-    groupID: 0
-  - effectType: 4
+    value: 0
+    cost: 0
+    parameter: '{ id : 1004 , amount : 1, position : Destroyed }'
+  - effectType: 5
+    groupID: 1
+    abilityName: "\uD76C\uC0DD"
+    description: "\uD55C \uD134\uC5D0 \uD55C \uBC88, \uC2A4\uC2A4\uB85C\uB97C \uD76C\uC0DD\uD560
+      \uC218 \uC788\uC73C\uBA70 \uB370\uC2A4\uCE74\uC6B4\uD2B8\uB97C \uD68D\uB4DD\uD569\uB2C8\uB2E4."
     trigger: 0
     target: 2
-    value: 1
-    parameter1: Graveyard
-    parameter2: 
-    groupID: 1
+    value: 0
+    cost: 0
+    parameter: '{ resourceType : Ability, amount : 1 }'
+  - effectType: 5
+    groupID: 2
+    abilityName: "\uC77C\uC5B4\uB098\uB77C"
+    description: "\uB370\uC2A4\uCE74\uC6B4\uD2B8\uB97C \uC18C\uBAA8\uD558\uC5EC \uC9C0\uC815\uD55C
+      \uC5B8\uB370\uB4DC \uC601\uC6C5\uC744 \uBD80\uD65C\uC2DC\uD0B5\uB2C8\uB2E4."
+    trigger: 0
+    target: 2
+    value: 0
+    cost: 2
+    parameter: '{ tag : Graveyard }'
   - effectType: 1
+    groupID: 2
+    abilityName: "\uC77C\uC5B4\uB098\uB77C"
+    description: "\uB370\uC2A4\uCE74\uC6B4\uD2B8\uB97C \uC18C\uBAA8\uD558\uC5EC \uC9C0\uC815\uD55C
+      \uC5B8\uB370\uB4DC \uC601\uC6C5\uC744 \uBD80\uD65C\uC2DC\uD0B5\uB2C8\uB2E4."
     trigger: 0
     target: 2
-    value: 1
-    parameter1: Graveyard_Source
-    parameter2: 
-    groupID: 1
+    value: 0
+    cost: 2
+    parameter: '{ id : Source, amount : 1, position : Selected }'

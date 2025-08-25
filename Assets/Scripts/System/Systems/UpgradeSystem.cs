@@ -61,11 +61,11 @@ public class UpgradeSystem
             return; 
         }
 
-        UnitCardData cardData = GetRandomValidOutput(sources[0].Race);
-        List<UnitCardData> dataSources = new List<UnitCardData>();  
+        CardData cardData = GetRandomValidOutput(sources[0].Race);
+        List<CardData> dataSources = new List<CardData>();  
 
         foreach(var source in sources)
-            dataSources.Add(source.UnitData); 
+            dataSources.Add(source.Data); 
 
         if(recipe.ResourceRequired > 0)
         {
@@ -77,10 +77,10 @@ public class UpgradeSystem
 
     }
 
-    public UnitCardData GetRandomValidOutput(Race race)
+    public CardData GetRandomValidOutput(Race race)
     {
-        List<UnitCardData> raceList = database.GetRaceCardList(race)
-            .OfType<UnitCardData>().
+        List<CardData> raceList = database.GetRaceCardList(race)
+            .OfType<CardData>().
             Where(u => u.Tag == UnitTag.Normal).
             ToList();
 

@@ -5,22 +5,26 @@ using UnityEngine;
 public class GridManager : MonoBehaviour
 {
     public const int HEIGHT = 7; 
-    public const int WIDTH = 7; 
-
-    Vector3 originPos = Vector3.left * 8; 
-
+    public const int WIDTH = 7;
+    const int OFFSET_X = 8;
+    
     Grid grid;
 
+    Vector3 originPos;
+
     [SerializeField] GameObject gridPrefab;
-    [SerializeField] List<Sprite> gridCellSprite;
 
     Dictionary<HighlightLayer, List<GridCell>> highlightLayerToGridCells; 
 
     public void Init()
     {
         grid = new Grid();
+
+        originPos = Vector3.left * OFFSET_X; 
+
         grid.Init(HEIGHT, WIDTH, originPos, gridPrefab);
-        grid.CreateGridMap(transform, gridCellSprite);
+
+        grid.CreateGridMap(transform);
 
         foreach (GridCell gridCell in grid.GetAllCells())
             gridCell.OnClicked += TrySelectGridCell;

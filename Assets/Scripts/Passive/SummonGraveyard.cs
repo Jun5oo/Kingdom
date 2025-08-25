@@ -48,17 +48,17 @@ public class SummonGraveyard : IPassive
 
         CardDatabase database = ServiceLocator.Get<CardDatabase>();
 
-        var unitData = deadToken.UnitData;
+        var unitData = deadToken.Data;
 
         if (unitData.Tag == UnitTag.Graveyard)
             return; 
 
-        UnitCardData graveyard = database.GetCardData<UnitCardData>("undead_graveyard");
+        CardData graveyard = database.GetCardData<CardData>("undead_graveyard");
         EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
         eventQueue.Enqueue(async () =>
         {
-            await summonSystem.Summon(deadToken.OwnerID, graveyard, position, passiveOwner.Data, new List<UnitCardData> { deadToken.UnitData }); 
+            await summonSystem.Summon(deadToken.OwnerID, graveyard, position, passiveOwner.Data, new List<CardData> { deadToken.Data }); 
         }); 
     }
 }

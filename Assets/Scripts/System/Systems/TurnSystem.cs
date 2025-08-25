@@ -27,10 +27,8 @@ public class TurnSystem : IGameSystem
     int[] playerID;
     int currentPlayerID;
 
-    public Action OnPlayerTurnStarted;
-    public Action OnOpponentTurnStarted; 
-    public Action OnPlayerTurnEnded;
-    public Action OnOpponentTurnEnded;
+    public Action<int> onTurnStarted;
+    public Action<int> onTurnEnded; 
 
     public void Init()
     {
@@ -59,13 +57,16 @@ public class TurnSystem : IGameSystem
         if (TurnState == TurnState.Unable)
             return;
 
-        actionSystem.ResetActionCount(currentPlayerID); 
+        actionSystem.ResetActionCount(currentPlayerID);
+
+        EventBus<TurnStartEvent>.Publish(new TurnStartEvent { playerID = currentPlayerID }); 
+
+        onTurnStarted?.Invoke(currentPlayerID);
 
         if (playerManager.Local.PlayerID == currentPlayerID)
             uiManager.OnNotification("내 턴", () => 
             { 
                 currentTurnState = TurnState.PlayerTurn;
-                OnPlayerTurnStarted?.Invoke(); 
             });
 
         else
@@ -73,7 +74,6 @@ public class TurnSystem : IGameSystem
             { 
                 currentTurnState = TurnState.EnemyTurn;
                 StartAITurn(currentPlayerID);
-                OnOpponentTurnStarted?.Invoke(); 
             });
 
         Card card = await drawManager.Draw(currentPlayerID);
@@ -94,10 +94,8 @@ public class TurnSystem : IGameSystem
         if (TurnState == TurnState.Unable)
             return;
 
-        if (currentTurnState == TurnState.PlayerTurn)
-            OnPlayerTurnEnded?.Invoke();
-        else
-            OnOpponentTurnEnded?.Invoke(); 
+        onTurnEnded?.Invoke(currentPlayerID);
+        EventBus<TurnEndEvent>.Publish(new TurnEndEvent { playerID = currentPlayerID });
 
         currentTurnState = TurnState.EndTurn;
 
@@ -108,7 +106,7 @@ public class TurnSystem : IGameSystem
                 currentPlayerID = _playerID;
                 break; 
             }
-        }
+        }   
 
         await StartTurn(); 
     }

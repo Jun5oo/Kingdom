@@ -9,7 +9,7 @@ public static class ReadCSVFile
 {
     #region PATH 
     private const string CARD_CSV_PATH = "Assets/CSV/CardData.csv";
-    private const string CARD_EFFECT_CSV_PATH = "Assets/CSV/EffectTable.csv"; 
+    private const string CARD_ABILITY_CSV_PATH = "Assets/CSV/AbilityTable.csv"; 
     private const string SAVE_PATH = "Assets/ScriptableObjects/Cards";
     #endregion 
 
@@ -42,13 +42,16 @@ public static class ReadCSVFile
     const string CARD_MOVERANGE3 = "MoveRange3";
     #endregion
 
-    #region EFFECT_HEADER
+    #region ABILITY_HEADER
     const string EFFECT_TYPE = "EffectType";
     const string GROUP_ID = "GroupID";
+    const string ABILITY_NAME = "AbilityName";
+    const string DESCRIPTION = "Description";
     const string TRIGGER = "Trigger";
     const string TARGET = "Target";
+    const string COST = "Cost";
     const string VALUE = "Value";
-    const string PARAM1 = "Param1"; 
+    const string PARAM = "Parameter";
     #endregion 
 
     [MenuItem("Tools/Import Cards from CSV")]
@@ -62,13 +65,13 @@ public static class ReadCSVFile
         }
 
         // 카드효과 CSV 파일 확인 
-        if (!File.Exists(CARD_EFFECT_CSV_PATH))
+        if (!File.Exists(CARD_ABILITY_CSV_PATH))
         {
-            Debug.LogError($"CSV file not found at {CARD_EFFECT_CSV_PATH}");
+            Debug.LogError($"CSV file not found at {CARD_ABILITY_CSV_PATH}");
             return; 
         }
 
-        Dictionary<string, CardDataSO> cardDict = new Dictionary<string, CardDataSO>();
+        Dictionary<string, CardData> cardDict = new Dictionary<string, CardData>();
 
         #region Parsing CardData 
         string[] dataLines = File.ReadAllLines(CARD_CSV_PATH);
@@ -92,7 +95,7 @@ public static class ReadCSVFile
             string name = GetValue(dataHeaders, values, CARD_NAME);
             string description = GetValue(dataHeaders, values, CARD_DESCRIPTION);
             
-            CardDataSO card = ScriptableObject.CreateInstance<CardDataSO>();
+            CardData card = ScriptableObject.CreateInstance<CardData>();
 
             card.ID = id;
             card.Name = name;
@@ -138,39 +141,40 @@ public static class ReadCSVFile
         AssetDatabase.SaveAssets();
         #endregion
 
-        #region Parsing EffectTable
+        #region Parsing AbilityTable
 
-        string[] effectLines = File.ReadAllLines(CARD_EFFECT_CSV_PATH);
+        string[] effectLines = File.ReadAllLines(CARD_ABILITY_CSV_PATH);
         
         if (effectLines.Length <= 1)
         {
-            Debug.LogWarning($"{CARD_EFFECT_CSV_PATH} : CSV file is empty or missing headers.");
+            Debug.LogWarning($"{CARD_ABILITY_CSV_PATH} : CSV file is empty or missing headers.");
             return;
         }
 
-        string[] effectHeaders = effectLines[0].Split(',');
+        string[] effectHeaders = SplitCSVLine(effectLines[0]).ToArray(); 
 
         for (int i = 1; i < effectLines.Length; i++)
         {
             if (string.IsNullOrWhiteSpace(effectLines[i]))
                 continue;
 
-            string[] values = effectLines[i].Split(',');
+            string[] values = SplitCSVLine(effectLines[i]).ToArray();
 
             string cardID = GetValue(effectHeaders, values, CARD_ID);
 
-            if (string.IsNullOrEmpty(cardID) || !cardDict.TryGetValue(cardID, out CardDataSO dataSO))
+            if (string.IsNullOrEmpty(cardID) || !cardDict.TryGetValue(cardID, out CardData dataSO))
                 continue;
 
             var effectSO = new EffectData();
 
-            effectSO.effectType = ParseEnum<EffectType>(GetValue(effectHeaders, values, EFFECT_TYPE)); 
+            effectSO.effectType = ParseEnum<EffectType>(GetValue(effectHeaders, values, EFFECT_TYPE));
+            effectSO.groupID = int.Parse(GetValue(effectHeaders, values, GROUP_ID));
+            effectSO.abilityName = GetValue(effectHeaders, values, ABILITY_NAME);
+            effectSO.description = GetValue(effectHeaders, values, DESCRIPTION); 
             effectSO.target = ParseEnum<Target>(GetValue(effectHeaders, values, TARGET), Target.None);
             effectSO.trigger = ParseEnum<Trigger>(GetValue(effectHeaders, values, TRIGGER));
-            effectSO.value = int.Parse(GetValue(effectHeaders, values, VALUE));
-            effectSO.parameter1 = GetValue(effectHeaders, values, PARAM1);
-            effectSO.groupID = int.Parse(GetValue(effectHeaders, values, GROUP_ID)); 
-
+            effectSO.cost = int.Parse(GetValue(effectHeaders, values, COST)); 
+            effectSO.parameter = (GetValue(effectHeaders, values, PARAM));
 
             dataSO.Effects.Add(effectSO);
             EditorUtility.SetDirty(cardDict[cardID]);
@@ -201,6 +205,26 @@ public static class ReadCSVFile
         Debug.LogWarning($"Invalid enum value: {input} for {typeof(T).Name}");
         return defaultValue;
     }
+
+    private static List<string> SplitCSVLine(string line)
+    {
+        var result = new List<string>();
+        bool inQuotes = false;
+        var cur = new System.Text.StringBuilder();
+
+        foreach (char c in line)
+        {
+            if (c == '"') inQuotes = !inQuotes;
+            else if (c == ',' && !inQuotes)
+            {
+                result.Add(cur.ToString().Trim());
+                cur.Clear();
+            }
+            else cur.Append(c);
+        }
+        result.Add(cur.ToString().Trim());
+        return result;
+    }
 }
 
-#endif 
+#endif

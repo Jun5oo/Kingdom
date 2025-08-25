@@ -57,16 +57,16 @@ public class UpgradeRecipe
         if (isCardIDSame)
         {
             // 동일한 카드를 요구하는 경우 
-            var count = new Dictionary<int, int>(); 
+            var count = new Dictionary<string, int>(); 
             
             foreach(var candidate in candidates)
             {
-                if (count.ContainsKey(candidate.ID))
-                    count[candidate.ID]++;
+                if (count.ContainsKey(candidate.Data.ID))
+                    count[candidate.Data.ID]++;
                 else
-                    count[candidate.ID] = 1;
+                    count[candidate.Data.ID] = 1;
 
-                if(count.TryGetValue(candidate.ID, out int num))
+                if(count.TryGetValue(candidate.Data.ID, out int num))
                 {
                     if (num >= tokenRequired)
                         return true; 
@@ -78,15 +78,15 @@ public class UpgradeRecipe
 
         else
         {
-            var count = new Dictionary<int, int>();
+            var count = new Dictionary<string, int>();
 
             // 그렇지 않은 경우 
             foreach (var candidate in candidates)
             {
-                if (count.ContainsKey(candidate.ID))
-                    count[candidate.ID]++;
+                if (count.ContainsKey(candidate.Data.ID))
+                    count[candidate.Data.ID]++;
                 else
-                    count[candidate.ID] = 1;
+                    count[candidate.Data.ID] = 1;
             }
 
             if (count.Count < tokenRequired) 
