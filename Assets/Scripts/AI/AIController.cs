@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +22,12 @@ public class AIController
     AIDivineShieldStrategy aiDivineShieldStrategy;
 
     ActionSystem actionSystem;
+
+    Dictionary<ActionType, float> baseWeights = new Dictionary<ActionType, float>
+    {
+        { ActionType.Move, 0.5f },
+        { ActionType.Summon, 0.5f },
+    };
 
     public void Init()
     {
@@ -79,16 +84,40 @@ public class AIController
                 }
             }
 
-            bool canSummon = aiSummonStrategy.CanSummonAction(currentPlayerID, out SummonAction summonAction,
-                out List<Vector2Int> validGridPosListForSummon);
-            bool canMove = aiMoveStrategy.CanMoveAction(currentPlayerID, out MoveAction moveAction,
-                out List<Vector2Int> validGridPosListForMove);
             bool canAttack = aiAttackStrategy.CanAttackAction(currentPlayerID, out AttackAction attackAction,
                 out List<Vector2Int> validGridPosListForAttack);
+
+            if (canAttack)
+            {
+                actionCount--;
+                await aiAttackStrategy.AttackRandomTarget(attackAction, validGridPosListForAttack);
+                continue;
+            }
+
             bool canResurrection = aiResurrectionStrategy.CanResurrectionAction(currentPlayerID, out ResurrectionAction resurrectionAction,
                 out Vector2Int validGridPosForResurrection);
             bool canDivineShield = aiDivineShieldStrategy.CanDivineShieldAction(currentPlayerID, out DivineShieldAction divineShieldAction,
                 out Vector2Int validGridPosForDivineShield);
+
+            if (canResurrection)
+            {
+                actionCount--;
+                await aiResurrectionStrategy.ResurrectionUnit(resurrectionAction, validGridPosForResurrection);
+                continue;
+            }
+
+            if (canDivineShield)
+            {
+                actionCount--;
+                await aiDivineShieldStrategy.DivineShieldUnit(divineShieldAction, validGridPosForDivineShield);
+                continue;
+            }
+
+            bool canSummon = aiSummonStrategy.CanSummonAction(currentPlayerID, out SummonAction summonAction,
+                out List<Vector2Int> validGridPosListForSummon);
+            bool canMove = aiMoveStrategy.CanMoveAction(currentPlayerID, out MoveAction moveAction,
+                out List<Vector2Int> validGridPosListForMove);
+
 
             if (canSummon)
             {
@@ -97,18 +126,6 @@ public class AIController
             if (canMove)
             {
                 availableActions.Add(ActionType.Move);
-            }
-            if (canAttack)
-            {
-                availableActions.Add(ActionType.Attack);
-            }
-            if (canResurrection)
-            {
-                availableActions.Add(ActionType.Resurrection);
-            }
-            if (canDivineShield)
-            {
-                availableActions.Add(ActionType.DivineShield);
             }
             if (availableActions.Count == 0)
             {
@@ -128,17 +145,6 @@ public class AIController
                     await aiMoveStrategy.MoveRandomPos(moveAction, validGridPosListForMove);
                     // 현재 자신의 필드 내 유닛 중 하나를 선택하여 이동 (이동이 가능한지 체크 : 상하좌우)
                     break;
-                case ActionType.Attack:
-                    await aiAttackStrategy.AttackRandomTarget(attackAction, validGridPosListForAttack);
-                    // 현재 자신의 필드 내 유닛들을 검사하여 공격이 가능한지 체크 후 실행
-                    break;
-                case ActionType.Resurrection:
-                    // 현재는 AI가 부활 액션을 수행하지 않음
-                    await aiResurrectionStrategy.ResurrectionUnit(resurrectionAction, validGridPosForResurrection);
-                    break;
-                case ActionType.DivineShield:
-                    await aiDivineShieldStrategy.DivineShieldUnit(divineShieldAction, validGridPosForDivineShield);
-                    break;
             }
 
             actionCount--;
@@ -150,7 +156,32 @@ public class AIController
 
     private ActionType GetRandomAction(List<ActionType> availableActions)
     {
-        int randomIndex = UnityEngine.Random.Range(0, availableActions.Count);
-        return availableActions[randomIndex];
+        Dictionary<ActionType, float> weightActionDict = new Dictionary<ActionType, float>();
+
+        foreach (var actionType in availableActions)
+        {
+            weightActionDict.Add(actionType, baseWeights[actionType]);
+        }
+
+        float total = weightActionDict.Values.Sum();
+
+        var normalized = weightActionDict.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value / total
+        );
+
+        float r = UnityEngine.Random.value;
+        float cumulative = 0;
+
+        foreach (var pair in normalized)
+        {
+            cumulative += pair.Value;
+            if (r <= cumulative)
+            {
+                return pair.Key; // 선택된 액션
+            }
+        }
+
+        return ActionType.Summon;
     }
 }
