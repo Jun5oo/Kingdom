@@ -178,7 +178,7 @@ public class AIController
             cumulative += pair.Value;
             if (r <= cumulative)
             {
-                return pair.Key; // 선택된 액션
+                return pair.Key;
             }
         }
 
