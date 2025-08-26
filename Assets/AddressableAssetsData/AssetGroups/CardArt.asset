@@ -16,37 +16,37 @@ MonoBehaviour:
   m_GUID: 8949414f734b8f348bb62a8f84e5085b
   m_SerializeEntries:
   - m_GUID: 0043c459b54fb464c955dc23f3a951a2
-    m_Address: card_art_2
+    m_Address: card_art_1002
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2c020d93f5925d64baef7cd2353d6ecb
-    m_Address: card_art_1
+    m_Address: card_art_1001
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 818a99f8400e79d458a53ed31ffef4cc
-    m_Address: card_art_3
+    m_Address: card_art_1003
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 856da0262f2a76c4ab6b8f0d57940629
-    m_Address: card_art_4
+    m_Address: card_art_1101
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b0db6eae0fd171d4595aa5adba50d8d9
-    m_Address: card_art_7
+    m_Address: card_art_1004
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dfc7e9fa96d925645ad17950da959492
-    m_Address: card_art_5
+    m_Address: card_art_1102
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f3154b03a0e8de544a4c4b0c27112024
-    m_Address: card_art_6
+    m_Address: card_art_1103
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

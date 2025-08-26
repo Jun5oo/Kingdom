@@ -30,7 +30,9 @@ public class DivineShieldAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token; 
+    public BaseObject Executor => token;
+
+    public Predicate<Vector2Int> Validation => CanBuff; 
 
     public DivineShieldAction(Token token, ActionPerformer performer)
     {
@@ -51,26 +53,7 @@ public class DivineShieldAction : IAction
 
     public void Enter()
     {
-        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
-        {
-            if (!tokenManager.IsTokenAtGridPosition(gridPosition))
-                return false;
 
-            Token token = tokenManager.GetTokenFrom(gridPosition);
-
-            if (token != null)
-            {
-                if (!token.IsAllies(target.OwnerID))
-                    return false;
-                if (token is not IBuffable)
-                    return false; 
-
-                return true; 
-            }
-
-            return false;
-
-        }, HighlightType, HighlightLayer);
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
@@ -91,6 +74,7 @@ public class DivineShieldAction : IAction
             OnActionCanceled?.Invoke();
             return;
         }
+
         IBuff buff = new DivineShield(buffable);
         await buff.OnApply();
 
@@ -99,7 +83,28 @@ public class DivineShieldAction : IAction
 
     public void Exit()
     {
-        gridManager.UnhighlightGridCells(HighlightLayer); 
+    }
+
+    bool CanBuff(Vector2Int pos)
+    {
+        if (!tokenManager.IsTokenAtGridPosition(pos))
+            return false;
+
+        Token token = tokenManager.GetTokenFrom(pos);
+
+        if (token != null)
+        {
+            if (!token.IsAllies(target.OwnerID))
+                return false;
+            if (token.Data.Tag == UnitTag.King)
+                return false;
+            if (token is not IBuffable)
+                return false;
+
+            return true;
+        }
+
+        return false;
     }
 
     public bool IsValid()

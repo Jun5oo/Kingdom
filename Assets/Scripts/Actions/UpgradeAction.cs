@@ -5,12 +5,11 @@ using UnityEngine;
 
 public enum UpgradeState
 {
-    RecipeSelection, 
-    SourceSelection, 
-    PlacementSelection, 
+    RecipeSelection,
+    SourceSelection,
+    PlacementSelection,
     Done
 }
-
 public class UpgradeAction : IAction
 {
     ActionType actionType;
@@ -21,8 +20,8 @@ public class UpgradeAction : IAction
     public HighlightLayer HighlightLayer { get { return highlightLayer; } }
     public HighlightType HighlightType { get { return highlightType; } }
 
-    ActionPerformer performer; 
-    public ActionPerformer Performer {  get { return performer; } }
+    ActionPerformer performer;
+    public ActionPerformer Performer { get { return performer; } }
 
     // UpgradeAction을 실행한 주체, 왕 
     Token actionOwner;
@@ -33,28 +32,30 @@ public class UpgradeAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
 
     // 행동 코스트 1 
-    int cost; 
-    public int Cost {  get { return cost; } }
+    int cost;
+    public int Cost { get { return cost; } }
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
     // FSM 상태로 행동 진행 
-    UpgradeState currentState; 
+    UpgradeState currentState;
     public UpgradeState UpgradeState { get { return currentState; } }
 
-    public BaseObject Executor => actionOwner; 
+    public BaseObject Executor => actionOwner;
+
+    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
     GridManager gridManager;
-    TokenManager tokenManager; 
+    TokenManager tokenManager;
     UpgradeSystem upgradeSystem;
 
     EventQueue eventQueue;
 
-    UpgradeRecipe currentRecipe; 
+    UpgradeRecipe currentRecipe;
     List<Token> picked;
 
-    List<Vector2Int> validPositions; 
+    List<Vector2Int> validPositions;
     public UpgradeAction(Token token, ActionPerformer performer)
     {
         this.actionOwner = token;
@@ -69,10 +70,10 @@ public class UpgradeAction : IAction
         this.cost = 1;
 
         gridManager = ServiceLocator.Get<GridManager>();
-        tokenManager = ServiceLocator.Get<TokenManager>(); 
+        tokenManager = ServiceLocator.Get<TokenManager>();
         upgradeSystem = ServiceLocator.Get<UpgradeSystem>();
 
-        eventQueue = ServiceLocator.Get<EventQueue>();  
+        eventQueue = ServiceLocator.Get<EventQueue>();
 
         currentRecipe = null;
         picked = new List<Token>();
@@ -92,26 +93,26 @@ public class UpgradeAction : IAction
 
     public void Enter()
     {
-        var recipes = upgradeSystem.GetValidRecipes(OwnerID); 
-        
+        var recipes = upgradeSystem.GetValidRecipes(OwnerID);
+
         // UI를 보여주고 선택 한 후에 해당 Source에 맞는 유닛들을 Highlight 하려고 하지만, 현재는 Log만 남기고 첫 번째 Recipe만을 선택한다고 가정 
-        foreach(var recipe in recipes)
+        foreach (var recipe in recipes)
             Debug.Log(recipe.Name);
 
         currentState = UpgradeState.RecipeSelection;
-        
-        OnRecipeSelected(recipes[0]); 
+
+        OnRecipeSelected(recipes[0]);
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
     {
         // Execute가 되었다는 것은, Highlight된 어느 한 Source를 클릭했다는 것 
-        if(currentState == UpgradeState.SourceSelection)
+        if (currentState == UpgradeState.SourceSelection)
         {
             var selected = tokenManager.GetTokenFrom(targetPosition);
             if (selected == null)
-                return; 
-         
+                return;
+
             if (!picked.Contains(selected))
                 picked.Add(selected);
 
@@ -144,15 +145,15 @@ public class UpgradeAction : IAction
                 return;
             }
         }
-    
-        if(currentState == UpgradeState.PlacementSelection)
+
+        if (currentState == UpgradeState.PlacementSelection)
         {
             eventQueue.Enqueue(() =>
             {
-                foreach(var selected in picked)
+                foreach (var selected in picked)
                     tokenManager.DestroyToken(selected);
 
-                return UniTask.CompletedTask; 
+                return UniTask.CompletedTask;
             });
 
             eventQueue.Enqueue(async () =>
@@ -160,12 +161,12 @@ public class UpgradeAction : IAction
                 await upgradeSystem.Upgrade(currentRecipe, picked, OwnerID, targetPosition, actionOwner.Data);
             });
 
-            await eventQueue.ExecuteAllAsync(); 
+            await eventQueue.ExecuteAllAsync();
 
-            currentState = UpgradeState.Done; 
+            currentState = UpgradeState.Done;
             OnActionComplete?.Invoke();
-            
-            Exit(); 
+
+            Exit();
         }
 
 
@@ -176,31 +177,31 @@ public class UpgradeAction : IAction
     {
         gridManager.UnhighlightGridCells(highlightLayer);
         picked.Clear();
-        currentRecipe = null; 
+        currentRecipe = null;
     }
 
     // 하나라도 진화할 수 있는 족보가 있으면 Valid 
-    public bool IsValid() => upgradeSystem.GetValidRecipes(OwnerID).Count > 0; 
-    
+    public bool IsValid() => upgradeSystem.GetValidRecipes(OwnerID).Count > 0;
+
     public void OnRecipeSelected(UpgradeRecipe recipe)
     {
-        currentRecipe = recipe; 
+        currentRecipe = recipe;
         picked.Clear();
         currentState = UpgradeState.SourceSelection;
 
         var candidates = GetCandidates(currentRecipe, OwnerID, picked);
-        
+
         gridManager.HighlightGridCells((Vector2Int position) =>
         {
-            foreach(var candidate in candidates)
+            foreach (var candidate in candidates)
             {
                 Vector2Int gridPos = tokenManager.GetGridPositionOfToken(candidate);
 
                 if (gridPos == position)
-                    return true; 
+                    return true;
             }
 
-            return false; 
+            return false;
         }, highlightType, highlightLayer);
     }
 
@@ -228,22 +229,22 @@ public class UpgradeAction : IAction
 
         }, HighlightType, HighlightLayer);
 
-        currentState = UpgradeState.PlacementSelection; 
+        currentState = UpgradeState.PlacementSelection;
     }
 
     // 진화를 하기 위한 재료 후보들을 찾는 함수 (Highlight를 하기 위함) 
     public List<Token> GetCandidates(UpgradeRecipe recipe, int playerID, List<Token> picked)
     {
         var result = new List<Token>();
-        var tokens = tokenManager.GetPlayerToken(playerID); 
+        var tokens = tokenManager.GetPlayerToken(playerID);
 
-        if(recipe == null)
+        if (recipe == null)
         {
             Debug.Log("Null recipe");
-            return null; 
+            return null;
         }
 
-        foreach(var token in tokens)
+        foreach (var token in tokens)
         {
             if (token.Level != recipe.Level)
                 continue;
@@ -256,17 +257,17 @@ public class UpgradeAction : IAction
 
             if (!recipe.Equal)
             {
-                foreach(var pickedToken in picked)
+                foreach (var pickedToken in picked)
                 {
-                    if (pickedToken.ID == token.ID)
-                        continue; 
+                    if (pickedToken.Data.ID == token.Data.ID)
+                        continue;
                 }
             }
 
             result.Add(token);
         }
 
-        return result; 
+        return result;
     }
 
 }

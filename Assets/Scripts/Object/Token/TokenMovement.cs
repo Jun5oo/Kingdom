@@ -54,23 +54,4 @@ public class TokenMovement : BaseMovement
     {
         MeleeAttackTargetFrom(target, from, onHitCallback, onCompleteCallback);
     }
-
-    public void PlayerSpinToss(Action onPeakCallback = null, Action onCompleteCallback = null)
-    {
-        Vector3 startPosition = PRS.position;
-        Vector3 peakPosition = startPosition + Vector3.up * HEIGHT;
-
-        transform.DORotate(new Vector3(1800f, 0f, 0f), 1f, RotateMode.LocalAxisAdd);
-        
-        sequence = DOTween.Sequence();
-        sequence.Append(transform.DOMove(peakPosition, 1.0f).SetEase(Ease.OutQuad));
-
-        sequence.AppendCallback(() => { onPeakCallback?.Invoke(); });
-
-        sequence.Append(transform.DOMove(startPosition, 1.0f).SetEase(Ease.InQuad));
-        sequence.OnComplete(() =>
-        {
-            onCompleteCallback?.Invoke();
-        }); 
-    }
 }

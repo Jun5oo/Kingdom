@@ -62,6 +62,11 @@ public class TokenInteraction : BaseInteraction
     }
     void OnDestroy()
     {
+        Clear(); 
+    }
+
+    void Clear()
+    {
         UnSubscribe();
         movement.OnMoved -= OnUpdatePRS;
         movement.OnMovedComplete -= OnMoveComplete;

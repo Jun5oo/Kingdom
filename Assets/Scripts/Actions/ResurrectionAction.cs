@@ -18,7 +18,6 @@ public class ResurrectionAction : IAction
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
-    GridManager gridManager;
     TokenManager tokenManager;
     SummonSystem summonSystem; 
 
@@ -33,7 +32,9 @@ public class ResurrectionAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return actionOwner.OwnerID; } }
 
-    public BaseObject Executor => actionOwner; 
+    public BaseObject Executor => actionOwner;
+
+    public Predicate<Vector2Int> Validation => CanRevive;
 
     public ResurrectionAction(Token token, ActionPerformer performer)
     {
@@ -42,50 +43,53 @@ public class ResurrectionAction : IAction
         highlightType = HighlightType.SummonHighlight;
         this.performer = performer;
 
-        this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
         this.summonSystem  = ServiceLocator.Get<SummonSystem>();
 
         this.actionOwner = token;
 
         currentCost = 2;
-
         resourceType = ResourceType.Ability; 
     }
 
     public void Enter()
     {
-        gridManager.HighlightGridCells((Vector2Int gridPosition) => 
-        {
-            if (!tokenManager.IsTokenAtGridPosition(gridPosition))
-                return false;
-            
-            Token token = tokenManager.GetTokenFrom(gridPosition); 
-            
-            if(token != null)
-            {
-                if (!token.IsAllies(this.actionOwner.OwnerID))
-                    return false;
-                if (token.UnitData.Tag == UnitTag.Graveyard)
-                    return true; 
-            }
-
-            return false; 
-
-        }, HighlightType, HighlightLayer);
 
     }
 
+    bool CanRevive(Vector2Int gridPosition)
+    {
+        if (!tokenManager.IsTokenAtGridPosition(gridPosition))
+            return false;
+
+        Token token = tokenManager.GetTokenFrom(gridPosition);
+
+        if (token != null)
+        {
+            if (!token.IsAllies(this.actionOwner.OwnerID))
+                return false;
+            if (token.Tag == UnitTag.Graveyard)
+                return true;
+        }
+
+        return false;
+
+    }
     public async UniTask Execute(Vector2Int targetPosition)
     {
         EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
         this.targetPosition = targetPosition;
+        
         Revive();
+
         await eventQueue.ExecuteAllAsync(); 
     }
 
-    public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer);
+    public void Exit()
+    {
+
+    }
     public bool IsValid()
     {
         return true; 
@@ -105,7 +109,7 @@ public class ResurrectionAction : IAction
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
 
-        var unitData = new List<UnitCardData>(targetToken.SourceObjects);
+        var unitData = new List<CardData>(targetToken.SourceObjects);
         
         tokenManager.DestroyToken(targetToken);
        

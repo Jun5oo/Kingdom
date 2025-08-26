@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using UnityEngine;
 
-public class PlayerManager
+public class PlayerManager : MonoBehaviour
 {
     int localPlayerID;
     int remotePlayerID;
+
+    [SerializeField] PlayerConfig config; 
 
     Player localPlayer;
     Player remotePlayer;
@@ -17,9 +20,8 @@ public class PlayerManager
     {
         Player[] players = new Player[2];
 
-        players[0] = new Player(0, Race.Undead, "Local", true);
-        players[1] = new Player(1, Race.Celestial, "Remote", false);
-
+        players[0] = new Player(0, config.playerSelected, "Local", true);
+        players[1] = new Player(1, config.botSelected, "Remote", false);
 
         foreach (var player in players)
         {

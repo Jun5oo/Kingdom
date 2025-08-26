@@ -16,15 +16,15 @@ public class MoveAction : IAction
     public ActionPerformer Performer { get { return performer; } }
 
     GridManager gridManager;
-    TokenManager tokenManager; 
+    TokenManager tokenManager;
     Token token;
 
     public List<Vector2Int> MoveablePositions { get; private set; }
 
-    Vector2Int targetPosition; 
+    Vector2Int targetPosition;
 
-    public event Action OnActionComplete;
     public event Action OnActionCanceled;
+    public event Action OnActionComplete;
 
     int currentCost;
     public int Cost { get { return currentCost; } }
@@ -34,7 +34,9 @@ public class MoveAction : IAction
 
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token; 
+    public BaseObject Executor => token;
+
+    public Predicate<Vector2Int> Validation => CanMoveTo;
 
     public MoveAction(Token token, ActionPerformer performer)
     {
@@ -44,7 +46,7 @@ public class MoveAction : IAction
         highlightType = HighlightType.MoveHighlight;
 
         this.gridManager = ServiceLocator.Get<GridManager>();
-        this.tokenManager = ServiceLocator.Get<TokenManager>(); 
+        this.tokenManager = ServiceLocator.Get<TokenManager>();
         this.performer = performer;
 
         this.token = token;
@@ -52,51 +54,35 @@ public class MoveAction : IAction
 
         currentCost = 1;
 
-        resourceType = ResourceType.Action; 
+        resourceType = ResourceType.Action;
     }
 
     public void Enter()
     {
-        Exit();
-
-        gridManager.HighlightGridCells((Vector2Int gridPosition) =>
-        {
-            Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token); 
-
-            foreach(Vector2Int position in MoveablePositions)
-            {
-                Vector2Int availablePosition = currentGridPosition + position; 
-                if (availablePosition == gridPosition && !tokenManager.IsTokenAtGridPosition(gridPosition))
-                    return true; 
-            }
-
-            return false; 
-        }, HighlightType.MoveHighlight, HighlightLayer.Action);
 
     }
     public async UniTask Execute(Vector2Int gridPosition)
     {
-        if(token == null)
+        if (token == null)
         {
             OnActionCanceled?.Invoke();
-            return; 
+            return;
         }
 
-        targetPosition = gridPosition; 
-        await Transition(MoveState.Prepare); 
+        targetPosition = gridPosition;
+        await Transition(MoveState.Prepare);
     }
     public void Exit()
     {
-        gridManager.UnhighlightGridCells(HighlightLayer.Action); 
+
     }
 
     public bool IsValid()
     {
-        if(MoveablePositions.Count == 0) 
+        if (MoveablePositions.Count == 0)
             return false;
 
-        return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;
+        return true;
     }
 
     async UniTask Transition(MoveState state)
@@ -107,23 +93,23 @@ public class MoveAction : IAction
                 await Prepare();
                 break;
             case MoveState.Animation:
-                await Move(); 
+                await Move();
                 break;
             case MoveState.Placing:
-                await Placing(); 
+                await Placing();
                 break;
             case MoveState.Done:
                 Done();
                 break;
             default:
                 Debug.LogError("Undefined MoveState");
-                return; 
+                return;
         }
     }
 
     async UniTask Prepare()
     {
-        Exit(); 
+        // Exit(); 
         await Transition(MoveState.Animation);
     }
     async UniTask Move()
@@ -134,24 +120,40 @@ public class MoveAction : IAction
         Quaternion quaternion = tokenMovement.PRS.rotation;
         Vector3 scale = tokenMovement.PRS.scale;
 
-        var taskComplete = new UniTaskCompletionSource(); 
+        var taskComplete = new UniTaskCompletionSource();
 
         tokenMovement.MoveTransform(new PRS(targetWorldPos, quaternion, scale), 0.5f, false, () =>
         {
-            taskComplete.TrySetResult(); 
+            taskComplete.TrySetResult();
         });
 
         await taskComplete.Task;
-        await Transition(MoveState.Placing); 
+        await Transition(MoveState.Placing);
     }
     async UniTask Placing()
     {
-        tokenManager.MoveTokenTo(token, targetPosition); 
+        tokenManager.MoveTokenTo(token, targetPosition);
         await Transition(MoveState.Done);
+    }
+
+    bool CanMoveTo(Vector2Int pos)
+    {
+        if (token == null || tokenManager == null)
+            return false;
+
+        var currentPos = tokenManager.GetGridPositionOfToken(token);
+
+        foreach (Vector2Int delta in MoveablePositions)
+        {
+            Vector2Int availablePosition = currentPos + delta;
+            if (availablePosition == pos && !tokenManager.IsTokenAtGridPosition(pos))
+                return true;
+        }
+
+        return false;
     }
 
     void Done()
     {
-        OnActionComplete?.Invoke(); 
     }
 }

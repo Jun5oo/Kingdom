@@ -9,40 +9,40 @@ public class ActionFactory
         switch (actionType)
         {
             case ActionType.Summon:
-                if (baseObject is UnitCard card)
+                if (baseObject is Card card)
                     action = new SummonAction(card, performer);
                 break;
             case ActionType.Move:
-                if(baseObject is Token moveableToken)
+                if (baseObject is Token moveableToken)
                     action = new MoveAction(moveableToken, performer);
                 break;
             case ActionType.Attack:
-                if(baseObject is Token attackableToken)
-                    action = new AttackAction(attackableToken, performer); 
+                if (baseObject is Token attackableToken)
+                    action = new AttackAction(attackableToken, performer);
                 break;
-            case ActionType.Resurrection: 
-                if(baseObject is Token undeadKing)
+            case ActionType.Resurrection:
+                if (baseObject is Token undeadKing)
                 {
                     if (undeadKing.Tag == UnitTag.King)
                         action = new ResurrectionAction(undeadKing, performer);
                 }
                 break;
             case ActionType.DivineShield:
-                if(baseObject is Token celestialKing)
+                if (baseObject is Token celestialKing)
                 {
                     if (celestialKing.Tag == UnitTag.King)
-                        action = new DivineShieldAction(celestialKing, performer); 
+                        action = new DivineShieldAction(celestialKing, performer);
                 }
                 break;
             case ActionType.Upgrade:
-                if(baseObject is Token king)
+                if (baseObject is Token king)
                 {
-                    if(king.Tag == UnitTag.King)
+                    if (king.Tag == UnitTag.King)
                         action = new UpgradeAction(king, performer);
                 }
-                break; 
+                break;
         }
 
-        return action; 
+        return action;
     }
 }

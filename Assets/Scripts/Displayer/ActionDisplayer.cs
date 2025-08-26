@@ -1,18 +1,27 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.VirtualTexturing;
 
 public class ActionDisplayer : MonoBehaviour
 {
     // 액션 팝업 Displayer. ISelectable한 BaseObject을 클릭했을 때 해당 오브젝트가 할 수 있는 행동을 Popup으로 보여줌 
     PoolManager poolManager;
 
-    SelectionSystem selectionSystem; 
+    SelectionSystem selectionSystem;
     ActionFactory actionFactory;
-    ActionSystem actionSystem; 
-    
+    ActionSystem actionSystem;
+
+    ActionResolver actionResolver;
+
     List<ActionPopup> pooled;
 
-    [SerializeField] Transform layout; 
+    [SerializeField] Transform layout;
+
+    void OnDisable()
+    {
+        selectionSystem.onSelectedComplete -= Display;
+        selectionSystem.onDeselected -= Clear;
+    }
 
     void Start()
     {
@@ -21,9 +30,11 @@ public class ActionDisplayer : MonoBehaviour
         actionFactory = ServiceLocator.Get<ActionFactory>();
         actionSystem = ServiceLocator.Get<ActionSystem>();
 
+        actionResolver = ServiceLocator.Get<ActionResolver>();
+
         pooled = new List<ActionPopup>();
 
-        selectionSystem.onSelectedComplete -= Display; 
+        selectionSystem.onSelectedComplete -= Display;
         selectionSystem.onSelectedComplete += Display;
 
         selectionSystem.onDeselected -= Clear;
@@ -32,7 +43,7 @@ public class ActionDisplayer : MonoBehaviour
 
     public void Display(BaseObject baseObject)
     {
-        Clear(); 
+        Clear();
 
         if (layout != null)
         {
@@ -42,10 +53,19 @@ public class ActionDisplayer : MonoBehaviour
         else
         {
             Debug.LogError("Layout not found");
-            return; 
+            return;
         }
 
-        var actionTypes = baseObject.Actions;
+        var actionTypes = actionResolver.GetValidActions(baseObject);
+
+        if(baseObject is Token && baseObject.Data.Action.Count > 0)
+        {
+            foreach (var actionType in baseObject.Data.Action)
+            {
+                if(actionType != ActionType.None)
+                    actionTypes.Add(actionType);
+            }
+        }
 
         foreach (var actionType in actionTypes)
         {
@@ -56,7 +76,7 @@ public class ActionDisplayer : MonoBehaviour
 
             if (!action.IsValid())
             {
-                Debug.Log($"{action} invalid"); 
+                Debug.Log($"{action} invalid");
                 continue;
             }
 
@@ -64,7 +84,7 @@ public class ActionDisplayer : MonoBehaviour
             if (!actionSystem.CanPerformAction(action, baseObject.OwnerID))
             {
                 Debug.Log($"cannot perform {action}");
-                continue; 
+                continue;
             }
 
             ActionPopup actionPopup = poolManager.Pop<ActionPopup>();
@@ -85,7 +105,7 @@ public class ActionDisplayer : MonoBehaviour
         foreach (var action in pooled)
         {
             action.OnSelected -= actionSystem.Enter;
-            action.OnClicked -= Clear; 
+            action.OnClicked -= Clear;
             action.OnSelected = null;
 
             poolManager.Push(action);
@@ -96,5 +116,5 @@ public class ActionDisplayer : MonoBehaviour
     {
         Clear();
     }
- 
+
 }

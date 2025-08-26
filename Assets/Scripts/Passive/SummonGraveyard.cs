@@ -1,7 +1,4 @@
-using Cysharp.Threading.Tasks;
-using NUnit.Framework;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class SummonGraveyard : IPassive
@@ -48,17 +45,17 @@ public class SummonGraveyard : IPassive
 
         CardDatabase database = ServiceLocator.Get<CardDatabase>();
 
-        var unitData = deadToken.UnitData;
+        var unitData = deadToken.Data;
 
         if (unitData.Tag == UnitTag.Graveyard)
             return; 
 
-        UnitCardData graveyard = database.GetCardData<UnitCardData>("undead_graveyard");
+        CardData graveyard = database.GetCardData<CardData>("무덤");
         EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
         eventQueue.Enqueue(async () =>
         {
-            await summonSystem.Summon(deadToken.OwnerID, graveyard, position, passiveOwner.Data, new List<UnitCardData> { deadToken.UnitData }); 
+            await summonSystem.Summon(deadToken.OwnerID, graveyard, position, passiveOwner.Data, new List<CardData> { deadToken.Data }); 
         }); 
     }
 }

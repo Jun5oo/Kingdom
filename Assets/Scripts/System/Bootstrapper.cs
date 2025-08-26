@@ -7,6 +7,9 @@ public class Bootstrapper : MonoBehaviour
     // 게임에 필요한 매니저, 시스템, 팩토리, 로더 클래스들을 생성하고 ServiceLocator에 등록하는 가장 먼저 실행되어야 하는 클래스
     // ExecutionOrder를 통해서 가장 먼저 실행 
 
+    [SerializeField] PlayerConfig config; 
+
+    [SerializeField] PlayerManager playerManager; 
     [SerializeField] UIManager uiManager;
     [SerializeField] GridManager gridManager;
     [SerializeField] HandManager handManager;
@@ -15,7 +18,6 @@ public class Bootstrapper : MonoBehaviour
     [SerializeField] ActionSystem actionSystem;
 
     GameFlowManager gameFlowManager;
-    PlayerManager playerManager;
     TokenManager tokenManager;
     TurnSystem turnSystem;
     DamageManager damageManager;
@@ -44,6 +46,14 @@ public class Bootstrapper : MonoBehaviour
     SummonSystem summonSystem;
     UpgradeSystem upgradeSystem;
 
+    RangeResolver rangeResolver;
+    ActionResolver actionResolver;
+
+    void OnDisable()
+    {
+        UnRegisterServices(); 
+    }
+
     void Awake()
     {
         RegisterServices();
@@ -57,7 +67,6 @@ public class Bootstrapper : MonoBehaviour
     public async void RegisterServices()
     {
         gameFlowManager = new GameFlowManager();
-        playerManager = new PlayerManager();
         tokenManager = new TokenManager();
         damageManager = new DamageManager();
         drawManager = new DrawManager();
@@ -79,6 +88,9 @@ public class Bootstrapper : MonoBehaviour
 
         summonSystem = new SummonSystem();
         upgradeSystem = new UpgradeSystem();
+
+        rangeResolver = new RangeResolver();
+        actionResolver = new ActionResolver(); 
 
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(damageManager);
@@ -117,9 +129,52 @@ public class Bootstrapper : MonoBehaviour
 
         ServiceLocator.Register(hudDisplayer);
 
+        ServiceLocator.Register(rangeResolver);
+        ServiceLocator.Register(actionResolver); 
+
         await Initialization();
     }
+    public void UnRegisterServices()
+    {
+        ServiceLocator.Unregister<PlayerManager>();
+        ServiceLocator.Unregister<DamageManager>();
+        ServiceLocator.Unregister<UIManager>();
+        ServiceLocator.Unregister<GridManager>();
+        ServiceLocator.Unregister<HandManager>();
+        ServiceLocator.Unregister<TokenManager>();
+        ServiceLocator.Unregister<PoolManager>();
 
+        ServiceLocator.Unregister<TurnSystem>(); 
+        ServiceLocator.Unregister<HoverSystem>();
+        ServiceLocator.Unregister<SelectionSystem>();
+        ServiceLocator.Unregister<ActionSystem>();
+            
+        ServiceLocator.Unregister<CardFactory>();
+        ServiceLocator.Unregister<TokenFactory>();
+        ServiceLocator.Unregister<ActionFactory>();
+        ServiceLocator.Unregister<PassiveFactory>();
+
+        ServiceLocator.Unregister<DrawManager>();
+        ServiceLocator.Unregister<DeckManager>();
+
+        ServiceLocator.Unregister<AIController>();
+
+        ServiceLocator.Unregister<CardTextureLoader>();
+        ServiceLocator.Unregister<TokenTextureLoader>();
+        ServiceLocator.Unregister<PrefabLoader>();
+        ServiceLocator.Unregister<SpriteLoader>();
+
+        ServiceLocator.Unregister<EventQueue>();
+        ServiceLocator.Unregister<CardDatabase>();
+
+        ServiceLocator.Unregister<SummonSystem>();
+        ServiceLocator.Unregister<UpgradeSystem>();
+
+        ServiceLocator.Unregister<HUDDisplayer>();
+
+        ServiceLocator.Unregister<RangeResolver>();
+        ServiceLocator.Unregister<ActionResolver>();
+    }
     public async UniTask Initialization()
     {
         playerManager.Init();

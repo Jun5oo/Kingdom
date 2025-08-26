@@ -13,6 +13,11 @@ public class PassiveFactory
                 break;
             case PassiveType.SummonGraveyard:
                 passive = new SummonGraveyard(owner);
+                break;
+            case PassiveType.DestroySelf:
+                passive = new DestroySelf(owner);
+                break; 
+            default:
                 break; 
         }
 

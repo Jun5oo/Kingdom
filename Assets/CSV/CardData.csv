@@ -1,8 +1,8 @@
-CardType ,ID,Name,Description,CP ,Race,IsKing,AttackRange,MovementRange,Passive
-Unit,1001,Lord of Undead,Lord of Undead,40,Undead,TRUE,NULL,(1:0)/(-1:0)/(0:1)/(0:1),GainAbilityCoin:SummonGraveyard
-Unit,1002,Undead Warrior,Basic Melee Unit,10,Undead,FALSE,(1:0)/(-1:0)/(0:1)/(0:1),(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),NULL
-Unit,1003,Undead Ranger,Basic Range Unit,5,Undead,FALSE,(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),(1:0)/(-1:0)/(0:1)/(0:1),NULL
-Unit,1004,Graveyard,Graveyard,1,Undead,FALSE,NULL,NULL,DestroyAfterTurn
-Unit,1101,Lord of Celestial,Lord of Celestial,40,Celestial,TRUE,NULL,(1:0)/(-1:0)/(0:1)/(0:1),GainAbilityCoin
-Unit,1102,Celestial Warrior,Basic Melee Unit,10,Celestial,FALSE,(1:0)/(-1:0)/(0:1)/(0:1),(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),NULL
-Unit,1103,Celestial Ranger,Basic Range Unit,5,Celestial,FALSE,(-2:0)/(-1:0)/(2:0)/(1:0)/(0:2)/(0:1)/(0:-1)/(0:2),(1:0)/(-1:0)/(0:1)/(0:1),NULL
+CardID,Name,Description,Race,Tag,MaxLevel,Level1CP,Level2CP,Level3CP,AttackType1,AttackRange1,AttackType2,AttackRange2,AttackType3,AttackRange3,MoveType1,MoveRange1,MoveType2,MoveRange2, MoveType3,MoveRange3,Action,Passive1,Passive2
+1001,Lord of Undead,Lord of Undead,Undead,King,1,40,40,40,None ,0,None ,0,None ,0,Straight,1,Straight,1,Straight,1,Resurrection,GainAbilityCoin,SummonGraveyard
+1002,Undead Warrior,Basic Melee Unit,Undead,Normal,3,10,12,20,Straight,1,Straight,1,Straight,2,Straight,2,Straight,2,Straight,3,None,None,None
+1003,Undead Ranger,Basic Range Unit,Undead,Normal,3,4,6,15,Straight,2,Straight,2,Straight,2,Straight,1,Straight,1,Straight,2,None,None,None
+1004,Graveyard,Graveyard,Undead,Graveyard,1,0,0,0,None ,0,None ,0,None ,0,None ,0,None ,0,None ,0,None,None,None
+1101,Lord of Celestial,Lord of Celestial,Celestial,King,1,40,40,40,None ,0,None ,0,None ,0,Straight,1,Straight,1,Straight,1,DivineShield,GainAbilityCoin,None
+1102,Celestial Warrior,Basic Melee Unit,Celestial,Normal,3,10,12,20,Straight,1,Straight,1,Straight,2,Straight,2,Straight,2,Straight,3,None,None,None
+1103,Celestial Ranger,Basic Range Unit,Celestial,Normal,3,4,6,15,Straight,2,Straight,2,Straight,2,Straight,1,Straight,1,Straight,2,None,None,None
