@@ -10,7 +10,12 @@ public class TurnEnd : MonoBehaviour
     [SerializeField] Renderer buttonRenderer;
 
     [SerializeField] Texture2D myTurn;
-    [SerializeField] Texture2D opponentTurn; 
+    [SerializeField] Texture2D opponentTurn;
+
+    void OnDisable()
+    {
+        Unsubscribe(); 
+    }
 
     void Start()
     {

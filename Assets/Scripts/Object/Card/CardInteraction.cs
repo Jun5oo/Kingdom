@@ -10,6 +10,11 @@ public class CardInteraction : BaseInteraction
     Vector3 selectedOffset;
     Vector3 selectedScale;
 
+    void OnDisable()
+    {
+        Clear(); 
+    }
+
     public override void Init(BaseObject baseObject)
     {
         base.Init(baseObject); 
@@ -85,6 +90,11 @@ public class CardInteraction : BaseInteraction
         originScale = prs.scale;
     }
     void OnDestroy()
+    {
+        Clear(); 
+    }
+
+    void Clear()
     {
         UnSubscribe();
         movement.OnMoved -= OnUpdatePRS;

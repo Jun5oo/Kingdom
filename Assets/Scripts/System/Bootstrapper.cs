@@ -47,7 +47,12 @@ public class Bootstrapper : MonoBehaviour
     UpgradeSystem upgradeSystem;
 
     RangeResolver rangeResolver;
-    ActionResolver actionResolver; 
+    ActionResolver actionResolver;
+
+    void OnDisable()
+    {
+        UnRegisterServices(); 
+    }
 
     void Awake()
     {
@@ -129,7 +134,47 @@ public class Bootstrapper : MonoBehaviour
 
         await Initialization();
     }
+    public void UnRegisterServices()
+    {
+        ServiceLocator.Unregister<PlayerManager>();
+        ServiceLocator.Unregister<DamageManager>();
+        ServiceLocator.Unregister<UIManager>();
+        ServiceLocator.Unregister<GridManager>();
+        ServiceLocator.Unregister<HandManager>();
+        ServiceLocator.Unregister<TokenManager>();
+        ServiceLocator.Unregister<PoolManager>();
 
+        ServiceLocator.Unregister<TurnSystem>(); 
+        ServiceLocator.Unregister<HoverSystem>();
+        ServiceLocator.Unregister<SelectionSystem>();
+        ServiceLocator.Unregister<ActionSystem>();
+            
+        ServiceLocator.Unregister<CardFactory>();
+        ServiceLocator.Unregister<TokenFactory>();
+        ServiceLocator.Unregister<ActionFactory>();
+        ServiceLocator.Unregister<PassiveFactory>();
+
+        ServiceLocator.Unregister<DrawManager>();
+        ServiceLocator.Unregister<DeckManager>();
+
+        ServiceLocator.Unregister<AIController>();
+
+        ServiceLocator.Unregister<CardTextureLoader>();
+        ServiceLocator.Unregister<TokenTextureLoader>();
+        ServiceLocator.Unregister<PrefabLoader>();
+        ServiceLocator.Unregister<SpriteLoader>();
+
+        ServiceLocator.Unregister<EventQueue>();
+        ServiceLocator.Unregister<CardDatabase>();
+
+        ServiceLocator.Unregister<SummonSystem>();
+        ServiceLocator.Unregister<UpgradeSystem>();
+
+        ServiceLocator.Unregister<HUDDisplayer>();
+
+        ServiceLocator.Unregister<RangeResolver>();
+        ServiceLocator.Unregister<ActionResolver>();
+    }
     public async UniTask Initialization()
     {
         playerManager.Init();

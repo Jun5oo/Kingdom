@@ -39,7 +39,8 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public CardData SourceObject { get { return sourceObject; } }
     public List<CardData> SourceObjects { get { return sourceObjects; } }
 
-    #endregion 
+    #endregion
+
 
     public void Init(CardData unitData, int playerID, CardData sourceObject = null, List<CardData> sourceObjects = null, int spawnLevel = 1)
     {
@@ -131,6 +132,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     {
         if (!buff.IsStackable() && buffs.Contains(buff))
             return; 
+
         buffs.Add(buff); 
     }
     public void RemoveBuff(IBuff buff) => buffs.Remove(buff);
@@ -147,7 +149,6 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     {
         return SourceObject as T; 
     }
-
     public List<T> GetSourceTokens<T>() where T: BaseObject
     {
         return SourceObjects as List<T>; 
@@ -155,28 +156,34 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     void OnDestroy()
     {
-        foreach(var buff in buffs)
+        Clear(); 
+    }
+
+    void Clear()
+    {
+        foreach (var buff in buffs)
         {
             if (buff == null)
-                continue; 
+                continue;
 
             RemoveBuff(buff);
         }
 
-        buffs.Clear(); 
+        buffs.Clear();
 
-        foreach(var passive in passives)
+        foreach (var passive in passives)
         {
             if (passive == null)
-                continue; 
-            
+                continue;
+
             passive.Deactivate();
         }
 
-        buffs.Clear(); 
+        buffs.Clear();
         passives.Clear();
-        sourceObjects.Clear(); 
+        sourceObjects.Clear();
 
         OnCPUpdate = null;
+
     }
 }

@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Celestial
   m_EditorClassIdentifier: 
   raceType: 0
-  raceName: "\uC5EC\uC2E0"
+  raceName: "\uCC9C\uC0AC"
   raceImage: {fileID: 2800000, guid: 856da0262f2a76c4ab6b8f0d57940629, type: 3}

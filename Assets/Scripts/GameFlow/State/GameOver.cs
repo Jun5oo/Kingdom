@@ -1,9 +1,10 @@
 using Cysharp.Threading.Tasks;
-using UnityEngine; 
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameOver : IGameState
 {
-    public UniTask Enter()
+    public async UniTask Enter()
     {
         Debug.Log("GameOver"); 
 
@@ -13,6 +14,8 @@ public class GameOver : IGameState
         hoverSystem.DisableSystem(); 
         selectionSystem.DisableSystem();
 
-        return UniTask.CompletedTask; 
+        await UniTask.Delay(System.TimeSpan.FromSeconds(5), DelayType.UnscaledDeltaTime, PlayerLoopTiming.Update);
+
+        SceneManager.LoadScene("Title");
     }
 }

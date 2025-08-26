@@ -17,6 +17,12 @@ public class ActionDisplayer : MonoBehaviour
 
     [SerializeField] Transform layout;
 
+    void OnDisable()
+    {
+        selectionSystem.onSelectedComplete -= Display;
+        selectionSystem.onDeselected -= Clear;
+    }
+
     void Start()
     {
         poolManager = ServiceLocator.Get<PoolManager>();

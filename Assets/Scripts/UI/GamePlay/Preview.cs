@@ -91,7 +91,9 @@ public class Preview : MonoBehaviour
                 description.text += $"<b>{entry.Key}</b>"; 
                 
                 if(count < abilityDict.Count - 1)
-                    description.text += ", "; 
+                    description.text += ", ";
+
+                layoutChildren[count].GetComponentInChildren<RawImage>().texture = background.texture; 
 
                 TextMeshProUGUI text = layoutChildren[count].GetComponentInChildren<TextMeshProUGUI>();
                 text.text = string.Empty; 

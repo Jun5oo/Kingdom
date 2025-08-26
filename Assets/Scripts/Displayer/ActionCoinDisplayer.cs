@@ -14,6 +14,12 @@ public class ActionCoinDisplayer : MonoBehaviour
     TurnSystem turnSystem; 
     ActionResourceSystem actionResourceSystem;
 
+    void OnDisable()
+    {
+        turnSystem.onTurnStarted -= OnUpdate;
+        actionResourceSystem.onActionResourceChanged -= OnUpdate;
+    }
+
     void Start()
     {
         turnSystem = ServiceLocator.Get<TurnSystem>(); 
