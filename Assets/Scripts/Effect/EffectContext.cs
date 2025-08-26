@@ -3,12 +3,17 @@ using System.Collections.Generic;
 public enum ContextKey
 {
     None, 
+
+    // Position 
     Selected,
-    Attacker,
-    AttackerPos, 
-    Defender,
-    DefenderPos
+    AllyPos, 
+    EnemyPos,
     
+    // BaseObject 
+    Ally, 
+    Enemy, 
+    AllySource, 
+    EnemySource, 
 }
 
 public struct EffectContext

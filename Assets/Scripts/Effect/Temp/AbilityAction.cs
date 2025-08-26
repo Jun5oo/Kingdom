@@ -4,30 +4,34 @@ using UnityEngine;
 
 public class AbilityAction : IAction
 {
-    public int OwnerID => throw new NotImplementedException();
+    public int OwnerID => actionOwner.OwnerID; 
 
-    public BaseObject Executor => throw new NotImplementedException();
+    BaseObject actionOwner; 
+    public BaseObject Executor => actionOwner;
 
-    public ActionType ActionType => throw new NotImplementedException();
+    public ActionType ActionType => ActionType.Summon;
 
-    public HighlightLayer HighlightLayer => throw new NotImplementedException();
+    public HighlightLayer HighlightLayer => HighlightLayer.Action;
 
-    public HighlightType HighlightType => throw new NotImplementedException();
+    public HighlightType HighlightType => HighlightType.SummonHighlight;
 
-    public ActionPerformer Performer => throw new NotImplementedException();
+    public ActionPerformer Performer => ActionPerformer.Player; 
 
     public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
-    public ResourceType ResourceType => throw new NotImplementedException();
+    public ResourceType ResourceType => ResourceType.Ability;
 
-    public int Cost => throw new NotImplementedException();
+    public int Cost => ability.Effects[0].EffectData.cost; 
+
+    Ability ability; 
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
     public AbilityAction(Ability ability, BaseObject actionOwner)
     {
-
+        this.actionOwner = actionOwner;
+        this.ability = ability; 
     }
 
     public void Enter()

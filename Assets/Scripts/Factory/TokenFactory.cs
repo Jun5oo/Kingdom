@@ -28,6 +28,7 @@ public class TokenFactory
         // 게임 오브젝트 인스턴스화 
         GameObject tokenObject = GameObject.Instantiate(prefab);
         tokenObject.SetActive(false);
+        tokenObject.name = cardData.name; 
 
         // Token Component가 있는지 확인 후 초기화 
         if (tokenObject.TryGetComponent<Token>(out Token token))

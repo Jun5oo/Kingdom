@@ -32,9 +32,10 @@ MonoBehaviour:
       \uBB34\uB364\uC744 \uC18C\uD658\uD569\uB2C8\uB2E4."
     trigger: 2
     target: 0
-    value: 0
     cost: 0
-    parameter: '{ resourceType : Ability, amount : 1 }'
+    value: 1
+    position: None
+    reward: Ability
   - effectType: 1
     groupID: 0
     abilityName: "\uC5B8\uB370\uB4DC \uC655\uC758 \uC800\uC8FC"
@@ -44,9 +45,10 @@ MonoBehaviour:
       \uBB34\uB364\uC744 \uC18C\uD658\uD569\uB2C8\uB2E4."
     trigger: 1
     target: 0
-    value: 0
     cost: 0
-    parameter: '{ id : 1004 , amount : 1, position : Destroyed }'
+    value: 1
+    position: AllyPos
+    reward: 1004
   - effectType: 5
     groupID: 1
     abilityName: "\uD76C\uC0DD"
@@ -54,9 +56,10 @@ MonoBehaviour:
       \uC218 \uC788\uC73C\uBA70 \uB370\uC2A4\uCE74\uC6B4\uD2B8\uB97C \uD68D\uB4DD\uD569\uB2C8\uB2E4."
     trigger: 0
     target: 2
-    value: 0
     cost: 0
-    parameter: '{ resourceType : Ability, amount : 1 }'
+    value: 1
+    position: Selected
+    reward: None
   - effectType: 5
     groupID: 2
     abilityName: "\uC77C\uC5B4\uB098\uB77C"
@@ -64,16 +67,18 @@ MonoBehaviour:
       \uC5B8\uB370\uB4DC \uC601\uC6C5\uC744 \uBD80\uD65C\uC2DC\uD0B5\uB2C8\uB2E4."
     trigger: 0
     target: 2
-    value: 0
     cost: 2
-    parameter: '{ tag : Graveyard }'
+    value: 1
+    position: Selected
+    reward: None
   - effectType: 1
     groupID: 2
     abilityName: "\uC77C\uC5B4\uB098\uB77C"
     description: "\uB370\uC2A4\uCE74\uC6B4\uD2B8\uB97C \uC18C\uBAA8\uD558\uC5EC \uC9C0\uC815\uD55C
       \uC5B8\uB370\uB4DC \uC601\uC6C5\uC744 \uBD80\uD65C\uC2DC\uD0B5\uB2C8\uB2E4."
     trigger: 0
-    target: 2
-    value: 0
+    target: 0
     cost: 2
-    parameter: '{ id : Source, amount : 1, position : Selected }'
+    value: 1
+    position: Selected
+    reward: Source

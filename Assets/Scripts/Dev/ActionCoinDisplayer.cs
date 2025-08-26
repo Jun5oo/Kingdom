@@ -1,31 +1,49 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class ActionCoinDisplayer : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI text;
+    [SerializeField] List<GameObject> actionCoins;
+    List<Renderer> renderers; 
 
-    ActionResourceSystem actionSystem;
+    [SerializeField] Sprite depleted;
+    [SerializeField] Sprite filled; 
 
-    [SerializeField] bool IsLocal;
-
-    int playerID = -1;
+    TurnSystem turnSystem; 
+    ActionResourceSystem actionResourceSystem;
 
     void Start()
     {
-        PlayerManager playerManager = ServiceLocator.Get<PlayerManager>();
-        actionSystem = ServiceLocator.Get<ActionResourceSystem>();
+        turnSystem = ServiceLocator.Get<TurnSystem>(); 
+        actionResourceSystem = ServiceLocator.Get<ActionResourceSystem>();
 
-        if (IsLocal)
-            playerID = playerManager.Local.PlayerID;
-        else
-            playerID = playerManager.Remote.PlayerID;
+        renderers = new List<Renderer>();
+        foreach(var gameObject in actionCoins)
+        {
+            var r = gameObject.GetComponent<Renderer>();
+            renderers.Add(r); 
+        }
 
+        turnSystem.onTurnStarted -= OnUpdate; 
+        turnSystem.onTurnStarted += OnUpdate;
+
+        actionResourceSystem.onActionResourceChanged -= OnUpdate;
+        actionResourceSystem.onActionResourceChanged += OnUpdate;
     }
 
-    private void Update()
+    void OnUpdate(int currentPlayerID)
     {
-        if (actionSystem != null)
-            text.text = actionSystem.GetCurrentResources(playerID).ToString();
+        int count = actionResourceSystem.GetCurrentResources(currentPlayerID);
+
+        if(count >= renderers.Count)
+        {
+            foreach (var renderer in renderers)
+                renderer.material.SetTexture("_BaseMap", filled.texture); 
+        }
+
+        else 
+            renderers[count].material.SetTexture("_BaseMap", depleted.texture);
     }
 }

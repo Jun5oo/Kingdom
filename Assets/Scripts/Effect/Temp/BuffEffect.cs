@@ -12,6 +12,8 @@ public class BuffEffect : IEffect
 
     public Trigger Trigger => effectData.trigger;
 
+    public EffectData EffectData => effectData; 
+
     public BuffEffect(EffectData effectData, BaseObject effectOwner)
     {
         this.effectData = effectData;

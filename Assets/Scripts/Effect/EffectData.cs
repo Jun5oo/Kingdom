@@ -9,8 +9,10 @@ public class EffectData
     public Trigger trigger;
     public Target target;
 
-    public int value;
     public int cost;
+    public int value;
 
-    public string parameter;
+    public string position;
+    public string reward; 
+
 }

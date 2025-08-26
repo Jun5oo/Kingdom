@@ -163,15 +163,11 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
         foreach(var buff in buffs)
             RemoveBuff(buff); 
 
-        buffs.Clear(); 
+        buffs.Clear();
 
-        /*S
-        foreach(var passive in passives)
-            passive.Deactivate();
+        foreach (var ability in abilities)
+            ability.Clear(); 
 
-        passives.Clear();
-        sourceObjects.Clear(); 
-        */ 
         OnCPUpdate = null;
     }
 }

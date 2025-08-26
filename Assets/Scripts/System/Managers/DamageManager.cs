@@ -138,7 +138,15 @@ public class DamageManager
         Vector2Int killerPosition = tokenManager.GetGridPositionOfToken(killer);
         Vector2Int victimPosition = tokenManager.GetGridPositionOfToken(victim);
 
-        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent { killer = killer, victim = victim , victimPosition = victimPosition, killerPosition = killerPosition }); 
+        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent 
+        { 
+            killer = killer, 
+            victim = victim , 
+            victimPosition = victimPosition, 
+            killerPosition = killerPosition,
+            killerSources = killer.SourceObjects,
+            victimSources = victim.SourceObjects
+        }); 
         
         OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
         OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);

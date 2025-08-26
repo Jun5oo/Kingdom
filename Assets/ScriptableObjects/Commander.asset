@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d6236a988be9974ab46e646357b42a4, type: 3}
+  m_Name: Commander
+  m_EditorClassIdentifier: 
+  undead: {fileID: 11400000, guid: d85e2ff8b97471c43a0b8882ef46e4d2, type: 2}
+  celestial: {fileID: 11400000, guid: 9b64e55e31b7dc54aaee2ab94c6db7b4, type: 2}

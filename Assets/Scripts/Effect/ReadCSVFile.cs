@@ -51,7 +51,8 @@ public static class ReadCSVFile
     const string TARGET = "Target";
     const string COST = "Cost";
     const string VALUE = "Value";
-    const string PARAM = "Parameter";
+    const string REWARD = "Reward";
+    const string POSITION = "Position"; 
     #endregion 
 
     [MenuItem("Tools/Import Cards from CSV")]
@@ -173,8 +174,10 @@ public static class ReadCSVFile
             effectSO.description = GetValue(effectHeaders, values, DESCRIPTION); 
             effectSO.target = ParseEnum<Target>(GetValue(effectHeaders, values, TARGET), Target.None);
             effectSO.trigger = ParseEnum<Trigger>(GetValue(effectHeaders, values, TRIGGER));
-            effectSO.cost = int.Parse(GetValue(effectHeaders, values, COST)); 
-            effectSO.parameter = (GetValue(effectHeaders, values, PARAM));
+            effectSO.cost = int.Parse(GetValue(effectHeaders, values, COST));
+            effectSO.value = int.Parse(GetValue(effectHeaders, values, VALUE)); 
+            effectSO.reward = GetValue(effectHeaders, values, REWARD);
+            effectSO.position = GetValue(effectHeaders, values, POSITION); 
 
             dataSO.Effects.Add(effectSO);
             EditorUtility.SetDirty(cardDict[cardID]);

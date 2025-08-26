@@ -29,6 +29,7 @@ MonoBehaviour:
     description: "\uB0B4 \uB2E4\uC74C \uD134\uC5D0 \uD30C\uAD34\uB429\uB2C8\uB2E4."
     trigger: 3
     target: 1
-    value: 0
     cost: 0
-    parameter: '{ duration : 1 }'
+    value: 1
+    position: AllyPos
+    reward: None

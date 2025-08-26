@@ -21,6 +21,7 @@ public class CardFactory
     {
         GameObject cardObject = GameObject.Instantiate(cardPrefab);
         cardObject.gameObject.SetActive(false); 
+        cardObject.gameObject.name = cardData.name;
 
         if(cardObject.TryGetComponent<Card>(out Card card))
         {

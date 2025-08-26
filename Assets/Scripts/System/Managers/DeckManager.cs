@@ -5,12 +5,8 @@ public class DeckManager : MonoBehaviour
 {
     PlayerManager playerManager;
 
-    // 임시적으로 정해진 고정덱 
-    [SerializeField] List<CardData> undeadDeck;
-    [SerializeField] List<CardData> celestialDeck;
-
-    [SerializeField] CardData undead;
-    [SerializeField] CardData celestial;
+    [SerializeField] DeckSO deck;
+    [SerializeField] CommanderSO commander; 
 
     private Dictionary<int, Queue<CardData>> playerDeck;
     private Dictionary<int, CardData> playerKing; 
@@ -33,9 +29,9 @@ public class DeckManager : MonoBehaviour
     {
         switch(race){
             case Race.Undead:
-                return new Queue<CardData>(undeadDeck);
+                return new Queue<CardData>(deck.undeadDeck);
             case Race.Celestial:
-                return new Queue<CardData>(celestialDeck);
+                return new Queue<CardData>(deck.celestialDeck);
         }
 
         Debug.LogError("Undefined race");
@@ -46,9 +42,9 @@ public class DeckManager : MonoBehaviour
         switch (race)
         {
             case Race.Undead:
-                return undead; 
+                return commander.undead; 
             case Race.Celestial:
-                return celestial; 
+                return commander.celestial;
         }
 
         Debug.LogError("Undefined race");

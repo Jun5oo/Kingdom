@@ -5,25 +5,25 @@ using UnityEngine;
 
 public class GainEffect : IEffect
 {
-    EffectType effectType;
-    Trigger trigger;
+    EffectData effectData;
+    BaseObject effectOwner;
+
     ResourceType resourceType;
 
-    BaseObject owner;
     int value; 
 
     public GainEffect(EffectData effectData, BaseObject effectOwner)
     {
-        this.effectType = effectData.effectType;    
-        this.trigger = effectData.trigger;
-
-        this.owner = effectOwner;
+        this.effectData = effectData; 
+        this.effectOwner = effectOwner;
 
         Debug.Log($"GainEffect Created: {resourceType}"); 
     }
 
-    public EffectType EffectType => effectType;
-    public Trigger Trigger => trigger;
+    public EffectType EffectType => effectData.effectType; 
+    public Trigger Trigger => effectData.trigger;
+
+    public EffectData EffectData => effectData;
 
     public List<Func<UniTask>> ToEvents(BaseObject owner, EffectContext context)
     {
@@ -31,7 +31,20 @@ public class GainEffect : IEffect
 
         events.Add(async () =>
         {
-
+            if (System.Enum.TryParse<ResourceType>(effectData.reward, true, out var result))
+            {
+                switch (result)
+                {
+                    case ResourceType.Action: 
+                        ActionResourceSystem actionResourceSystem = ServiceLocator.Get<ActionResourceSystem>();
+                        actionResourceSystem.Add(owner.OwnerID, effectData.value);
+                        break;
+                    case ResourceType.Ability:
+                        AbilityResourceSystem abilityResourceSystem = ServiceLocator.Get<AbilityResourceSystem>();
+                        abilityResourceSystem.Add(owner.OwnerID, effectData.value);
+                        break;
+                }
+            }
         });
 
         return events;

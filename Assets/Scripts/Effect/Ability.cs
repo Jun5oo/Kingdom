@@ -71,33 +71,54 @@ public class Ability
     {
         if (eventData.playerID == abilityOwner.OwnerID)
         {
-            EffectContext context = new EffectContext(); 
+            EffectContext context = new EffectContext();
+
+            if(abilityOwner is Token ownerToken)
+            {
+                TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
+                Vector2Int effectOwnerPosition = tokenManager.GetGridPositionOfToken(ownerToken);
+                context.Set<Vector2Int>(ContextKey.AllyPos, effectOwnerPosition);
+                context.Set<BaseObject>(ContextKey.Ally, abilityOwner); 
+            }
+
             Execute(context).Forget();
         }
 
-        Debug.Log($"{this} TurnStart 실행? "); 
+        Debug.Log($"{this} TurnStart 실행"); 
     }
     void TurnEnd(TurnEndEvent eventData)
     {
         if (eventData.playerID == abilityOwner.OwnerID)
         {
             EffectContext context = new EffectContext();
+
+            if (abilityOwner is Token ownerToken)
+            {
+                TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
+                Vector2Int effectOwnerPosition = tokenManager.GetGridPositionOfToken(ownerToken);
+                context.Set<Vector2Int>(ContextKey.AllyPos, effectOwnerPosition);
+                context.Set<BaseObject>(ContextKey.Ally, abilityOwner);
+            }
+
             Execute(context).Forget();
         }
 
-        Debug.Log($"{this} TurnEnd 실행? ");
+        Debug.Log($"{this} TurnEnd 실행");
     }
     void AllyDead(UnitDeadEvent eventData)
     {
         if(eventData.victim.OwnerID == abilityOwner.OwnerID)
         {
             EffectContext context = new EffectContext();
-            
-            // context.Set<BaseObject>(ContextKey.Attacker, eventData.killer);
-            // context.Set<BaseObject>(ContextKey.Defender, eventData.victim); 
+
+            context.Set<CardData>(ContextKey.Ally, eventData.victim.Data); 
+            context.Set<CardData>(ContextKey.Enemy, eventData.killer.Data);
+            context.Set<Vector2Int>(ContextKey.AllyPos, eventData.victimPosition); 
+            context.Set<Vector2Int>(ContextKey.EnemyPos, eventData.killerPosition);
             
             Execute(context).Forget();
-            Debug.Log($"{this} AllyDead 실행? ");
+
+            Debug.Log($"{this} AllyDead 실행");
         }
     }
     void EnemyDead(UnitDeadEvent eventData)
@@ -105,11 +126,14 @@ public class Ability
         if (eventData.victim.OwnerID != abilityOwner.OwnerID)
         {
             EffectContext context = new EffectContext();
-            // context.Set<BaseObject>(ContextKey.Attacker, eventData.killer);
-            // context.Set<BaseObject>(ContextKey.Defender, eventData.victim);
+
+            context.Set<CardData>(ContextKey.Ally, eventData.killer.Data);
+            context.Set<CardData>(ContextKey.Enemy, eventData.victim.Data);
+            context.Set<Vector2Int>(ContextKey.AllyPos, eventData.killerPosition);
+            context.Set<Vector2Int>(ContextKey.EnemyPos, eventData.victimPosition);
 
             Execute(context).Forget();
-            Debug.Log($"{this} EnemyDead 실행? ");
+            Debug.Log($"{this} EnemyDead 실행");
 
         }
     }
@@ -126,7 +150,7 @@ public class Ability
         await eventQueue.ExecuteAllAsync();
     }
 
-    void Clear()
+    public void Clear()
     {
         Unsubscribe(); 
     }

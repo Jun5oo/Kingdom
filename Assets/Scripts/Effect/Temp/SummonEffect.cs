@@ -7,59 +7,31 @@ public struct SummonParameter
 {
     public string id;
     public string position;
-    public int amount;
-    public string owner; 
 }
 
 public class SummonEffect : IEffect
 {
-    EffectData data;
+    EffectData effectData;
     BaseObject effectOwner;
 
     SummonParameter summonParam; 
 
     public SummonEffect(EffectData data, BaseObject baseObject)
     {
-        this.data = data;
+        this.effectData = data;
         this.effectOwner = baseObject;
 
         summonParam = new SummonParameter
         {
-            amount = 1,
+            id = string.Empty, 
             position = "Selected",
-            owner = "Self",
         }; 
-        
-        // Parameter Parsing 
-
-        try
-        {
-            if (!string.IsNullOrEmpty(data.parameter))
-            {
-                var p = JsonUtility.FromJson<SummonParameter>(data.parameter);
-
-                if (!string.IsNullOrEmpty(p.id))
-                    summonParam.id = p.id;
-                if (p.amount > 0)
-                    summonParam.amount = p.amount;
-                
-                if (!string.IsNullOrEmpty(p.position))
-                    summonParam.position = p.position;
-
-                if (!string.IsNullOrEmpty(p.owner))
-                    summonParam.owner = p.owner; 
-            }
-        }
-
-        catch (Exception ex)
-        {
-            Debug.LogWarning("SummonEffect Parsing 실패");
-            return; 
-        }
     }
 
     public EffectType EffectType => EffectType.Summon;
-    public Trigger Trigger => data.trigger; 
+    public Trigger Trigger => effectData.trigger;
+
+    public EffectData EffectData => effectData;
 
     public bool IsValid()
     {
@@ -74,53 +46,97 @@ public class SummonEffect : IEffect
         {
             CardDatabase database = ServiceLocator.Get<CardDatabase>();
             SummonSystem summonSystem = ServiceLocator.Get<SummonSystem>();
-            TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
 
-            string cardID = null;
-            // 적 유닛을 생성하는 것이 있다면 추후 이 부분 수정 필요 
-            Debug.Log($"발동하려는 이 SummonEffect의 Owner는 {effectOwner}입니다."); 
+            string cardID = string.Empty;
             Vector2Int targetPosition = -Vector2Int.one;
 
-            if (summonParam.position == "Destroyed")
+            // Parse Reward
+            try
             {
-                if (!context.TryGet<Vector2Int>(ContextKey.DefenderPos, out Vector2Int pos))
-                    Debug.Log("Destroyed Position을 찾을 수 없습니다.");
-                else 
-                    targetPosition = pos; 
-            }
-
-            else if (summonParam.position == "Selected")
-            {
-                if (!context.TryGet<Vector2Int>(ContextKey.DefenderPos, out Vector2Int pos))
-                    Debug.Log("Selected Position을 찾을 수 없습니다.");
-                else
-                    targetPosition = pos;
-            }
-
-            if (summonParam.id == "Source")
-            {
-                if (!context.TryGet<BaseObject>(ContextKey.Defender, out BaseObject obj))
-                    Debug.Log($"{obj}의 Source를 찾을 수 없습니다.");
-                else
-                    summonParam.id = obj.Data.ID; 
-
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(summonParam.id))
+                if (!string.IsNullOrEmpty(effectData.reward))
                 {
-                    cardID = summonParam.id;
-                    Debug.Log(summonParam.id); 
+                    if (database.GetCardData<CardData>(effectData.reward) != null)
+                        cardID = effectData.reward; 
+                    else
+                    {
+                        switch (effectData.reward)
+                        {
+                            case "AllySource":
+                                if (context.TryGet<List<CardData>>(ContextKey.Ally, out List<CardData> allySources))
+                                {
+                                    if(allySources != null && allySources.Count > 0)
+                                        summonParam.id = allySources[0].ID;
+                                }
+                                break;
+
+                            case "EnemySource":
+                                if (context.TryGet<List<CardData>>(ContextKey.EnemySource, out List<CardData> enemySources))
+                                {
+                                    if(enemySources != null && enemySources.Count > 0)
+                                        summonParam.id = enemySources[0].ID;
+                                }
+
+                                break;
+                        }
+                    }
                 }
             }
-
-            if (cardID == null)
+            catch (Exception ex)
             {
-                Debug.LogError("SummonEffect: CardID를 찾을 수 없습니다.");
+                Debug.LogWarning("SummonEffect Parsing 실패");
+                return;
+            }
+
+            // Parse Position 
+            try
+            {
+                if (!string.IsNullOrEmpty(effectData.position))
+                {
+                    switch (effectData.position)
+                    {
+                        case "Selected":
+                            if (context.TryGet<Vector2Int>(ContextKey.Selected, out Vector2Int pos))
+                                targetPosition = pos;
+                            break;
+                        case "AllyPos":
+                            if (context.TryGet<Vector2Int>(ContextKey.AllyPos, out Vector2Int allyPos))
+                                targetPosition = allyPos;
+                            break;
+                        case "EnemyPos":
+                            if (context.TryGet<Vector2Int>(ContextKey.EnemyPos, out Vector2Int enemyPos))
+                                targetPosition = enemyPos;
+                            break;
+                        default:
+                            Debug.LogError($"{effectOwner}의 SummonEffect: {effectData.position}을 찾을 수 없습니다.");
+                            return; 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("SummonEffect Parsing 실패");
+                return;
+            }
+    
+            if (cardID == string.Empty)
+            {
+                Debug.LogError($"{effectOwner}의 SummonEffect: 소환하려는 CardID를 찾을 수 없습니다.");
+                return; 
+            }
+
+            if (targetPosition.x < 0 || targetPosition.y < 0)
+            {
+                Debug.LogError($"{effectOwner}의 SummonEffect: TargetPosition이 잘못되었습니다.");
                 return;
             }
 
             CardData summonData = database.GetCardData<CardData>(cardID);
+
+            if (summonData == null)
+            {
+                Debug.LogError($"{effectOwner}의 SummonEffect: {cardID}의 summonData를 찾을 수 없습니다. "); 
+            }
+
             await summonSystem.Summon(effectOwner.OwnerID, summonData, targetPosition, effectOwner.Data);
         });
 
