@@ -1993,7 +1993,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 94a8098009a697a40990cb118b26771f, type: 2}
   playerManager: {fileID: 2103683941}
   uiManager: {fileID: 592437428}
-  gridManager: {fileID: 0}
+  gridManager: {fileID: 235094183}
   handManager: {fileID: 1347928980}
   hoverSystem: {fileID: 852600076}
   selectionSystem: {fileID: 2126896486}
