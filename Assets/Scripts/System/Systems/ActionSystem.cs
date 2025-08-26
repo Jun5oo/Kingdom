@@ -1,5 +1,7 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
@@ -40,6 +42,11 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
     }
 
+    public void EnterAI(IAction action)
+    {
+        currentAction = action;
+    }
+
     public async void Enter(IAction action)
     {
         // 진행할 Action 세팅 
@@ -68,7 +75,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         finally
         {
             if (succeeded)
-                OnActionComplete();
+                await OnActionComplete();
         }
 
     }
@@ -92,17 +99,15 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         Exit();
     }
 
-    void OnActionComplete()
+    public async UniTask OnActionComplete()
     {
-        if (currentAction?.Performer == ActionPerformer.System)
-        {
-            Exit();
-            return;
-        }
-
         IResourceSystem resourceSystem = (currentAction.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
         resourceSystem.Consume(currentAction.OwnerID, currentAction.Cost);
 
+        if (currentAction?.Performer == ActionPerformer.System)
+        {
+            await Task.Delay(500);
+        }
         Exit();
     }
 

@@ -75,6 +75,8 @@ public class AIController
                 {
                     actionCount--;
                     await aiSummonStrategy.SummonRandomPos(summon, validGridPosList);
+                    actionSystem.EnterAI(summon);
+                    await actionSystem.OnActionComplete();
                     continue;
                 }
                 else
@@ -91,6 +93,8 @@ public class AIController
             {
                 actionCount--;
                 await aiAttackStrategy.AttackRandomTarget(attackAction, validGridPosListForAttack);
+                actionSystem.EnterAI(attackAction);
+                await actionSystem.OnActionComplete();
                 continue;
             }
 
@@ -103,6 +107,8 @@ public class AIController
             {
                 actionCount--;
                 await aiResurrectionStrategy.ResurrectionUnit(resurrectionAction, validGridPosForResurrection);
+                actionSystem.EnterAI(resurrectionAction);
+                await actionSystem.OnActionComplete();
                 continue;
             }
 
@@ -110,6 +116,8 @@ public class AIController
             {
                 actionCount--;
                 await aiDivineShieldStrategy.DivineShieldUnit(divineShieldAction, validGridPosForDivineShield);
+                actionSystem.EnterAI(divineShieldAction);
+                await actionSystem.OnActionComplete();
                 continue;
             }
 
@@ -139,10 +147,14 @@ public class AIController
                 // 전체 action들이 가능한지 검사, action들을 다 수행했는지 검사 후 턴 넘김
                 case ActionType.Summon:
                     await aiSummonStrategy.SummonRandomPos(summonAction, validGridPosListForSummon);
+                    actionSystem.EnterAI(summonAction);
+                    await actionSystem.OnActionComplete();
                     // 현재 자신의 영역 중 유효한 그리드 찾아서 배치 (유닛이 없는 곳에 배치)
                     break;
                 case ActionType.Move:
                     await aiMoveStrategy.MoveRandomPos(moveAction, validGridPosListForMove);
+                    actionSystem.EnterAI(moveAction);
+                    await actionSystem.OnActionComplete();
                     // 현재 자신의 필드 내 유닛 중 하나를 선택하여 이동 (이동이 가능한지 체크 : 상하좌우)
                     break;
             }
