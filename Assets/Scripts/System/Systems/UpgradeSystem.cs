@@ -8,8 +8,8 @@ public class UpgradeSystem
     List<UpgradeRecipe> recipes;
 
     CardDatabase database;
-    SummonSystem summonSystem; 
-    TokenManager tokenManager; 
+    SummonSystem summonSystem;
+    TokenManager tokenManager;
 
     public void Init()
     {
@@ -18,14 +18,14 @@ public class UpgradeSystem
         recipes.Add(new UpgradeRecipe("동일한 1성 유닛 2개", 1, 2, 0, true));
         recipes.Add(new UpgradeRecipe("동일한 2성 유닛 2개", 2, 2, 0, true));
         recipes.Add(new UpgradeRecipe("서로 다른 2성 유닛 2개 및 코인 1개", 2, 2, 1, false));
-        recipes.Add(new UpgradeRecipe("하나의 2성 유닛 및 코인 3개", 2, 1, 3, false)); 
+        recipes.Add(new UpgradeRecipe("하나의 2성 유닛 및 코인 3개", 2, 1, 3, false));
 
         summonSystem = ServiceLocator.Get<SummonSystem>();
         tokenManager = ServiceLocator.Get<TokenManager>();
         database = ServiceLocator.Get<CardDatabase>();
     }
 
-    public List<UpgradeRecipe> GetValidRecipes(int playerID) 
+    public List<UpgradeRecipe> GetValidRecipes(int playerID)
     {
         // 현재 코인의 개수 
         var coin = ServiceLocator.Get<AbilityResourceSystem>().GetCurrentResources(playerID);
@@ -34,13 +34,13 @@ public class UpgradeSystem
 
         List<UpgradeRecipe> upgradable = new List<UpgradeRecipe>();
 
-        foreach(var recipe in recipes)
+        foreach (var recipe in recipes)
         {
             if (recipe.IsMatch(tokens))
-                upgradable.Add(recipe); 
+                upgradable.Add(recipe);
         }
 
-        return upgradable; 
+        return upgradable;
     }
 
     public async UniTask Upgrade(UpgradeRecipe recipe, List<Token> sources, int playerID, Vector2Int targetPosition, CardData caller)
@@ -53,43 +53,43 @@ public class UpgradeSystem
         }
 
         int baseLevel = sources[0].Level;
-        int nextLevel = baseLevel + 1; 
+        int nextLevel = baseLevel + 1;
 
-        if(nextLevel > 3)
+        if (nextLevel > 3)
         {
             Debug.Log("더 이상 업그레이드 할 수 없습니다.");
-            return; 
+            return;
         }
 
-        UnitCardData cardData = GetRandomValidOutput(sources[0].Race);
-        List<UnitCardData> dataSources = new List<UnitCardData>();  
+        CardData cardData = GetRandomValidOutput(sources[0].Race);
+        List<CardData> dataSources = new List<CardData>();
 
-        foreach(var source in sources)
-            dataSources.Add(source.UnitData); 
+        foreach (var source in sources)
+            dataSources.Add(source.Data);
 
-        if(recipe.ResourceRequired > 0)
+        if (recipe.ResourceRequired > 0)
         {
             IResourceSystem abilitySystem = ServiceLocator.Get<AbilityResourceSystem>();
-            abilitySystem.Consume(playerID, recipe.ResourceRequired); 
+            abilitySystem.Consume(playerID, recipe.ResourceRequired);
         }
 
-        await summonSystem.Summon(playerID, cardData, targetPosition, caller, dataSources, nextLevel); 
+        await summonSystem.Summon(playerID, cardData, targetPosition, caller, dataSources, nextLevel);
 
     }
 
-    public UnitCardData GetRandomValidOutput(Race race)
+    public CardData GetRandomValidOutput(Race race)
     {
-        List<UnitCardData> raceList = database.GetRaceCardList(race)
-            .OfType<UnitCardData>().
+        List<CardData> raceList = database.GetRaceCardList(race)
+            .OfType<CardData>().
             Where(u => u.Tag == UnitTag.Normal).
             ToList();
 
-        if(raceList.Count == 0)
+        if (raceList.Count == 0)
         {
-            Debug.Log($"해당 {race}종족의 카드 데이터를 찾을 수 없습니다."); 
+            Debug.Log($"해당 {race}종족의 카드 데이터를 찾을 수 없습니다.");
         }
 
         int idx = Random.Range(0, raceList.Count);
-        return raceList[idx]; 
+        return raceList[idx];
     }
 }

@@ -1,69 +1,84 @@
 using System;
+using System.Threading;
 using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
 {
     IAction currentAction;
 
+    GridSelection gridSelection;
+    CancellationTokenSource selectCts;
+
     ActionResourceSystem actionResourceSystem;
-    AbilityResourceSystem abilityResourceSystem; 
+    AbilityResourceSystem abilityResourceSystem;
 
     public void Init()
     {
         DisableSystem();
-        
+
         this.currentAction = null;
 
-        GridManager gridManager = ServiceLocator.Get<GridManager>();
-
-        gridManager.OnGridCellSelected -= Execute; 
-        gridManager.OnGridCellSelected += Execute;
-
         actionResourceSystem = new ActionResourceSystem();
-        abilityResourceSystem = new AbilityResourceSystem(); 
+        abilityResourceSystem = new AbilityResourceSystem();
 
-        actionResourceSystem.Init(); 
+        actionResourceSystem.Init();
         abilityResourceSystem.Init();
 
-        ServiceLocator.Register(actionResourceSystem); 
+        ServiceLocator.Register(actionResourceSystem);
         ServiceLocator.Register(abilityResourceSystem);
+
+        gridSelection = new GridSelection();
+        gridSelection.Init();
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            if(currentAction?.Performer != ActionPerformer.System)
+            if (currentAction?.Performer != ActionPerformer.System)
                 Exit();
         }
     }
 
-    public void Enter(IAction action)
+    public async void Enter(IAction action)
     {
-        currentAction = action; 
-        currentAction?.Enter();
+        // 진행할 Action 세팅 
+        currentAction = action;
+        selectCts?.Cancel();
+        selectCts = new CancellationTokenSource();
 
         currentAction.OnActionCanceled -= OnActionCanceled;
         currentAction.OnActionCanceled += OnActionCanceled;
-    }
-    public void Execute(Vector2Int gridPosition)
-    {
-        if(currentAction != null)
+
+        // 하이라이트 
+        currentAction?.Enter();
+
+        bool succeeded = false;
+
+        try
         {
-            currentAction.OnActionCanceled -= OnActionCanceled;
-
-            currentAction.OnActionComplete -= OnActionComplete;
-            currentAction.OnActionComplete += OnActionComplete;
-
-            currentAction?.Execute(gridPosition);
+            var pos = await gridSelection.WaitGridSelectionAsync(currentAction.Validation, currentAction.HighlightType, currentAction.HighlightLayer, selectCts.Token);
+            await currentAction.Execute(pos);
+            succeeded = true;
         }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Action이 취소되었습니다.");
+        }
+        finally
+        {
+            if (succeeded)
+                OnActionComplete();
+        }
+
     }
+
     public void Exit()
     {
-        if(currentAction != null)
+        if (currentAction != null)
         {
-            currentAction.OnActionCanceled -= OnActionCanceled; 
-            currentAction.OnActionComplete -= OnActionComplete;
+            selectCts.Cancel();
+            currentAction.OnActionCanceled -= OnActionCanceled;
             currentAction?.Exit();
             currentAction = null;
         }
@@ -74,18 +89,19 @@ public class ActionSystem : MonoBehaviour, IGameSystem
     void OnActionCanceled()
     {
         Debug.Log("Action Canceled");
-        Exit(); 
+        Exit();
     }
+
     void OnActionComplete()
     {
         if (currentAction?.Performer == ActionPerformer.System)
         {
             Exit();
-            return; 
+            return;
         }
 
         IResourceSystem resourceSystem = (currentAction.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
-        resourceSystem.Consume(currentAction.OwnerID, currentAction.Cost); 
+        resourceSystem.Consume(currentAction.OwnerID, currentAction.Cost);
 
         Exit();
     }
@@ -93,13 +109,13 @@ public class ActionSystem : MonoBehaviour, IGameSystem
     public bool CanPerformAction(IAction action, int playerID)
     {
         IResourceSystem resourceSystem = (action.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
-        return resourceSystem.IsEnoughResources(playerID, action.Cost); 
+        return resourceSystem.IsEnoughResources(playerID, action.Cost);
     }
 
     public int GetCurrentActionCount(int playerID) => actionResourceSystem.GetCurrentResources(playerID);
     public int GetCurrentAbilityCount(int playerID) => abilityResourceSystem.GetCurrentResources(playerID);
-    public void ResetActionCount(int playerID) => actionResourceSystem.ResetResources(playerID); 
-   
-    public void EnableSystem() => enabled = true; 
+    public void ResetActionCount(int playerID) => actionResourceSystem.ResetResources(playerID);
+
+    public void EnableSystem() => enabled = true;
     public void DisableSystem() => enabled = false;
 }

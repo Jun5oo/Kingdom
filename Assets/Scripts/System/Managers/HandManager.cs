@@ -65,10 +65,10 @@ public class HandManager : MonoBehaviour
             return; 
         }
 
-        card.transform.position = playerHands[playerID].Deck.position;
+        // card.transform.position = playerHands[playerID].Deck.position;
         card.transform.parent = playerHands[playerID].CardParent.transform;
 
-        card.gameObject.SetActive(true); 
+        // card.gameObject.SetActive(true); 
 
         CardAlignmentOnBoardSide(playerID, card);
   
@@ -221,9 +221,10 @@ public class HandManager : MonoBehaviour
 
         PRS prs = new PRS(pos, rotation, scale);
 
-        card.GetComponent<CardMovement>().MoveTransform(prs, 0f, false);
-        hand[idx] = card; 
+        card.GetComponent<CardMovement>().MoveTransform(prs, 0f, false, () => { card.gameObject.SetActive(true); });
+        hand[idx] = card;
     }
+
     public void RemoveFromSlot(int playerID, Card card)
     {
         Card[] hand = playerID == playerManager.Local.PlayerID ? _localHand : _remoteHand;
@@ -239,7 +240,6 @@ public class HandManager : MonoBehaviour
             if (hand[i] == card)
             {
                 hand[i] = null;
-                // card.gameObject.SetActive(false); 
                 break; 
             }
         }

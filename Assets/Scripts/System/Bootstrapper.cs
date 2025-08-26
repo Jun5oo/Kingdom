@@ -46,6 +46,9 @@ public class Bootstrapper : MonoBehaviour
     SummonSystem summonSystem;
     UpgradeSystem upgradeSystem;
 
+    RangeResolver rangeResolver;
+    ActionResolver actionResolver; 
+
     void Awake()
     {
         RegisterServices();
@@ -80,6 +83,9 @@ public class Bootstrapper : MonoBehaviour
 
         summonSystem = new SummonSystem();
         upgradeSystem = new UpgradeSystem();
+
+        rangeResolver = new RangeResolver();
+        actionResolver = new ActionResolver(); 
 
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(damageManager);
@@ -117,6 +123,9 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(upgradeSystem);
 
         ServiceLocator.Register(hudDisplayer);
+
+        ServiceLocator.Register(rangeResolver);
+        ServiceLocator.Register(actionResolver); 
 
         await Initialization();
     }

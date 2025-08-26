@@ -9,7 +9,7 @@ public class SummonAction : IAction
     private ActionType actionType;
     private HighlightLayer highlightLayer;
     private HighlightType highlightType;
-   
+
     public ActionType ActionType { get { return actionType; } }
     public HighlightLayer HighlightLayer { get { return highlightLayer; } }
     public HighlightType HighlightType { get { return highlightType; } }
@@ -19,18 +19,18 @@ public class SummonAction : IAction
     GridManager gridManager;
     HandManager handManager;
     TokenManager tokenManager;
-    SummonSystem summonSystem; 
-    
-    UnitCard card;
+    SummonSystem summonSystem;
+
+    Card card;
     ActionPerformer performer;
 
     Vector2Int targetPosition;
     public List<Vector2Int> ValidPositions { get; private set; }
 
-    public event Action OnActionComplete;
     public event Action OnActionCanceled;
+    public event Action OnActionComplete;
 
-    int currentCost; 
+    int currentCost;
     public int Cost { get { return currentCost; } }
 
     public SummonState CurrentSummonState { get; private set; } = SummonState.Prepare;
@@ -38,12 +38,14 @@ public class SummonAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return card.OwnerID; } }
 
-    public BaseObject Executor => card; 
+    public BaseObject Executor => card;
 
-    public SummonAction(UnitCard card, ActionPerformer performer)
+    public Predicate<Vector2Int> Validation => CanSummonAt;
+
+    public SummonAction(Card card, ActionPerformer performer)
     {
         actionType = ActionType.Summon;
-        highlightLayer = HighlightLayer.Action; 
+        highlightLayer = HighlightLayer.Action;
         highlightType = HighlightType.SummonHighlight;
 
         this.gridManager = ServiceLocator.Get<GridManager>();
@@ -68,79 +70,77 @@ public class SummonAction : IAction
 
         currentCost = 1;
 
-        resourceType = ResourceType.Action; 
+        resourceType = ResourceType.Action;
     }
     public void Enter()
     {
-        if(card == null)
+        if (card == null)
         {
-            Debug.LogError("The subject of the action is not exits");
-            return; 
+            Debug.LogError("null 인 카드입니다.");
+            return;
         }
 
-        gridManager?.HighlightGridCells((Vector2Int gridPosition) => CanSummonAt(gridPosition), highlightType, highlightLayer); 
     }
     public async UniTask Execute(Vector2Int targetPosition)
     {
         this.targetPosition = targetPosition;
-        await Transition(SummonState.Prepare); 
+        await Transition(SummonState.Prepare);
     }
     public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
     public bool IsValid()
     {
-        return true; 
-        // return ServiceLocator.Get<ActionSystem>().GetCurrentActionCount() >= currentCost;  
+        return true;
     }
     async UniTask Transition(SummonState state)
     {
         switch (state)
         {
             case SummonState.Prepare:
-                await Prepare(); 
+                await Prepare();
                 break;
             case SummonState.Summon:
-                await Summon(); 
+                await Summon();
                 break;
             case SummonState.Placing:
-                await Placing(); 
+                await Placing();
                 break;
             case SummonState.Done:
                 CurrentSummonState = SummonState.Done;
-                Done(); 
-                break; 
+                Done();
+                break;
         }
-    } 
+    }
     async UniTask Prepare()
     {
         Exit();
 
-        int playerID = card.OwnerID; 
-        
+        int playerID = card.OwnerID;
+
         handManager.RemoveCardFromHand(playerID, card);
-        
-        CardMovement cardMovement = card.GetComponent<CardMovement>();  
+
+        CardMovement cardMovement = card.GetComponent<CardMovement>();
         PRS prs = cardMovement.PRS;
-        prs.position += Vector3.forward * 2f;
+        prs.position += Vector3.up * 2f;
 
-        var taskCompletion = new UniTaskCompletionSource(); 
+        var taskCompletion = new UniTaskCompletionSource();
 
-        cardMovement.MoveTransform(prs, 0.5f, false, () => 
+        cardMovement.MoveTransform(prs, 0.5f, false, () =>
         {
             card.gameObject.SetActive(false);
             taskCompletion.TrySetResult();
         });
 
-        await taskCompletion.Task; 
+        await taskCompletion.Task;
         await Transition(SummonState.Summon);
     }
     async UniTask Summon()
     {
-        await summonSystem.Summon(card.OwnerID, card.UnitData, targetPosition); 
+        await summonSystem.Summon(card.OwnerID, card.Data, targetPosition);
         await Transition(SummonState.Placing);
     }
     async UniTask Placing()
     {
-        await Transition(SummonState.Done); 
+        await Transition(SummonState.Done);
     }
     void Done()
     {
@@ -166,19 +166,19 @@ public class SummonAction : IAction
         {
             foreach (var validPos in ValidPositions)
             {
-                Vector2Int availablePos = gridPos + validPos; 
+                Vector2Int availablePos = gridPos + validPos;
                 if (!tokenManager.IsTokenAtGridPosition(availablePos) && availablePos == pos)
                     return true;
             }
 
-            return false; 
+            return false;
         }
 
         else
         {
             Debug.LogError("왕 토큰이 존재하지 않습니다!");
             Exit();
-            OnActionCanceled?.Invoke(); 
+            OnActionCanceled?.Invoke();
             return false;
         }
     }

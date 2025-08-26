@@ -12,16 +12,16 @@ public interface IAction
     public HighlightLayer HighlightLayer { get; }
     public HighlightType HighlightType { get; }
     public ActionPerformer Performer { get; }
-
+    public Predicate<Vector2Int> Validation { get; }
     public ResourceType ResourceType { get; }
 
     public void Enter();
     public void Exit();
-    public UniTask Execute(Vector2Int targetPosition); 
+    public UniTask Execute(Vector2Int targetPosition);
     public bool IsValid();
 
     public event Action OnActionCanceled;
-    public event Action OnActionComplete; 
+    public event Action OnActionComplete;
 
     public int Cost { get; }
 }

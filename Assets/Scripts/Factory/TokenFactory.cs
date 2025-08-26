@@ -16,7 +16,7 @@ public class TokenFactory
 
         tokenPrefab = await prefabLoader.LoadPrefabAsync<Token>(); 
     }
-    public async UniTask<Token> CreateToken(UnitCardData unitData, int playerID, CardData sourceObject = null, List<UnitCardData> sourceObjects = null, int spawnLevel = 1)
+    public async UniTask<Token> CreateToken(CardData cardData, int playerID, CardData sourceObject = null, List<CardData> sourceObjects = null, int spawnLevel = 1)
     {
         GameObject prefab = tokenPrefab; 
 
@@ -24,11 +24,11 @@ public class TokenFactory
         tokenObject.SetActive(false);
 
         if (tokenObject.TryGetComponent<Token>(out Token token))
-            token.Init(unitData, playerID, sourceObject, sourceObjects, spawnLevel);
+            token.Init(cardData, playerID, sourceObject, sourceObjects, spawnLevel);
 
-        VisualTexture textures = await textureLoader.LoadAllTextures(unitData);
+        VisualTexture textures = await textureLoader.LoadAllTextures(cardData);
 
-        GameObject statusPrefab = (unitData.Tag != UnitTag.King) ? await prefabLoader.LoadPrefabAsync<NumberStatusPresenter>() : await prefabLoader.LoadPrefabAsync<BarStatusPresenter>(); 
+        GameObject statusPrefab = (cardData.Tag != UnitTag.King) ? await prefabLoader.LoadPrefabAsync<NumberStatusPresenter>() : await prefabLoader.LoadPrefabAsync<BarStatusPresenter>(); 
 
         if(statusPrefab == null)
         {
@@ -51,7 +51,7 @@ public class TokenFactory
         }
 
         statusInstance.transform.SetParent(tokenView.Canvas.transform, false);
-        tokenView.Init(textures, presenter, unitData.GetCP(token.Level), unitData.GetMovement(token.Level));
+        tokenView.Init(textures, presenter, cardData.CP[token.Level - 1], cardData.MoveRange[token.Level - 1]);
 
         tokenObject.SetActive(true); 
         

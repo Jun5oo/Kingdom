@@ -9,25 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48180781445a7944290bb149b399f937, type: 3}
+  m_Script: {fileID: 11500000, guid: e41f85cfad645d349b42903fe1b3da66, type: 3}
   m_Name: 1004
   m_EditorClassIdentifier: 
-  ID: 1004
-  Name: Graveyard
-  Description: Graveyard
-  Race: 1
-  Tag: 3
-  MaxLevel: 1
-  CP: 000000000000000000000000
-  AttackType: 000000000000000000000000
-  AttackRange: 000000000000000000000000
-  MoveType: 000000000000000000000000
-  MoveRange: 000000000000000000000000
-  Effects:
-  - effectType: 4
-    trigger: 3
-    target: 0
-    value: 1
-    parameter1: 
-    parameter2: 
-    groupID: 0
+  id: 1004
+  cardName: "\uBB34\uB364"
+  race: 1
+  tag: 3
+  maxLevel: 1
+  cp: 000000000000000000000000
+  attackType: 000000000000000000000000
+  attackRange: 000000000000000000000000
+  moveType: 000000000000000000000000
+  moveRange: 000000000000000000000000
+  action: 
+  passives: 0300000000000000

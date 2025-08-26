@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.InputSystem;
 
 public class PrefabLoader
 {
@@ -15,7 +16,7 @@ public class PrefabLoader
     // 오브젝트 타입을 통해 Prefab을 찾는 캐시 
     Dictionary<Type, GameObject> typeCache;
     // Addressable Asset key를 통해서 Prefab을 찾는 캐시 
-    Dictionary<string, GameObject> stringCache; 
+    Dictionary<string, GameObject> stringCache;
 
     public PrefabLoader()
     {
@@ -32,23 +33,32 @@ public class PrefabLoader
         prefabDictionary.Add(typeof(BarStatusPresenter), "barStatusPrefab");
 
         typeCache = new Dictionary<Type, GameObject>();
-        stringCache = new Dictionary<string, GameObject>(); 
+        stringCache = new Dictionary<string, GameObject>();
     }
 
     // MonoBehaviour 타입의 오브젝트 Prefab만 찾을 수 있음. 
     public async UniTask<GameObject> LoadPrefabAsync<T>() where T : MonoBehaviour
     {
-        if(typeCache.TryGetValue(typeof(T), out GameObject cached))
-            return cached; 
+        if (typeCache.TryGetValue(typeof(T), out GameObject cached))
+            return cached;
 
-        if (!prefabDictionary.TryGetValue(typeof(T), out string key)){
+        if (!prefabDictionary.TryGetValue(typeof(T), out string key))
+        {
             Debug.LogError("No prefab was found");
-            return null; 
+            return null;
         }
 
-        GameObject prefab = await Addressables.LoadAssetAsync<GameObject>(key);
-        typeCache.Add(typeof(T), prefab); 
-        return prefab; 
+        var handle = Addressables.LoadAssetAsync<GameObject>(key);
+        var prefab = await handle.ToUniTask(cancellationToken: default);
+
+        if (prefab != null)
+            typeCache.Add(typeof(T), prefab);
+        else
+            Debug.LogError($"{prefab}을 Load할 수 없습니다.");
+
+        Addressables.Release(handle);
+
+        return prefab;
     }
 
     // MonoBehaviour 타입의 오브젝트가 아닌 Prefab을 찾기 위한 함수 
@@ -57,8 +67,17 @@ public class PrefabLoader
         if (stringCache.TryGetValue(addressKey, out GameObject cached))
             return cached;
 
-        GameObject prefab = await Addressables.LoadAssetAsync<GameObject>(addressKey); 
-        stringCache.Add(addressKey, prefab);
-        return prefab; 
+        var handle = Addressables.LoadAssetAsync<GameObject>(addressKey);
+        var prefab = await handle.ToUniTask(cancellationToken: default);
+
+        if (prefab != null)
+            stringCache.Add(addressKey, prefab);
+
+        else
+            Debug.LogError($"{prefab}을 Load할 수 없습니다.");
+
+        Addressables.Release(handle);
+
+        return prefab;
     }
 }

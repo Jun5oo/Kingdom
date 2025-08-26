@@ -9,16 +9,16 @@ public class SummonSystem
 
     TokenManager tokenManager;
     TokenFactory tokenFactory;
-    GridManager gridManager; 
+    GridManager gridManager;
 
     public void Init()
     {
-        tokenManager = ServiceLocator.Get<TokenManager>(); 
+        tokenManager = ServiceLocator.Get<TokenManager>();
         tokenFactory = ServiceLocator.Get<TokenFactory>();
         gridManager = ServiceLocator.Get<GridManager>();
     }
 
-    public async UniTask Summon(int playerID, UnitCardData unitCardData, Vector2Int targetPosition, CardData sourceObject = null, List<UnitCardData> sourceObjects = null, int spawnLevel = 1)
+    public async UniTask Summon(int playerID, CardData cardData, Vector2Int targetPosition, CardData sourceObject = null, List<CardData> sourceObjects = null, int spawnLevel = 1)
     {
         if (tokenManager.IsTokenAtGridPosition(targetPosition))
         {
@@ -30,14 +30,14 @@ public class SummonSystem
         Quaternion rotation = Quaternion.Euler(90f, 0f, 0f);
         Vector3 scale = Vector3.one;
 
-        PRS prs = new PRS(position, rotation, scale); 
+        PRS prs = new PRS(position, rotation, scale);
 
         // 1. 생성 
-        Token created = await tokenFactory.CreateToken(unitCardData, playerID, sourceObject, sourceObjects, spawnLevel);
+        Token created = await tokenFactory.CreateToken(cardData, playerID, sourceObject, sourceObjects, spawnLevel);
         created.transform.position = position + Vector3.up * 10f;
         created.transform.rotation = rotation;
 
-        if(created.Tag == UnitTag.King)
+        if (created.Tag == UnitTag.King)
             tokenManager.AddKingToken(playerID, created);
 
         tokenManager.PlaceTokenTo(created, targetPosition);
@@ -49,10 +49,10 @@ public class SummonSystem
         {
             movement.MoveTransform(prs, 0.5f, false, () =>
             {
-                task.TrySetResult(); 
+                task.TrySetResult();
             });
 
-            await task.Task; 
+            await task.Task;
         }
     }
 }

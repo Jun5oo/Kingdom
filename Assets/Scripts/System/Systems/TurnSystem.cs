@@ -32,6 +32,8 @@ public class TurnSystem : IGameSystem
     public Action OnPlayerTurnEnded;
     public Action OnOpponentTurnEnded;
 
+    public Action<int> onTurnStarted; 
+
     public void Init()
     {
         this.playerManager = ServiceLocator.Get<PlayerManager>();
@@ -59,7 +61,8 @@ public class TurnSystem : IGameSystem
         if (TurnState == TurnState.Unable)
             return;
 
-        actionSystem.ResetActionCount(currentPlayerID); 
+        actionSystem.ResetActionCount(currentPlayerID);
+        onTurnStarted?.Invoke(currentPlayerID);
 
         if (playerManager.Local.PlayerID == currentPlayerID)
             uiManager.OnNotification("내 턴", () => 
