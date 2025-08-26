@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class PrefabLoader
 {
@@ -12,6 +13,8 @@ public class PrefabLoader
 
     // 오브젝트 타입을 통해서 Addressable Asset 키를 찾는 딕셔너리 
     Dictionary<Type, string> prefabDictionary;
+
+    Dictionary<string, AsyncOperationHandle<GameObject>> keyHandles;
 
     // 오브젝트 타입을 통해 Prefab을 찾는 캐시 
     Dictionary<Type, GameObject> typeCache;
@@ -34,6 +37,8 @@ public class PrefabLoader
 
         typeCache = new Dictionary<Type, GameObject>();
         stringCache = new Dictionary<string, GameObject>();
+
+        keyHandles = new Dictionary<string, AsyncOperationHandle<GameObject>>();
     }
 
     // MonoBehaviour 타입의 오브젝트 Prefab만 찾을 수 있음. 
@@ -56,7 +61,8 @@ public class PrefabLoader
         else
             Debug.LogError($"{prefab}을 Load할 수 없습니다.");
 
-        Addressables.Release(handle);
+        keyHandles.Add(key, handle);
+        // Addressables.Release(handle);
 
         return prefab;
     }
@@ -76,8 +82,23 @@ public class PrefabLoader
         else
             Debug.LogError($"{prefab}을 Load할 수 없습니다.");
 
-        Addressables.Release(handle);
+        keyHandles.Add(addressKey, handle);
+
+        // Addressables.Release(handle);
 
         return prefab;
+    }
+
+    public void ReleaseAll()
+    {
+        foreach (var k in keyHandles)
+        {
+            if (k.Value.IsValid())
+                Addressables.Release(k.Value);
+        }
+
+        keyHandles.Clear();
+        typeCache.Clear();
+        stringCache.Clear();
     }
 }
