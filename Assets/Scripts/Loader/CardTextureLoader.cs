@@ -109,4 +109,8 @@ public class CardTextureLoader : TextureLoader
         return new VisualTexture(art, artMask, frame, background, back);
     }
 
+    public void ReleaseAll()
+    {
+
+    }
 }

@@ -51,7 +51,7 @@ public class Bootstrapper : MonoBehaviour
 
     void OnDisable()
     {
-        UnRegisterServices(); 
+        // UnRegisterServices(); 
     }
 
     void Awake()
@@ -128,7 +128,6 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(upgradeSystem);
 
         ServiceLocator.Register(hudDisplayer);
-
         ServiceLocator.Register(rangeResolver);
         ServiceLocator.Register(actionResolver); 
 

@@ -2002,6 +2002,7 @@ MonoBehaviour:
   deckManager: {fileID: 2052858407}
   database: {fileID: 1897200703}
   hudDisplayer: {fileID: 843241604}
+  actionDisplayer: {fileID: 1978112988}
 --- !u!4 &903121663
 Transform:
   m_ObjectHideFlags: 0

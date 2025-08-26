@@ -14,6 +14,7 @@ public class CardFactory
         prefabLoader = ServiceLocator.Get<PrefabLoader>();
 
         cardPrefab = await prefabLoader.LoadPrefabAsync<Card>();
+        Debug.Log($"[CardFactory] cardPrefab loaded? {cardPrefab != null}"); // 안전 로그
 
         Debug.Log("CardFactory Initialized");
     }
