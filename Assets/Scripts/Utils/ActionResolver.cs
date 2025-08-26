@@ -17,8 +17,10 @@ public class ActionResolver
                     actions.Add(ActionType.Move);
                 if (token.Data.AttackType[token.Level-1] != RangeType.None)
                     actions.Add(ActionType.Attack);
+                /*
                 if (token.Data.Tag == UnitTag.King)
                     actions.Add(ActionType.Upgrade); 
+                */ 
                 break; 
         }
 
