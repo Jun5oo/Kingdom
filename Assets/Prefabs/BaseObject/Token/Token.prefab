@@ -201,7 +201,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2989032104835819154}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
   m_Name: 
@@ -326,7 +326,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentLevel: 0
   currentCP: 0
-  ownerID: 0
+  attackVectors: []
+  moveVectors: []
   movement: {fileID: 5961579675541900130}
   interaction: {fileID: 8842170041966107595}
   view: {fileID: 6569040969496006808}

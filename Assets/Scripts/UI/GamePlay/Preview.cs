@@ -99,7 +99,7 @@ public class Preview : MonoBehaviour
                 text.text = string.Empty; 
 
                 text.text += $"<b>{entry.Key}</b>";
-                text.text += "\n";
+                text.text += "\n\n";
                 text.text += entry.Value;
 
                 layoutChildren[count].SetActive(true);
