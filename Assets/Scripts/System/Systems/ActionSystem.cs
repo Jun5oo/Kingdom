@@ -7,10 +7,18 @@ public class ActionSystem : MonoBehaviour, IGameSystem
     IAction currentAction;
 
     GridSelection gridSelection;
+    HighlightResolver highlightResolver; 
+
     CancellationTokenSource selectCts; 
 
     ActionResourceSystem actionResourceSystem;
     AbilityResourceSystem abilityResourceSystem; 
+
+    void Awake()
+    {
+        // 처음 게임이 시작할 때, 취소가 되서는 안됨. 
+        DisableSystem(); 
+    }
 
     public void Init()
     {
@@ -28,15 +36,16 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         ServiceLocator.Register(abilityResourceSystem);
 
         gridSelection = new GridSelection();
-        gridSelection.Init(); 
+        gridSelection.Init();
+
+        highlightResolver = new HighlightResolver(); 
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Mouse1))
         {
-            if(currentAction?.Performer != ActionPerformer.System)
-                Exit();
+            Exit(); 
         }
     }
 
@@ -50,15 +59,15 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         currentAction.OnActionCanceled -= OnActionCanceled;
         currentAction.OnActionCanceled += OnActionCanceled;
 
-        // 하이라이트 
-        currentAction?.Enter();
-
         bool succeeded = false; 
 
         try
         {
-            var pos = await gridSelection.WaitGridSelectionAsync(currentAction.Validation, currentAction.HighlightType, currentAction.HighlightLayer, selectCts.Token);
+            var ctx = highlightResolver.Resolve(currentAction.ActionType); 
+            var pos = await gridSelection.WaitGridSelectionAsync(currentAction.Validation, ctx, selectCts.Token);
+
             await currentAction.Execute(pos);
+            
             succeeded = true; 
         }
         catch (OperationCanceledException)
@@ -94,7 +103,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
 
     void OnActionComplete()
     {
-        if (currentAction?.Performer == ActionPerformer.System)
+        if (!enabled)
         {
             Exit();
             return; 

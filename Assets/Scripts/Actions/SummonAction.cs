@@ -2,27 +2,18 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class SummonAction : IAction
 {
     private ActionType actionType;
-    private HighlightLayer highlightLayer;
-    private HighlightType highlightType;
-   
     public ActionType ActionType { get { return actionType; } }
-    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
-    public HighlightType HighlightType { get { return highlightType; } }
-    public ActionPerformer Performer { get { return performer; } }
 
     // References 
-    GridManager gridManager;
     HandManager handManager;
     TokenManager tokenManager;
     SummonSystem summonSystem; 
-    
+
     Card card;
-    ActionPerformer performer;
 
     Vector2Int targetPosition;
     public List<Vector2Int> ValidPositions { get; private set; }
@@ -38,23 +29,19 @@ public class SummonAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return card.OwnerID; } }
 
-    public BaseObject Executor => card;
+    public BaseObject BaseObject => card;
 
     public Predicate<Vector2Int> Validation => CanSummonAt;
 
-    public SummonAction(Card card, ActionPerformer performer)
+    public SummonAction(Card card)
     {
         actionType = ActionType.Summon;
-        highlightLayer = HighlightLayer.Action; 
-        highlightType = HighlightType.SummonHighlight;
 
-        this.gridManager = ServiceLocator.Get<GridManager>();
         this.handManager = ServiceLocator.Get<HandManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>();
         this.summonSystem = ServiceLocator.Get<SummonSystem>();
 
         this.card = card;
-        this.performer = performer;
 
         ValidPositions = new List<Vector2Int>
         {
@@ -86,7 +73,10 @@ public class SummonAction : IAction
         this.targetPosition = targetPosition;
         await Transition(SummonState.Prepare); 
     }
-    public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
+    public void Exit()
+    {
+
+    }
     public bool IsValid()
     {
         return true; 

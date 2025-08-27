@@ -29,7 +29,7 @@ public class AIResurrectionStrategy
 
         if (tokenManager.TryGetKingTokenFrom(currentPlayerID, out Token kingToken))
         {
-            resurrectionAction = actionFactory.CreateAction(ActionType.Resurrection, kingToken, ActionPerformer.System) as ResurrectionAction;
+            resurrectionAction = actionFactory.CreateAction(ActionType.Resurrection, kingToken) as ResurrectionAction;
         }
         else
         {

@@ -6,19 +6,11 @@ using UnityEngine;
 public class ResurrectionAction : IAction
 {
     ActionType actionType;
-    HighlightLayer highlightLayer; 
-    HighlightType highlightType;
-    ActionPerformer performer;
-
     public ActionType ActionType {get { return actionType;}}
-    public HighlightLayer HighlightLayer { get { return highlightLayer;}}   
-    public HighlightType HighlightType {  get { return highlightType;}}
-    public ActionPerformer Performer {  get { return performer;}}
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
-    GridManager gridManager;
     TokenManager tokenManager;
     SummonSystem summonSystem; 
 
@@ -33,18 +25,14 @@ public class ResurrectionAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return actionOwner.OwnerID; } }
 
-    public BaseObject Executor => actionOwner;
+    public BaseObject BaseObject => actionOwner;
 
     public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
-    public ResurrectionAction(Token token, ActionPerformer performer)
+    public ResurrectionAction(Token token)
     {
         actionType = ActionType.Resurrection;
-        highlightLayer = HighlightLayer.Action;
-        highlightType = HighlightType.SummonHighlight;
-        this.performer = performer;
 
-        this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
         this.summonSystem  = ServiceLocator.Get<SummonSystem>();
 
@@ -57,6 +45,7 @@ public class ResurrectionAction : IAction
 
     public void Enter()
     {
+        /*
         gridManager.HighlightGridCells((Vector2Int gridPosition) => 
         {
             if (!tokenManager.IsTokenAtGridPosition(gridPosition))
@@ -75,7 +64,7 @@ public class ResurrectionAction : IAction
             return false; 
 
         }, HighlightType, HighlightLayer);
-
+        */ 
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
@@ -87,7 +76,10 @@ public class ResurrectionAction : IAction
         await eventQueue.ExecuteAllAsync(); 
     }
 
-    public void Exit() => gridManager.UnhighlightGridCells(HighlightLayer);
+    public void Exit()
+    {
+        // gridManager.UnhighlightGridCells(HighlightLayer);
+    }
     public bool IsValid()
     {
         return true; 

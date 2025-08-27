@@ -5,21 +5,15 @@ using UnityEngine;
 public class DivineShieldAction : IAction
 {
     ActionType actionType;
-    HighlightLayer highlightLayer;
-    HighlightType highlightType; 
-    ActionPerformer performer;
+    public ActionType ActionType { get { return actionType; } }
 
     Token token; 
     BaseObject target;
+
     int currentCost;
 
     GridManager gridManager;
     TokenManager tokenManager; 
-
-    public ActionType ActionType { get { return actionType; } }
-    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
-    public HighlightType HighlightType { get { return highlightType; } }
-    public ActionPerformer Performer { get { return performer; } }
 
     public int Cost { get { return currentCost; } }
 
@@ -30,16 +24,13 @@ public class DivineShieldAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token;
+    public BaseObject BaseObject => token;
 
     public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
-    public DivineShieldAction(Token token, ActionPerformer performer)
+    public DivineShieldAction(Token token)
     {
         actionType = ActionType.DivineShield;
-        highlightLayer = HighlightLayer.Action;
-        highlightType = HighlightType.SummonHighlight;
-        this.performer = performer;
 
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager =ServiceLocator.Get<TokenManager>();
@@ -53,6 +44,7 @@ public class DivineShieldAction : IAction
 
     public void Enter()
     {
+        /*
         gridManager.HighlightGridCells((Vector2Int gridPosition) =>
         {
             if (!tokenManager.IsTokenAtGridPosition(gridPosition))
@@ -73,6 +65,7 @@ public class DivineShieldAction : IAction
             return false;
 
         }, HighlightType, HighlightLayer);
+    */
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
@@ -101,7 +94,7 @@ public class DivineShieldAction : IAction
 
     public void Exit()
     {
-        gridManager.UnhighlightGridCells(HighlightLayer); 
+        // gridManager.UnhighlightGridCells(HighlightLayer); 
     }
 
     public bool IsValid()

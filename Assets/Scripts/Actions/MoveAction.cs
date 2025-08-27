@@ -6,14 +6,7 @@ using UnityEngine;
 public class MoveAction : IAction
 {
     ActionType actionType;
-    HighlightLayer highlightLayer;
-    HighlightType highlightType;
-    ActionPerformer performer;
-
     public ActionType ActionType { get { return actionType; } }
-    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
-    public HighlightType HighlightType { get { return highlightType; } }
-    public ActionPerformer Performer { get { return performer; } }
 
     GridManager gridManager;
     TokenManager tokenManager; 
@@ -34,20 +27,17 @@ public class MoveAction : IAction
 
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token;
+    public BaseObject BaseObject => token;
 
     public Predicate<Vector2Int> Validation => CanMoveTo;
 
-    public MoveAction(Token token, ActionPerformer performer)
+    public MoveAction(Token token)
     {
         // 이동액션 초기화 
         actionType = ActionType.Move;
-        highlightLayer = HighlightLayer.Action;
-        highlightType = HighlightType.MoveHighlight;
 
         this.gridManager = ServiceLocator.Get<GridManager>();
         this.tokenManager = ServiceLocator.Get<TokenManager>(); 
-        this.performer = performer;
 
         this.token = token;
         this.MoveablePositions = token.MoveableRange;
@@ -70,6 +60,7 @@ public class MoveAction : IAction
         }
 
         targetPosition = gridPosition; 
+
         await Transition(MoveState.Prepare); 
     }
     public void Exit()

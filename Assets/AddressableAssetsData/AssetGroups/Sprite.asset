@@ -21,12 +21,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - Icon
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1de5d5dcc6c763a4aa95889a6e6e8dd9
-    m_Address: coin_celestial
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Coin
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2af2e7b62cae54543adef4b0fb8cd70b
     m_Address: icon_upgrade
     m_ReadOnly: 0
@@ -50,12 +44,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - Icon
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b7ab3cdc0513050438d4f192a3107686
-    m_Address: coin_undead
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Coin
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: d7edbc370b39a47498351f6616c4fb68, type: 2}

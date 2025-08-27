@@ -55,7 +55,7 @@ public class PrefabLoader
         else
             Debug.LogError($"{prefab}을 Load할 수 없습니다.");
 
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return prefab; 
     }
@@ -75,7 +75,7 @@ public class PrefabLoader
         else
             Debug.LogError($"{prefab}을 Load할 수 없습니다.");
         
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return prefab; 
     }

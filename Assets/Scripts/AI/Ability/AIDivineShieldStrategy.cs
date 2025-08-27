@@ -28,7 +28,7 @@ public class AIDivineShieldStrategy
         if (tokenManager.TryGetKingTokenFrom(currentPlayerID, out Token kingToken))
         {
             tokens.Remove(kingToken);
-            divineShieldAction = actionFactory.CreateAction(ActionType.DivineShield, kingToken, ActionPerformer.System) as DivineShieldAction;
+            divineShieldAction = actionFactory.CreateAction(ActionType.DivineShield, kingToken) as DivineShieldAction;
         }
         else
         {

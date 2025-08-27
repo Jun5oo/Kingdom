@@ -6,13 +6,7 @@ using UnityEngine;
 public class AttackAction : IAction
 {
     ActionType actionType;
-    HighlightLayer highlightLayer;
-    HighlightType highlightType;
-
     public ActionType ActionType { get { return actionType; } }
-    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
-    public HighlightType HighlightType {  get { return highlightType; } }
-    public ActionPerformer Performer {  get {  return performer; } }
 
     GridManager gridManager;
     TokenManager tokenManager;
@@ -21,8 +15,6 @@ public class AttackAction : IAction
 
     Token token;
     Token target;
-
-    ActionPerformer performer;
 
     Vector2Int targetPosition; 
 
@@ -38,15 +30,13 @@ public class AttackAction : IAction
     public ResourceType ResourceType { get { return resourceType; } }
     public int OwnerID { get { return token.OwnerID; } }
 
-    public BaseObject Executor => token;
+    public BaseObject BaseObject => token;
 
     public Predicate<Vector2Int> Validation => CanAttack;
 
-    public AttackAction(Token token, ActionPerformer performer)
+    public AttackAction(Token token)
     {
         actionType = ActionType.Attack;
-        highlightLayer = HighlightLayer.Action;
-        highlightType = HighlightType.AttackHighlight;
 
         this.gridManager = ServiceLocator.Get<GridManager>(); 
         this.damageManager = ServiceLocator.Get<DamageManager>();
@@ -54,7 +44,6 @@ public class AttackAction : IAction
         this.eventQueue = ServiceLocator.Get<EventQueue>();
 
         this.token = token;
-        this.performer = performer;
 
         AttackablePositions = token.AttackRange;
 

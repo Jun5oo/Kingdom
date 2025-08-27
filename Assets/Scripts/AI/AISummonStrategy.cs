@@ -38,7 +38,7 @@ public class AISummonStrategy
 
         Card card = GetRandomCard(cards);
 
-        summonAction = actionFactory.CreateAction(ActionType.Summon, card, ActionPerformer.System) as SummonAction;
+        summonAction = actionFactory.CreateAction(ActionType.Summon, card) as SummonAction;
 
         validGridPosList = summonAction.ValidPositions.ToList();
 

@@ -14,15 +14,8 @@ public enum UpgradeState
 public class UpgradeAction : IAction
 {
     ActionType actionType;
-    HighlightLayer highlightLayer;
-    HighlightType highlightType;
 
     public ActionType ActionType { get { return actionType; } }
-    public HighlightLayer HighlightLayer { get { return highlightLayer; } }
-    public HighlightType HighlightType { get { return highlightType; } }
-
-    ActionPerformer performer; 
-    public ActionPerformer Performer {  get { return performer; } }
 
     // UpgradeAction을 실행한 주체, 왕 
     Token actionOwner;
@@ -43,7 +36,7 @@ public class UpgradeAction : IAction
     UpgradeState currentState; 
     public UpgradeState UpgradeState { get { return currentState; } }
 
-    public BaseObject Executor => actionOwner;
+    public BaseObject BaseObject => actionOwner;
 
     public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
@@ -57,15 +50,11 @@ public class UpgradeAction : IAction
     List<Token> picked;
 
     List<Vector2Int> validPositions; 
-    public UpgradeAction(Token token, ActionPerformer performer)
+    public UpgradeAction(Token token)
     {
         this.actionOwner = token;
-        this.performer = performer;
 
         this.actionType = ActionType.Upgrade;
-        this.highlightLayer = HighlightLayer.Action;
-        // 임시 
-        this.highlightType = HighlightType.SummonHighlight;
 
         this.resourceType = ResourceType.Action;
         this.cost = 1;
@@ -94,6 +83,7 @@ public class UpgradeAction : IAction
 
     public void Enter()
     {
+        /*
         var recipes = upgradeSystem.GetValidRecipes(OwnerID); 
         
         // UI를 보여주고 선택 한 후에 해당 Source에 맞는 유닛들을 Highlight 하려고 하지만, 현재는 Log만 남기고 첫 번째 Recipe만을 선택한다고 가정 
@@ -103,10 +93,12 @@ public class UpgradeAction : IAction
         currentState = UpgradeState.RecipeSelection;
         
         OnRecipeSelected(recipes[0]); 
+        */
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
     {
+        /*
         // Execute가 되었다는 것은, Highlight된 어느 한 Source를 클릭했다는 것 
         if(currentState == UpgradeState.SourceSelection)
         {
@@ -172,13 +164,16 @@ public class UpgradeAction : IAction
 
 
         return;
+        */
     }
 
     public void Exit()
     {
+        /*
         gridManager.UnhighlightGridCells(highlightLayer);
         picked.Clear();
         currentRecipe = null; 
+        */
     }
 
     // 하나라도 진화할 수 있는 족보가 있으면 Valid 
@@ -186,6 +181,7 @@ public class UpgradeAction : IAction
     
     public void OnRecipeSelected(UpgradeRecipe recipe)
     {
+        /*
         currentRecipe = recipe; 
         picked.Clear();
         currentState = UpgradeState.SourceSelection;
@@ -204,10 +200,12 @@ public class UpgradeAction : IAction
 
             return false; 
         }, highlightType, highlightLayer);
+        */ 
     }
 
     public void OnEnterPlacement()
     {
+        /*
         gridManager.UnhighlightGridCells(highlightLayer);
 
         gridManager.HighlightGridCells((Vector2Int gridPosition) =>
@@ -231,6 +229,7 @@ public class UpgradeAction : IAction
         }, HighlightType, HighlightLayer);
 
         currentState = UpgradeState.PlacementSelection; 
+        */
     }
 
     // 진화를 하기 위한 재료 후보들을 찾는 함수 (Highlight를 하기 위함) 

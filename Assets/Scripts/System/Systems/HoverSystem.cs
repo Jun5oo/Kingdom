@@ -151,7 +151,7 @@ public class HoverSystem : MonoBehaviour, IGameSystem
             if (currentAction.ActionType == ActionType.Summon)
                 return;
 
-            BaseObject executor = currentAction?.Executor; 
+            BaseObject executor = currentAction?.BaseObject; 
 
             if (ReferenceEquals(token, executor))
                 return;

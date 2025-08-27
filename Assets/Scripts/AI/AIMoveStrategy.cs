@@ -26,7 +26,7 @@ public class AIMoveStrategy
         List<Token> tokens = tokenManager.GetTokens(currentPlayerID);
         Token randomToken = GetRandomToken(tokens);
 
-        moveAction = actionFactory.CreateAction(ActionType.Move, randomToken, ActionPerformer.System) as MoveAction;
+        moveAction = actionFactory.CreateAction(ActionType.Move, randomToken) as MoveAction;
 
         List<Vector2Int> tempListToRemove = new List<Vector2Int>();
 

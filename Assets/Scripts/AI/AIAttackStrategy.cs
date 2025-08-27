@@ -28,7 +28,7 @@ public class AIAttackStrategy
         List<Token> tokens = tokenManager.GetTokens(currentPlayerID);
         Token randomToken = GetRandomToken(tokens);
 
-        attackAction = actionFactory.CreateAction(ActionType.Attack, randomToken, ActionPerformer.System) as AttackAction;
+        attackAction = actionFactory.CreateAction(ActionType.Attack, randomToken) as AttackAction;
 
         List<Vector2Int> tempListToRemove = new List<Vector2Int>();
 

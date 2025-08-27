@@ -6,12 +6,9 @@ public interface IAction
 {
     // 오브젝트 행동 인터페이스 
     public int OwnerID { get; }
-    public BaseObject Executor { get; }
+    public BaseObject BaseObject { get; }
 
     public ActionType ActionType { get; }
-    public HighlightLayer HighlightLayer { get; }
-    public HighlightType HighlightType { get; }
-    public ActionPerformer Performer { get; }
     public Predicate<Vector2Int> Validation { get; }
     public ResourceType ResourceType { get; }
 
