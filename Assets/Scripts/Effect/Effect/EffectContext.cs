@@ -4,19 +4,24 @@ public enum ContextKey
 {
     None, 
 
-    // Position 
-    Selected,
-    AllyPos, 
-    EnemyPos,
+    PlayerID,
     
-    // BaseObject 
-    Ally, 
-    Enemy, 
-    AllySource, 
-    EnemySource, 
+    Positions, 
+
+    KillerObject,
+    KillerData,
+    KillerPosition, 
+    KillerOwnerID, 
+
+    VictimObject,
+    VictimData, 
+    VictimPosition, 
+    VictimOwnerID, 
+
+    SourceData, 
 }
 
-public struct EffectContext
+public class EffectContext
 {
     Dictionary<ContextKey, object> payload;
 

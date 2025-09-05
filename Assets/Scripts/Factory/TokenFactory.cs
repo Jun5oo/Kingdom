@@ -34,7 +34,6 @@ public class TokenFactory
         if (tokenObject.TryGetComponent<Token>(out Token token))
         {
             List<Ability> abilities = abilityFactory.CreateAbilityAsync(cardData, token); 
-            
             token.Init(cardData, playerID, sourceObject, sourceObjects, spawnLevel, abilities);
         }
 

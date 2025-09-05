@@ -93,6 +93,7 @@ public class GridManager : MonoBehaviour
     public Vector3 GetWorldPosition(Vector2Int gridPosition) => grid.GetWorldPosition(gridPosition);
     public Vector2Int GetGridPosition(Vector3 worldPosition) => grid.GetGridPosition(worldPosition);
     public GridCell GetGridCell(Vector2Int gridPosition) => grid.GetGridCell(gridPosition);
+    public List<Vector2Int> GetAllPositions() => grid.GetAllPositions(); 
     public int GetRandomGridXPos() => UnityEngine.Random.Range(0, WIDTH - 1);
     public int GetRandomGridYPos() => UnityEngine.Random.Range(0, HEIGHT - 1);
     #endregion

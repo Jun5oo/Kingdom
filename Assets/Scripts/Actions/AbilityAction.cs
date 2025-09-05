@@ -17,7 +17,7 @@ public class AbilityAction : IAction
 
     public ResourceType ResourceType => ResourceType.Ability;
 
-    public int Cost => ability.Effects[0].EffectData.cost; 
+    public int Cost => 0; //ability.Effects[0].EffectData.cost; 
 
     Ability ability; 
 

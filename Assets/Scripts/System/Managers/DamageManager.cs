@@ -1,6 +1,4 @@
-using Cysharp.Threading.Tasks;
 using System;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class DamageManager
@@ -138,12 +136,28 @@ public class DamageManager
         Vector2Int killerPosition = tokenManager.GetGridPositionOfToken(killer);
         Vector2Int victimPosition = tokenManager.GetGridPositionOfToken(victim);
 
+        if(victim == null)
+        {
+            Debug.Log("여기는 DamageManager: victim을 찾을 수 없다."); 
+        }
+
+        if (killer == null)
+        {
+            Debug.Log("여기는 DamageManager: victim을 찾을 수 없다.");
+        }
+
+
         EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent 
         { 
             killer = killer, 
             victim = victim , 
+
             victimPosition = victimPosition, 
             killerPosition = killerPosition,
+
+            victimOwnerID = victim.OwnerID,
+            killerOwnerID = killer.OwnerID, 
+
             killerSources = killer.SourceObjects,
             victimSources = victim.SourceObjects
         }); 

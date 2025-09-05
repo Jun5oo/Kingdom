@@ -1,155 +1,169 @@
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Ability
 {
-    BaseObject abilityOwner; 
+    BaseObject abilityOwner;
+    AbilitySO abilityData;
 
-    Trigger trigger;
-    int groupID; 
-    List<IEffect> effects;
+    HashSet<Trigger> triggerSet;
 
-    EventQueue eventQueue; 
+    bool isSubscribed;
 
-    public Trigger Trigger => trigger;
-    public int GroupID => groupID; 
-    public List<IEffect> Effects => effects;
-
-    public Ability(Trigger trigger, int groupID, List<IEffect> effects, BaseObject baseObject)
+    public Ability(BaseObject baseObject, AbilitySO abilityData)
     {
-        this.trigger = trigger;
-        this.groupID = groupID;
-
-        this.effects = effects; 
-
         this.abilityOwner = baseObject;
+        this.abilityData = abilityData;
 
-        eventQueue = ServiceLocator.Get<EventQueue>(); 
+        triggerSet = new HashSet<Trigger>();
+
+        isSubscribed = false; 
         Subscribe(); 
     }
 
     public void Subscribe()
     {
-        switch (trigger)
+        if (isSubscribed)
+            return; 
+
+        foreach(var binding in abilityData.bindings)
         {
-            case Trigger.OnTurnStarted:
-                EventBus<TurnStartEvent>.Subscribe(TurnStart); 
-                break; 
-            case Trigger.OnTurnEnded:
-                EventBus<TurnEndEvent>.Subscribe(TurnEnd); 
-                break;
-            case Trigger.OnAllyDead:
-                EventBus<UnitDeadEvent>.Subscribe(AllyDead);
-                break; 
-            case Trigger.OnEnemyDead:
-                EventBus<UnitDeadEvent>.Subscribe(EnemyDead);
-                break; 
+            switch (binding.trigger)
+            {
+                case Trigger.OnTurnStarted:
+                    TrySubScribe(binding.trigger, () => { EventBus<TurnStartEvent>.Subscribe(TurnStart); Debug.Log("OnTurnStarted Event가 연결되었습니다."); });
+                    break;
+                case Trigger.OnTurnEnded:
+                    TrySubScribe(binding.trigger, () => { EventBus<TurnEndEvent>.Subscribe(TurnEnd); Debug.Log("OnTurnEnded Event가 연결되었습니다."); });
+                    break;
+                case Trigger.OnAllyDead:
+                case Trigger.OnEnemyDead:
+                case Trigger.OnUnitDead:
+                    TrySubScribe(binding.trigger, () => { EventBus<UnitDeadEvent>.Subscribe(UnitDead); Debug.Log("UnitDead Event가 연결되었습니다."); });
+                    break;
+            }
         }
+
     }
     public void Unsubscribe()
     {
-        switch (trigger)
-        {
-            case Trigger.OnTurnStarted:
-                EventBus<TurnStartEvent>.Unsubscribe(TurnStart);
-                break;
-            case Trigger.OnTurnEnded:
-                EventBus<TurnEndEvent>.Unsubscribe(TurnEnd);
-                break;
-            case Trigger.OnAllyDead:
-                EventBus<UnitDeadEvent>.Unsubscribe(AllyDead);
-                break;
-            case Trigger.OnEnemyDead:
-                EventBus<UnitDeadEvent>.Unsubscribe(EnemyDead);
-                break;
-        }
+        if (!isSubscribed)
+            return; 
+
+        if(triggerSet.Contains(Trigger.OnTurnStarted))
+            EventBus<TurnStartEvent>.Unsubscribe(TurnStart);
+
+        if(triggerSet.Contains(Trigger.OnTurnEnded))
+            EventBus<TurnEndEvent>.Unsubscribe(TurnEnd);
+
+        if (triggerSet.Contains(Trigger.OnUnitDead))
+            EventBus<UnitDeadEvent>.Unsubscribe(UnitDead);
+
+        isSubscribed = false; 
+    }
+
+    void TrySubScribe(Trigger trigger, Action action)
+    {
+        if (triggerSet.Add(trigger))
+            action?.Invoke(); 
     }
 
     #region Event 
     void TurnStart(TurnStartEvent eventData)
     {
-        if (eventData.playerID == abilityOwner.OwnerID)
-        {
-            EffectContext context = new EffectContext();
-
-            if(abilityOwner is Token ownerToken)
-            {
-                TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
-                Vector2Int effectOwnerPosition = tokenManager.GetGridPositionOfToken(ownerToken);
-                context.Set<Vector2Int>(ContextKey.AllyPos, effectOwnerPosition);
-                context.Set<BaseObject>(ContextKey.Ally, abilityOwner); 
-            }
-
-            Execute(context).Forget();
-        }
-
-        Debug.Log($"{this} TurnStart 실행"); 
+        RunBindings(Trigger.OnTurnStarted, eventData).Forget(); 
     }
     void TurnEnd(TurnEndEvent eventData)
     {
-        if (eventData.playerID == abilityOwner.OwnerID)
-        {
-            EffectContext context = new EffectContext();
+        RunBindings(Trigger.OnTurnEnded, eventData).Forget();
 
-            if (abilityOwner is Token ownerToken)
-            {
-                TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
-                Vector2Int effectOwnerPosition = tokenManager.GetGridPositionOfToken(ownerToken);
-                context.Set<Vector2Int>(ContextKey.AllyPos, effectOwnerPosition);
-                context.Set<BaseObject>(ContextKey.Ally, abilityOwner);
-            }
-
-            Execute(context).Forget();
-        }
-
-        Debug.Log($"{this} TurnEnd 실행");
     }
-    void AllyDead(UnitDeadEvent eventData)
+    void UnitDead(UnitDeadEvent eventData)
     {
-        if(eventData.victim.OwnerID == abilityOwner.OwnerID)
-        {
-            EffectContext context = new EffectContext();
-
-            context.Set<CardData>(ContextKey.Ally, eventData.victim.Data); 
-            context.Set<CardData>(ContextKey.Enemy, eventData.killer.Data);
-            context.Set<Vector2Int>(ContextKey.AllyPos, eventData.victimPosition); 
-            context.Set<Vector2Int>(ContextKey.EnemyPos, eventData.killerPosition);
-            
-            Execute(context).Forget();
-
-            Debug.Log($"{this} AllyDead 실행");
-        }
-    }
-    void EnemyDead(UnitDeadEvent eventData)
-    {
-        if (eventData.victim.OwnerID != abilityOwner.OwnerID)
-        {
-            EffectContext context = new EffectContext();
-
-            context.Set<CardData>(ContextKey.Ally, eventData.killer.Data);
-            context.Set<CardData>(ContextKey.Enemy, eventData.victim.Data);
-            context.Set<Vector2Int>(ContextKey.AllyPos, eventData.killerPosition);
-            context.Set<Vector2Int>(ContextKey.EnemyPos, eventData.victimPosition);
-
-            Execute(context).Forget();
-            Debug.Log($"{this} EnemyDead 실행");
-
-        }
+        RunBindings(Trigger.OnUnitDead, eventData).Forget();
+        RunBindings(Trigger.OnEnemyDead, eventData).Forget();
+        RunBindings(Trigger.OnAllyDead, eventData).Forget(); 
     }
     #endregion 
 
-    public async UniTask Execute(EffectContext context)
+    async UniTask RunBindings(Trigger trigger, IGameEvent eventData)
     {
-        foreach(var effect in effects)
-        {
-            foreach(var _event in effect.ToEvents(abilityOwner, context))
-                eventQueue.Enqueue(_event); 
-        }
+        TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
 
-        await eventQueue.ExecuteAllAsync();
+        foreach (var binding in abilityData.bindings)
+        {
+            if (binding.trigger != trigger)
+                continue;
+
+            var context = new EffectContext();
+            FillContextFromEvent(context, eventData); 
+
+            bool isAllConditionSatisfied = true; 
+
+            // TriggerCondition 확인 
+            foreach(var condition in binding.conditions)
+            {
+                if (!condition.IsTriggerConditionSatisfied(abilityData, abilityOwner, context))
+                {
+                    isAllConditionSatisfied = false;
+                    break; 
+                }
+            }
+
+            if (!isAllConditionSatisfied)
+                continue;
+
+            List<Vector2Int> candidates = await resolver.TryResolve(abilityOwner, binding.target, binding.targetConditions, binding.filters, context);
+            Debug.Log(candidates); 
+
+            if (candidates.Count == 0 || candidates == null)
+                context.Set(ContextKey.Positions, candidates);
+
+            foreach (var effect in binding.effects)
+                await effect.Apply(abilityOwner, context);
+
+            await eventQueue.ExecuteAllAsync(); 
+        }
     }
 
+    void FillContextFromEvent(EffectContext context, IGameEvent eventData)
+    {
+        switch (eventData)
+        {
+            case TurnStartEvent turnStart:
+                context.Set<int>(ContextKey.PlayerID, turnStart.playerID);
+                break;
+
+            case TurnEndEvent turnEnd:
+                context.Set<int>(ContextKey.PlayerID, turnEnd.playerID);
+                break;
+
+            case UnitDeadEvent dead:
+
+                if(dead.killer != null)
+                    context.Set<BaseObject>(ContextKey.KillerObject, dead.killer);
+
+                context.Set<Vector2Int>(ContextKey.KillerPosition, dead.killerPosition);
+                context.Set<CardData>(ContextKey.KillerData, dead.killer?.Data);
+                context.Set<int>(ContextKey.KillerOwnerID, dead.killerOwnerID);
+
+                if(dead.victim != null )
+                    context.Set<BaseObject>(ContextKey.VictimObject, dead.victim);
+
+                context.Set<int>(ContextKey.VictimOwnerID, dead.victimOwnerID);
+                context.Set<CardData>(ContextKey.VictimData, dead.victim?.Data);
+                context.Set<Vector2Int>(ContextKey.VictimPosition, dead.victimPosition);
+                
+                if(dead.victimSources.Count != 0 && dead.victimSources != null)
+                    context.Set<CardData>(ContextKey.SourceData, dead.victimSources[0]); 
+
+                break;
+        
+        }
+    }
     public void Clear()
     {
         Unsubscribe(); 

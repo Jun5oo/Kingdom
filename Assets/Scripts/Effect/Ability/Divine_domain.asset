@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa6357724946dd6489207cdfe502a2fe, type: 3}
+  m_Name: Divine_domain
+  m_EditorClassIdentifier: 
+  abilityName: "\uC5EC\uC2E0\uC758 \uC601\uC5ED"
+  abilityDescription: "\uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uC5EC\uC2E0 \uCE74\uC6B4\uD2B8
+    1\uAC1C\uB97C \uD68D\uB4DD\uD569\uB2C8\uB2E4. "
+  bindings:
+  - trigger: 5
+    target: 0
+    conditions:
+    - {fileID: 11400000, guid: 92921d3bd7767f2499b0d702efd09a8e, type: 2}
+    - {fileID: 11400000, guid: 9c973d274b124064197ea5f77af3b787, type: 2}
+    targetConditions: []
+    filters: []
+    effects:
+    - {fileID: 11400000, guid: 57ace92455707674c8760fd08126e896, type: 2}

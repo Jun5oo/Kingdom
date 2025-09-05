@@ -142,6 +142,7 @@ public static class CSVReader
         AssetDatabase.SaveAssets();
         #endregion
 
+        /*
         #region Parsing AbilityTable
 
         string[] effectLines = File.ReadAllLines(CARD_ABILITY_CSV_PATH);
@@ -179,7 +180,6 @@ public static class CSVReader
             effectSO.reward = GetValue(effectHeaders, values, REWARD);
             effectSO.position = GetValue(effectHeaders, values, POSITION); 
 
-            dataSO.Effects.Add(effectSO);
             EditorUtility.SetDirty(cardDict[cardID]);
         }
 
@@ -187,6 +187,7 @@ public static class CSVReader
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("All cards imported from CSV.");
+        */ 
     }
 
     private static string GetValue(string[] headers, string[] values, string key)

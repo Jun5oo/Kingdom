@@ -35,7 +35,7 @@ public class CardTextureLoader : TextureLoader
         else
             Debug.LogError($"{texture}를 Load하지 못했습니다.");
 
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return texture;
     }
@@ -53,7 +53,7 @@ public class CardTextureLoader : TextureLoader
         else
             Debug.LogError($"{texture}를 Load하지 못했습니다.");
         
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return texture;
     }
@@ -70,7 +70,7 @@ public class CardTextureLoader : TextureLoader
         else
             Debug.LogError($"{texture}를 Load하지 못했습니다.");
 
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return texture; 
     }
@@ -87,7 +87,7 @@ public class CardTextureLoader : TextureLoader
         else
             Debug.LogError($"{texture}를 Load하지 못했습니다.");
 
-        Addressables.Release(handle);
+        // Addressables.Release(handle);
 
         return texture; 
     }
@@ -97,8 +97,6 @@ public class CardTextureLoader : TextureLoader
         string cardID = cardData.ID;
         string race = cardData.Race.ToString().ToLower(); 
         string type = cardData.Tag == UnitTag.King ? "king" : "normal";
-
-        Debug.Log($"{cardID}, {race}, {type}"); 
 
         Texture2D art = await LoadArtAsync(cardID);
         Texture2D artMask = await LoadArtMaskAsync(race, type);

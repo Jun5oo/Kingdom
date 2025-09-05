@@ -48,6 +48,7 @@ public class Bootstrapper : MonoBehaviour
 
     ActionResolver actionResolver; 
     RangeResolver rangeResolver; 
+    TargetResolver targetResolver;
 
     void Awake()
     {
@@ -86,6 +87,7 @@ public class Bootstrapper : MonoBehaviour
 
         actionResolver = new ActionResolver(); 
         rangeResolver = new RangeResolver(); 
+        targetResolver = new TargetResolver();  
 
         ServiceLocator.Register(playerManager);
         ServiceLocator.Register(damageManager);
@@ -125,7 +127,7 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(hudDisplayer);
         ServiceLocator.Register(rangeResolver);
         ServiceLocator.Register(actionResolver);
-
+        ServiceLocator.Register(targetResolver);
         await Initialization();
     }
 

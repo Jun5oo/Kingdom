@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Grid
 {
-    const float OFFSET = 0.5f; 
+    const float OFFSET = 0.5f;
 
     private int height;
     private int width;
@@ -15,25 +15,25 @@ public class Grid
 
     public Action<GridCell> OnGridCellClicked;
 
-    Dictionary<Vector2Int,  GridCell> positionToCell;
+    Dictionary<Vector2Int, GridCell> positionToCell;
     List<GridCell> cellList;
 
     public void Init(int width, int height, Vector3 originPos, GameObject prefab)
     {
-        this.width = width; 
+        this.width = width;
         this.height = height;
-        this.originPos = originPos; 
+        this.originPos = originPos;
         this.prefab = prefab;
 
-        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x + OFFSET; 
+        this.prefabSize = prefab.GetComponent<BoxCollider>().size.x + OFFSET;
     }
 
     #region Create Grid 
     public void CreateGridMap(Transform gridParent)
     {
-        positionToCell = new Dictionary<Vector2Int, GridCell>(); 
+        positionToCell = new Dictionary<Vector2Int, GridCell>();
 
-        cellList = new List<GridCell>(); 
+        cellList = new List<GridCell>();
 
         // GridPosition: (0, 0) ~ (width - 1,  height - 1); 
 
@@ -45,15 +45,15 @@ public class Grid
                 gridObject.name = $"{j},{i}";
                 gridObject.transform.parent = gridParent.transform;
 
-                Vector2Int gridPos = new Vector2Int(j, i); 
+                Vector2Int gridPos = new Vector2Int(j, i);
 
                 GridCell gridCell = gridObject.GetComponent<GridCell>();
 
-                int idx = i * width + j; 
+                int idx = i * width + j;
 
                 gridCell.Init(gridPos);
 
-                gridCell.OnClicked += OnClicked; 
+                gridCell.OnClicked += OnClicked;
                 positionToCell.Add(gridPos, gridCell);
                 cellList.Add(gridCell);
             }
@@ -68,38 +68,49 @@ public class Grid
         float totalHeight = height * prefabSize;
 
         float offsetX = -(totalWidth / 2) + (gridPosition.x * prefabSize) + (prefabSize / 2);
-        float offsetZ = -(totalHeight / 2) + (gridPosition.y * prefabSize)  + (prefabSize / 2); 
+        float offsetZ = -(totalHeight / 2) + (gridPosition.y * prefabSize) + (prefabSize / 2);
 
         return new Vector3(offsetX + originPos.x, 0f, offsetZ + originPos.z);
     }
     public Vector2Int GetGridPosition(Vector3 worldPosition)
     {
-        Vector3 relativePosition = worldPosition - originPos; 
+        Vector3 relativePosition = worldPosition - originPos;
 
-        float totalWidth = width * prefabSize; 
+        float totalWidth = width * prefabSize;
         float totalHeight = height * prefabSize;
 
         float normalizedX = relativePosition.x + (totalWidth / 2);
         float normalizedZ = relativePosition.z + (totalHeight / 2);
 
-        int gridX = Mathf.FloorToInt(normalizedX/prefabSize);
-        int gridZ = Mathf.FloorToInt(normalizedZ/prefabSize);
+        int gridX = Mathf.FloorToInt(normalizedX / prefabSize);
+        int gridZ = Mathf.FloorToInt(normalizedZ / prefabSize);
 
         bool isGridSelected = gridX >= 0 && gridZ >= 0 && gridX < width && gridZ < height;
 
         if (!isGridSelected)
-            return -Vector2Int.one; 
+            return -Vector2Int.one;
 
         return new Vector2Int(gridX, gridZ);
     }
     public GridCell GetGridCell(Vector2Int gridPosition)
     {
         if (positionToCell.TryGetValue(gridPosition, out GridCell cell))
-            return cell; 
+            return cell;
         else
-            return null; 
+            return null;
     }
-    public List<GridCell> GetAllCells() => cellList; 
+    public List<GridCell> GetAllCells() => cellList;
+    public List<Vector2Int> GetAllPositions()
+    {
+        List<Vector2Int> positions = new List<Vector2Int>(width * height);
+        for(int i=0; i<height; i++)
+        {
+            for(int j=0; j<width; j++)
+                positions.Add(new Vector2Int(j, i)); 
+        }
+
+        return positions;
+    }
     #endregion
 
     public void OnClicked(GridCell gridCell)

@@ -60,23 +60,7 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
         attackVectors = resolver.Resolve(Data.AttackType[Level-1], Data.AttackRange[Level-1]);
         moveVectors = resolver.Resolve(Data.MoveType[Level - 1], Data.MoveRange[Level - 1]);
 
-        Debug.Log($"{this.Data.name} : " + attackVectors.Count);
-
         buffs = new List<IBuff>();
-        
-        /*
-        passives = new List<IPassive>();
-
-        PassiveFactory passiveFactory = ServiceLocator.Get<PassiveFactory>(); 
-
-        foreach(var passive in Data.Passive)
-        {
-            IPassive created = passiveFactory.CreatePassive(passive, this);
-            passives.Add(created);
-            created.Deactivate(); 
-            created.Activate(); 
-        }
-   */ 
 
         isDead = false;
 
@@ -159,14 +143,20 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     void OnDestroy()
     {
+        if(buffs != null)
+        {
+            foreach (var buff in buffs)
+                RemoveBuff(buff);
+            
+            buffs.Clear();
+        }
 
-        foreach(var buff in buffs)
-            RemoveBuff(buff); 
 
-        buffs.Clear();
-
-        foreach (var ability in abilities)
-            ability.Clear(); 
+        if(abilities != null)
+        {
+            foreach (var ability in abilities)
+                ability.Clear();
+        }
 
         OnCPUpdate = null;
     }

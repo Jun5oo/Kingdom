@@ -42,6 +42,6 @@ public class CardData : ScriptableObject
     public List<int> MoveRange { get { return moveRange; } internal set { moveRange = value; } }
 
     [SerializeField]
-    List<EffectData> effects = new List<EffectData>();
-    public List<EffectData> Effects { get { return effects; } internal set { effects = value; } }
+    List<AbilitySO> abilitySOs = new List<AbilitySO>();
+    public List<AbilitySO> Abilities { get {  return abilitySOs; } internal set {  abilitySOs = value; } }
 }

@@ -23,6 +23,8 @@ public enum Target
 {
     None, 
     Self, 
+    Board, 
+    Select, 
     Ally,
     AllAllies, 
     Enemy, 
