@@ -18,9 +18,16 @@ MonoBehaviour:
     \uC0AC\uB9DD\uBA74\uC5ED\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4. \n\uBCF4\uD638\uB9C9\uC740
     \uD53C\uD574\uB97C \uBC1B\uAC70\uB098 \uB450 \uD134 \uB4A4\uC5D0 \uC81C\uAC70\uB429\uB2C8\uB2E4. "
   bindings:
-  - trigger: 0
-    target: 0
-    conditions: []
-    targetConditions: []
+  - trigger: 1
+    target: 3
+    targetCount: 1
+    triggerConditions: []
+    targetConditions:
+    - {fileID: 11400000, guid: 5ea8a540b6828d5409429176ecd38b8a, type: 2}
+    - {fileID: 11400000, guid: a9f5dfd192689fa41a46a5e744cc92aa, type: 2}
+    value: 0
+    duration: 0
+    delay: 0
     filters: []
     effects: []
+    chainAbilities: []

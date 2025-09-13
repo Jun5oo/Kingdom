@@ -4,10 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = ("Effect/GainSO"))]
 public class GainSO : EffectSO
 {
-    public int value;
     public ResourceType resourceType;
 
-    public override UniTask Apply(BaseObject caster, EffectContext context)
+    public override UniTask Apply(BaseObject caster, TriggerBinding binding, EffectContext context)
     {
         ActionResourceSystem actionResourceSystem = ServiceLocator.Get<ActionResourceSystem>();
         AbilityResourceSystem abilityResourceSystem = ServiceLocator.Get<AbilityResourceSystem>();
@@ -15,10 +14,10 @@ public class GainSO : EffectSO
         switch (resourceType)
         {
             case ResourceType.Action:
-                actionResourceSystem.Add(caster.OwnerID, value); 
+                actionResourceSystem.Add(caster.OwnerID, binding.value); 
                 break; 
             case ResourceType.Ability:
-                abilityResourceSystem.Add(caster.OwnerID, value);
+                abilityResourceSystem.Add(caster.OwnerID, binding.value);
                 break; 
         }
 

@@ -17,9 +17,9 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     [SerializeField] TokenView view;
 
     // 생성한 주체, ex) 무덤을 생성한 것은 언데드 왕
-    [SerializeField] CardData sourceObject;
+    [SerializeField] CardData parentData;
     // 생성에 필요한 재료, ex) 무덤의 original cardData 또는 업그레이드에 사용된 오브젝트 
-    [SerializeField] List<CardData> sourceObjects;
+    [SerializeField] List<CardData> sourceData;
 
     List<Ability> abilities; 
     List<IBuff> buffs;
@@ -39,8 +39,8 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
     public List<Vector2Int> MoveableRange { get { return moveVectors; } }
     public List<Vector2Int> AttackRange { get { return attackVectors; } }
 
-    public CardData SourceObject { get { return sourceObject; } }
-    public List<CardData> SourceObjects { get { return  sourceObjects; } }
+    public CardData ParentData { get { return parentData; } }
+    public List<CardData> SourceData { get { return  sourceData; } }
     public List<Ability> Abilities { get { return abilities; } }
     #endregion
 
@@ -64,12 +64,12 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
         isDead = false;
 
-        this.sourceObject = sourceObject;
+        this.parentData = sourceObject;
         
         if (sourceObjects != null)
-            this.sourceObjects = sourceObjects;
+            this.sourceData = sourceObjects;
         else
-            this.sourceObjects = new List<CardData>();
+            this.sourceData = new List<CardData>();
 
         this.abilities = abilities; 
     }
@@ -138,8 +138,8 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     #endregion
 
-    public T GetSourceObjects<T>() where T : BaseObject => SourceObject as T; 
-    public List<T> GetSourceTokens<T>() where T: BaseObject => SourceObjects as List<T>; 
+    public T GetSourceObjects<T>() where T : BaseObject => ParentData as T; 
+    public List<T> GetSourceTokens<T>() where T: BaseObject => SourceData as List<T>; 
 
     void OnDestroy()
     {

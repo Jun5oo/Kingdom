@@ -3,16 +3,18 @@ using UnityEngine;
 public class ConditionOnKilled : ConditionSO
 {
     [SerializeField] ConditionOperatorBool op;
-
-    public override bool IsTriggerConditionSatisfied(AbilitySO ability, BaseObject caster, EffectContext context)
+    public override bool IsTriggerConditionSatisfied(BaseObject caster, EffectContext context)
     {
-        if(!context.TryGet<BaseObject>(ContextKey.KillerObject, out var killer))
+        if (caster == null)
+            return false;
+
+        if (!context.TryGet<ObjectContext>(ContextKey.Kill, out var objectContext))
         {
-            Debug.Log("처치한 오브젝트가 없습니다.");
-            return false; 
+            Debug.Log("Context.Kill 데이터를 찾을 수 없습니다.");
+            return false;
         }
 
-        bool isMyUnit = caster.OwnerID == killer.OwnerID; 
-        return CompareBool(isMyUnit, op); 
+        bool isAllyKill = caster.OwnerID == objectContext.ownerID;
+        return CompareBool(isAllyKill, op);
     }
 }

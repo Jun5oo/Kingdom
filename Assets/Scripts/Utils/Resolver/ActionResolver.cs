@@ -18,6 +18,11 @@ public class ActionResolver
                     actions.Add(ActionType.Attack);
                 if (token.Data.Tag == UnitTag.King)
                     actions.Add(ActionType.Upgrade); 
+                if(token.Abilities.Count > 0)
+                {
+                    // TODO 
+                    // Ability가 Active type인 경우, ActionType.Ability를 추가하도록 해야한다. 
+                }
                 break; 
         }
 

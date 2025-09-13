@@ -6,6 +6,7 @@ public enum ActionType
     Resurrection, 
     DivineShield, 
     Upgrade, 
+    Ability, 
 }
 
 public enum ActionPerformer

@@ -16,12 +16,17 @@ MonoBehaviour:
   abilityDescription: "\uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uC5EC\uC2E0 \uCE74\uC6B4\uD2B8
     1\uAC1C\uB97C \uD68D\uB4DD\uD569\uB2C8\uB2E4. "
   bindings:
-  - trigger: 5
+  - trigger: 4
     target: 0
-    conditions:
-    - {fileID: 11400000, guid: 92921d3bd7767f2499b0d702efd09a8e, type: 2}
+    targetCount: 0
+    triggerConditions:
+    - {fileID: 11400000, guid: 1d834d94cf2ed9a47872138516222da5, type: 2}
     - {fileID: 11400000, guid: 9c973d274b124064197ea5f77af3b787, type: 2}
     targetConditions: []
+    value: 1
+    duration: 0
+    delay: 0
     filters: []
     effects:
     - {fileID: 11400000, guid: 57ace92455707674c8760fd08126e896, type: 2}
+    chainAbilities: []

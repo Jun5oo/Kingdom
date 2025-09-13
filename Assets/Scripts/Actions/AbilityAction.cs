@@ -4,29 +4,28 @@ using UnityEngine;
 
 public class AbilityAction : IAction
 {
-    public int OwnerID => actionOwner.OwnerID; 
+    public int OwnerID => caster.OwnerID; 
 
-    BaseObject actionOwner; 
-    public BaseObject BaseObject => actionOwner;
+    BaseObject caster; 
+    public BaseObject BaseObject => caster;
 
     public ActionType ActionType => ActionType.Summon;
 
-    public ActionPerformer Performer => ActionPerformer.Player; 
-
-    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
+    public ActionPerformer Performer => ActionPerformer.Player;
 
     public ResourceType ResourceType => ResourceType.Ability;
 
-    public int Cost => 0; //ability.Effects[0].EffectData.cost; 
+    public int Cost => 0;
+    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
 
     Ability ability; 
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
-    public AbilityAction(Ability ability, BaseObject actionOwner)
+    public AbilityAction(Ability ability, BaseObject caster)
     {
-        this.actionOwner = actionOwner;
+        this.caster = caster;
         this.ability = ability; 
     }
 
@@ -35,11 +34,10 @@ public class AbilityAction : IAction
         Debug.Log("AbilityAction Enter"); 
     }
 
-    public UniTask Execute(Vector2Int targetPosition)
+    public async UniTask Execute(Vector2Int targetPosition)
     {
         Debug.Log("AbilityAction을 실행합니다.");
-        // foreach(ability.effect.ExecuteAsync) 
-        return UniTask.CompletedTask; 
+        await ability.RunBindings(Trigger.Active, null); 
     }
 
     public void Exit()
@@ -50,6 +48,5 @@ public class AbilityAction : IAction
     public bool IsValid()
     {
         return true; 
-        // Ability의 Trigger가 Active가 아니면 false? 
     }
 }

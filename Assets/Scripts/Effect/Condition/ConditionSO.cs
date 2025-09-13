@@ -7,17 +7,28 @@ public abstract class ConditionSO : ScriptableObject
         return true; 
     }
 
-    public virtual bool IsTargetConditionSatisfied(BaseObject caster, BaseObject target)
+    public virtual bool IsTriggerConditionSatisfied(BaseObject caster, EffectContext context)
     {
         return true; 
     }
 
+    public virtual bool IsTargetConditionSatisfied(BaseObject caster, BaseObject target)
+    {
+        return true; 
+    }
     public virtual bool IsTargetConditionSatisfied(BaseObject target)
     {
         return true;
     }
-
+    public virtual bool IsTargetConditionSatisfied(CardData cardData)
+    {
+        return true; 
+    }
     public virtual bool IsTargetConditionSatisfied(BaseObject caster, Vector2Int targetPosition)
+    {
+        return true; 
+    }
+    public virtual bool IsTargetConditionSatisfied(ObjectContext caster, ObjectContext target)
     {
         return true; 
     }

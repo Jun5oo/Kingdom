@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3aa5f1a9b7793bd4c901f22440c3d28c, type: 3}
-  m_Name: Destroy_1
+  m_Script: {fileID: 11500000, guid: 6c43b39944267074fb2af4e5a80e0f73, type: 3}
+  m_Name: Is_not_empty_grid
   m_EditorClassIdentifier: 
-  amount: 1
+  op: 1

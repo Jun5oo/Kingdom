@@ -4,14 +4,18 @@ public class ConditionOnDeath : ConditionSO
 {
     [SerializeField] ConditionOperatorBool op;
 
-    public override bool IsTriggerConditionSatisfied(AbilitySO ability, BaseObject caster, EffectContext context)
+    public override bool IsTriggerConditionSatisfied(BaseObject caster, EffectContext context)
     {
-        if(!context.TryGet<int>(ContextKey.VictimOwnerID, out var victimOwnerID)){
-            Debug.Log("처치된 오브젝트가 없습니다.");
+        if (caster == null)
+            return false; 
+
+        if(!context.TryGet<ObjectContext>(ContextKey.Death, out var objectContext))
+        {
+            Debug.Log("Context.Death 데이터를 찾을 수 없습니다.");
             return false; 
         }
 
-        bool isMyUnitDead = caster.OwnerID == victimOwnerID; 
-        return CompareBool(isMyUnitDead, op); 
+        bool isAllyDead = caster.OwnerID == objectContext.ownerID;
+        return CompareBool(isAllyDead, op); 
     }
 }

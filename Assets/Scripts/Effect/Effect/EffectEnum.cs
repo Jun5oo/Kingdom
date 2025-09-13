@@ -11,35 +11,36 @@ public enum EffectType
 
 public enum Trigger 
 {
-    Active, 
-    OnAllyDead, 
-    OnEnemyDead, 
-    OnTurnStarted, 
+    None, 
+    
+    Active,
+    
+    OnTurnStarted,
     OnTurnEnded,
-    OnUnitDead, 
+
+    OnUnitDead,
 }
 
 public enum Target
 {
     None, 
+    // 시전자 
     Self, 
+    // 보드 위의 유닛 대상
     Board, 
+    // 선택한 유닛 
     Select, 
-    Ally,
-    AllAllies, 
-    Enemy, 
-    AllEnemies  
+
+    // 처치한 유닛 
+    Kill, 
+    // 죽은 유닛 
+    Death, 
+
+    // 마지막으로 파괴된 유닛 
+    LastDestroyed, 
 }
 
 public enum BuffType
 {
     DivineShield
-}
-
-
-public enum SelectionMode 
-{
-    Default, 
-    Select, 
-    Random 
 }

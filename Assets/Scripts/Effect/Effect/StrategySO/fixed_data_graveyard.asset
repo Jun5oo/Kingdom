@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d40ae3652c4828a4580d04c6b121ad58, type: 3}
-  m_Name: Summon_1_source_object
+  m_Script: {fileID: 11500000, guid: fe1424eabdc4c9f46aa83175f47b9c68, type: 3}
+  m_Name: fixed_data_graveyard
   m_EditorClassIdentifier: 
-  summonData: {fileID: 0}
-  isSourceObject: 1
-  quantity: 1
+  cardData: {fileID: 0}

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 509a1320bfe947844b9f39483e6fc2c0, type: 3}
-  m_Name: Gain_1_ability_count
+  m_Name: Gain_actionCount
   m_EditorClassIdentifier: 
   value: 1
-  resourceType: 1
+  resourceType: 0

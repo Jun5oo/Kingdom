@@ -8,7 +8,7 @@ public class Ability
     BaseObject abilityOwner;
     AbilitySO abilityData;
 
-    HashSet<Trigger> triggerSet;
+    HashSet<Trigger> triggers;
 
     bool isSubscribed;
 
@@ -17,7 +17,7 @@ public class Ability
         this.abilityOwner = baseObject;
         this.abilityData = abilityData;
 
-        triggerSet = new HashSet<Trigger>();
+        triggers = new HashSet<Trigger>();
 
         isSubscribed = false; 
         Subscribe(); 
@@ -38,8 +38,6 @@ public class Ability
                 case Trigger.OnTurnEnded:
                     TrySubScribe(binding.trigger, () => { EventBus<TurnEndEvent>.Subscribe(TurnEnd); Debug.Log("OnTurnEnded Event가 연결되었습니다."); });
                     break;
-                case Trigger.OnAllyDead:
-                case Trigger.OnEnemyDead:
                 case Trigger.OnUnitDead:
                     TrySubScribe(binding.trigger, () => { EventBus<UnitDeadEvent>.Subscribe(UnitDead); Debug.Log("UnitDead Event가 연결되었습니다."); });
                     break;
@@ -52,13 +50,13 @@ public class Ability
         if (!isSubscribed)
             return; 
 
-        if(triggerSet.Contains(Trigger.OnTurnStarted))
+        if(triggers.Contains(Trigger.OnTurnStarted))
             EventBus<TurnStartEvent>.Unsubscribe(TurnStart);
 
-        if(triggerSet.Contains(Trigger.OnTurnEnded))
+        if(triggers.Contains(Trigger.OnTurnEnded))
             EventBus<TurnEndEvent>.Unsubscribe(TurnEnd);
 
-        if (triggerSet.Contains(Trigger.OnUnitDead))
+        if (triggers.Contains(Trigger.OnUnitDead))
             EventBus<UnitDeadEvent>.Unsubscribe(UnitDead);
 
         isSubscribed = false; 
@@ -66,7 +64,7 @@ public class Ability
 
     void TrySubScribe(Trigger trigger, Action action)
     {
-        if (triggerSet.Add(trigger))
+        if (triggers.Add(trigger))
             action?.Invoke(); 
     }
 
@@ -83,12 +81,10 @@ public class Ability
     void UnitDead(UnitDeadEvent eventData)
     {
         RunBindings(Trigger.OnUnitDead, eventData).Forget();
-        RunBindings(Trigger.OnEnemyDead, eventData).Forget();
-        RunBindings(Trigger.OnAllyDead, eventData).Forget(); 
     }
     #endregion 
 
-    async UniTask RunBindings(Trigger trigger, IGameEvent eventData)
+    public async UniTask RunBindings(Trigger trigger, IGameEvent eventData)
     {
         TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
         EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
@@ -104,9 +100,15 @@ public class Ability
             bool isAllConditionSatisfied = true; 
 
             // TriggerCondition 확인 
-            foreach(var condition in binding.conditions)
+            foreach(var condition in binding.triggerConditions)
             {
                 if (!condition.IsTriggerConditionSatisfied(abilityData, abilityOwner, context))
+                {
+                    isAllConditionSatisfied = false;
+                    break; 
+                }
+
+                if(!condition.IsTriggerConditionSatisfied(abilityOwner, context))
                 {
                     isAllConditionSatisfied = false;
                     break; 
@@ -117,15 +119,58 @@ public class Ability
                 continue;
 
             List<Vector2Int> candidates = await resolver.TryResolve(abilityOwner, binding.target, binding.targetConditions, binding.filters, context);
-            Debug.Log(candidates); 
 
-            if (candidates.Count == 0 || candidates == null)
-                context.Set(ContextKey.Positions, candidates);
+            if (candidates != null)
+            {
+                context.Set<List<Vector2Int>>(ContextKey.Position, candidates);
+                Debug.Log($"{candidates.Count}");
+            }
 
             foreach (var effect in binding.effects)
-                await effect.Apply(abilityOwner, context);
+                await effect.Apply(abilityOwner, binding, context);
 
-            await eventQueue.ExecuteAllAsync(); 
+            await eventQueue.ExecuteAllAsync();
+
+            if (binding.chainAbilities != null && binding.chainAbilities.Count > 0)
+                await ExecuteChainAbilities(binding.chainAbilities, context); 
+        }
+    }
+
+    async UniTask ExecuteChainAbilities(List<TriggerBinding> chainAbilities, EffectContext parentContext)
+    {
+        TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
+        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+
+        foreach (var chainBinding in chainAbilities)
+        {
+            var chainContext = parentContext; 
+
+            bool isAllConditionSatisfied = true;
+
+            foreach (var condition in chainBinding.triggerConditions)
+            {
+                if (!condition.IsTriggerConditionSatisfied(abilityData, abilityOwner, chainContext))
+                {
+                    isAllConditionSatisfied = false;
+                    break;
+                }
+            }
+
+            if (!isAllConditionSatisfied)
+                continue;
+
+            List<Vector2Int> chainCandidates = await resolver.TryResolve(abilityOwner, chainBinding.target, chainBinding.targetConditions, chainBinding.filters, chainContext); 
+
+            if (chainCandidates != null)
+                chainContext.Set(ContextKey.Position, chainCandidates);
+
+            foreach (var effect in chainBinding.effects)
+                await effect.Apply(abilityOwner, chainBinding, chainContext);
+
+            await eventQueue.ExecuteAllAsync();
+
+            if (chainBinding.chainAbilities != null && chainBinding.chainAbilities.Count > 0)
+                await ExecuteChainAbilities(chainBinding.chainAbilities, chainContext);
         }
     }
 
@@ -142,28 +187,13 @@ public class Ability
                 break;
 
             case UnitDeadEvent dead:
-
-                if(dead.killer != null)
-                    context.Set<BaseObject>(ContextKey.KillerObject, dead.killer);
-
-                context.Set<Vector2Int>(ContextKey.KillerPosition, dead.killerPosition);
-                context.Set<CardData>(ContextKey.KillerData, dead.killer?.Data);
-                context.Set<int>(ContextKey.KillerOwnerID, dead.killerOwnerID);
-
-                if(dead.victim != null )
-                    context.Set<BaseObject>(ContextKey.VictimObject, dead.victim);
-
-                context.Set<int>(ContextKey.VictimOwnerID, dead.victimOwnerID);
-                context.Set<CardData>(ContextKey.VictimData, dead.victim?.Data);
-                context.Set<Vector2Int>(ContextKey.VictimPosition, dead.victimPosition);
-                
-                if(dead.victimSources.Count != 0 && dead.victimSources != null)
-                    context.Set<CardData>(ContextKey.SourceData, dead.victimSources[0]); 
-
+                context.Set<ObjectContext>(ContextKey.Kill, dead.killer);
+                context.Set<ObjectContext>(ContextKey.Death, dead.victim); 
                 break;
-        
         }
     }
+
+
     public void Clear()
     {
         Unsubscribe(); 

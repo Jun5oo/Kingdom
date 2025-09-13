@@ -99,7 +99,7 @@ public class ResurrectionAction : IAction
         Token targetToken = tokenManager.GetTokenFrom(targetPosition);
         TokenMovement tokenMovement = targetToken.GetComponent<TokenMovement>();
 
-        var unitData = new List<CardData>(targetToken.SourceObjects);
+        var unitData = new List<CardData>(targetToken.SourceData);
         
         tokenManager.DestroyToken(targetToken);
        

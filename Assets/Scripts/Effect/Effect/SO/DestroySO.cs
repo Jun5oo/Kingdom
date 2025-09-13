@@ -5,17 +5,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = ("Effect/DestroySO"))]
 public class DestroySO : EffectSO
 {
-    [SerializeField] int amount;
-
-    public override UniTask Apply(BaseObject caster, EffectContext context)
+    public override UniTask Apply(BaseObject caster, TriggerBinding binding, EffectContext context)
     {
         TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
 
-        if(context.TryGet<List<Vector2Int>>(ContextKey.Positions, out List<Vector2Int> result))
+        if(context.TryGet<List<Vector2Int>>(ContextKey.Position, out List<Vector2Int> result))
         {
-            int min = Mathf.Min(result.Count, amount);
-
-            for(int i=0; i<min; i++)
+            for(int i=0; i<result.Count; i++)
             {
                 if(tokenManager.TryGetTokenFrom(result[i], out Token token))
                     tokenManager.DestroyToken(token); 

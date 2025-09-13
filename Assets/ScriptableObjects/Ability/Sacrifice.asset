@@ -16,4 +16,18 @@ MonoBehaviour:
   abilityDescription: "\uC544\uAD70\uC744 \uC120\uD0DD\uD569\uB2C8\uB2E4. \uD574\uB2F9
     \uC544\uAD70\uC744 \uD76C\uC0DD\uC2DC\uD0A4\uACE0 \uCE74\uC6B4\uD2B8 1\uAC1C\uB97C
     \uD68D\uB4DD\uD569\uB2C8\uB2E4. "
-  bindings: []
+  bindings:
+  - trigger: 1
+    target: 3
+    targetCount: 1
+    triggerConditions: []
+    targetConditions:
+    - {fileID: 11400000, guid: a9f5dfd192689fa41a46a5e744cc92aa, type: 2}
+    - {fileID: 11400000, guid: 5ea8a540b6828d5409429176ecd38b8a, type: 2}
+    value: 1
+    duration: 0
+    delay: 0
+    filters: []
+    effects:
+    - {fileID: 11400000, guid: 57ace92455707674c8760fd08126e896, type: 2}
+    chainAbilities: []

@@ -25,10 +25,8 @@ public class DamageManager
         this.displayer = new DamageDisplayer();
     }
 
-    public int ProcessDamage(Token attacker, Token defender)
+    public int ProcessDamage(Token attacker, Token defender, int damage)
     {
-        int damage = attacker.CP;
-
         if (defender.TryGetComponent<IDamageable>(out IDamageable damageable))
         {
             damage = damageable.TakeDamage(damage, true);
@@ -146,24 +144,29 @@ public class DamageManager
             Debug.Log("여기는 DamageManager: victim을 찾을 수 없다.");
         }
 
+        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent
+        {
+            killer = new ObjectContext
+            {
+                baseObject = killer,
+                ownerID = killer.OwnerID,
+                objectData = killer.Data,
+                gridPosition = killerPosition,
+                parentData = killer.ParentData,
+                sourceData = killer.SourceData
+            },
 
-        EventBus<UnitDeadEvent>.Publish(new UnitDeadEvent 
-        { 
-            killer = killer, 
-            victim = victim , 
+            victim = new ObjectContext
+            {
+                baseObject = victim,
+                ownerID = victim.OwnerID,
+                objectData = victim.Data,
+                gridPosition = victimPosition,
+                parentData = victim.ParentData,
+                sourceData = victim.SourceData
+            }
+        });
 
-            victimPosition = victimPosition, 
-            killerPosition = killerPosition,
-
-            victimOwnerID = victim.OwnerID,
-            killerOwnerID = killer.OwnerID, 
-
-            killerSources = killer.SourceObjects,
-            victimSources = victim.SourceObjects
-        }); 
-        
-        OnPlayerUnitKilledEnemy?.Invoke(killer, victim);
-        OnPlayerUnitDead?.Invoke(victim.OwnerID, victim);
 
         tokenManager.DestroyToken(victim);
     }

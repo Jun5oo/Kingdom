@@ -18,12 +18,29 @@ MonoBehaviour:
     \uBB34\uB364\uC744 \uBD80\uD65C \uC2DC\uD0B5\uB2C8\uB2E4. "
   bindings:
   - trigger: 0
-    target: 2
-    conditions: []
+    target: 3
+    targetCount: 1
+    triggerConditions: []
     targetConditions:
     - {fileID: 11400000, guid: a9f5dfd192689fa41a46a5e744cc92aa, type: 2}
     - {fileID: 11400000, guid: 6d251b331a1cd354783eeab5b4025578, type: 2}
+    value: 1
+    duration: 0
+    delay: 0
     filters: []
     effects:
     - {fileID: 11400000, guid: a9ce96b95a6b7804ba9baa4aba7a3856, type: 2}
-    - {fileID: 11400000, guid: 470fc0f3e3950a544816c70220c0eea0, type: 2}
+    chainAbilities:
+    - trigger: 0
+      target: 5
+      targetCount: 0
+      triggerConditions: []
+      targetConditions:
+      - {fileID: 0}
+      value: 0
+      duration: 0
+      delay: 0
+      filters: []
+      effects:
+      - {fileID: 11400000, guid: 7ffb436d440d03247b943ff411d1f233, type: 2}
+      chainAbilities: []

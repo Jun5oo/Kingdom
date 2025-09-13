@@ -5,7 +5,7 @@ public class ConditionTurn : ConditionSO
 {
     [SerializeField] ConditionOperatorBool op; 
 
-    public override bool IsTriggerConditionSatisfied(AbilitySO ability, BaseObject caster, EffectContext context)
+    public override bool IsTriggerConditionSatisfied(BaseObject caster, EffectContext context)
     {
         TurnSystem turnSystem = ServiceLocator.Get<TurnSystem>();
 

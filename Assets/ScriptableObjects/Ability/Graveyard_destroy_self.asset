@@ -16,11 +16,15 @@ MonoBehaviour:
   abilityDescription: "\uB450 \uBC88\uC9F8 \uC790\uC2E0\uC758 \uD134\uC774 \uB418\uBA74,
     \uD30C\uAD34\uB429\uB2C8\uB2E4. "
   bindings:
-  - trigger: 3
+  - trigger: 5
     target: 1
-    conditions:
-    - {fileID: 11400000, guid: 25a9ae30727cc7e4796336ae8a2681f5, type: 2}
+    targetCount: 0
+    triggerConditions: []
     targetConditions: []
+    value: 0
+    duration: 0
+    delay: 2
     filters: []
     effects:
     - {fileID: 11400000, guid: a9ce96b95a6b7804ba9baa4aba7a3856, type: 2}
+    chainAbilities: []

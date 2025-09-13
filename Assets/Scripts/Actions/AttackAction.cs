@@ -160,7 +160,7 @@ public class AttackAction : IAction
                 }, onCompleteCallback: () =>
                 {
                     Debug.Log($"공격 데미지 처리: {token} -> {target}, 데미지: {damage}");
-                    damage = damageManager.ProcessDamage(token, target);
+                    damage = damageManager.ProcessDamage(token, target, token.CP);
                     Debug.Log($"실제 적용된 데미지: {damage}, 타겟 HP: {target.CP}, 타겟 사망: {target.IsDead}");
                     end.TrySetResult(); 
                 });
@@ -175,7 +175,7 @@ public class AttackAction : IAction
                 }, onCompleteCallback: () =>
                 {
                     Debug.Log($"공격 데미지 처리: {token} -> {target}, 데미지: {damage}");
-                    damage = damageManager.ProcessDamage(token, target);
+                    damage = damageManager.ProcessDamage(token, target, token.CP);
                     Debug.Log($"실제 적용된 데미지: {damage}, 타겟 HP: {target.CP}, 타겟 사망: {target.IsDead}");
                     end.TrySetResult(); 
                 });

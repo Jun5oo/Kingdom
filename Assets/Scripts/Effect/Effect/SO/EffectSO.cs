@@ -5,5 +5,5 @@ using UnityEngine;
 public abstract class EffectSO : ScriptableObject
 {
     public abstract EffectType GetEffectType();
-    public abstract UniTask Apply(BaseObject caster, EffectContext context); 
+    public abstract UniTask Apply(BaseObject caster, TriggerBinding binding, EffectContext context); 
 }

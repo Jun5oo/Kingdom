@@ -5,20 +5,14 @@ public enum ContextKey
     None, 
 
     PlayerID,
-    
-    Positions, 
+    Position, 
+    // 처치한 오브젝트 
+    Kill, 
+    // 처치당한 오브젝트 
+    Death, 
 
-    KillerObject,
-    KillerData,
-    KillerPosition, 
-    KillerOwnerID, 
-
-    VictimObject,
-    VictimData, 
-    VictimPosition, 
-    VictimOwnerID, 
-
-    SourceData, 
+    LastDestroyed, 
+    LastSummoned, 
 }
 
 public class EffectContext
