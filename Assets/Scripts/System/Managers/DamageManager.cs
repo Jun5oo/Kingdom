@@ -121,6 +121,7 @@ public class DamageManager
 
         if (local.IsDead)
             OnKingDefeated?.Invoke(local.OwnerID);
+
         else if (remote.IsDead)
             OnKingDefeated?.Invoke(remote.OwnerID);
         else
