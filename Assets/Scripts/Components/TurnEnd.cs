@@ -64,6 +64,9 @@ public class TurnEnd : MonoBehaviour
             return;
 
         if (actionSystem.IsActionInProgress())
+            return;
+
+        if (!turnSystem.IsMyTurn())
             return; 
 
         turnSystem.EndTurn(); 
