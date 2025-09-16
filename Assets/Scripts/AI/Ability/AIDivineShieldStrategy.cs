@@ -29,6 +29,12 @@ public class AIDivineShieldStrategy
         {
             tokens.Remove(kingToken);
             divineShieldAction = actionFactory.CreateAction(ActionType.DivineShield, kingToken) as DivineShieldAction;
+
+            if(divineShieldAction == null)
+            {
+                validGridPosForDivineShield = new Vector2Int();
+                return false;
+            }
         }
         else
         {

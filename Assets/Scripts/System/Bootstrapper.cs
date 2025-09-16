@@ -26,7 +26,6 @@ public class Bootstrapper : MonoBehaviour
     CardFactory cardFactory;
     TokenFactory tokenFactory;
     ActionFactory actionFactory;
-    PassiveFactory passiveFactory;
 
     AIController aiController;
 
@@ -46,7 +45,6 @@ public class Bootstrapper : MonoBehaviour
     SummonSystem summonSystem;
     UpgradeSystem upgradeSystem;
 
-    ActionResolver actionResolver; 
     RangeResolver rangeResolver; 
     TargetResolver targetResolver;
 
@@ -71,7 +69,6 @@ public class Bootstrapper : MonoBehaviour
         cardFactory = new CardFactory();
         tokenFactory = new TokenFactory();
         actionFactory = new ActionFactory();
-        passiveFactory = new PassiveFactory();
 
         turnSystem = new TurnSystem();
 
@@ -85,7 +82,6 @@ public class Bootstrapper : MonoBehaviour
         summonSystem = new SummonSystem();
         upgradeSystem = new UpgradeSystem();
 
-        actionResolver = new ActionResolver(); 
         rangeResolver = new RangeResolver(); 
         targetResolver = new TargetResolver();  
 
@@ -105,7 +101,6 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Register(cardFactory);
         ServiceLocator.Register(tokenFactory);
         ServiceLocator.Register(actionFactory);
-        ServiceLocator.Register(passiveFactory);
 
         ServiceLocator.Register(drawManager);
         ServiceLocator.Register(deckManager);
@@ -126,7 +121,6 @@ public class Bootstrapper : MonoBehaviour
 
         ServiceLocator.Register(hudDisplayer);
         ServiceLocator.Register(rangeResolver);
-        ServiceLocator.Register(actionResolver);
         ServiceLocator.Register(targetResolver);
         await Initialization();
     }
@@ -162,6 +156,7 @@ public class Bootstrapper : MonoBehaviour
         upgradeSystem.Init();
 
         hudDisplayer.Init();
+        targetResolver.Init();
 
         await poolManager.InitAsync();
     }

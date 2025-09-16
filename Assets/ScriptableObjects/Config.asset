@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75bd83fac0d189947b72bc6721b67d23, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
-  playerSelected: 0
-  botSelected: 1
+  playerSelected: 1
+  botSelected: 0

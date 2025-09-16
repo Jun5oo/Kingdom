@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
-public class DivineShieldAction : IAction
+public class DivineShieldAction : IGameAction
 {
     ActionType actionType;
     public ActionType ActionType { get { return actionType; } }

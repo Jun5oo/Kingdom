@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResurrectionAction : IAction
+public class ResurrectionAction : IGameAction
 {
     ActionType actionType;
     public ActionType ActionType {get { return actionType;}}

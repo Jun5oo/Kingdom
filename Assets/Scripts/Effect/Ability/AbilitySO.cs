@@ -8,5 +8,6 @@ public class AbilitySO : ScriptableObject
     [TextArea(5, 7)]
     public string abilityDescription;
 
-    public List<TriggerBinding> bindings; 
+    [SerializeField]
+    public List<TriggeredEffect> triggeredEffects; 
 }

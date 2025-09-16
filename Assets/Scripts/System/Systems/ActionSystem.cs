@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ActionSystem : MonoBehaviour, IGameSystem
 {
-    IAction currentAction;
+    IGameAction currentAction;
 
     GridSelection gridSelection;
     HighlightResolver highlightResolver; 
@@ -49,7 +49,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
     }
 
-    public async void Enter(IAction action)
+    public async void Enter(IGameAction action)
     {
         // 진행할 Action 세팅 
         currentAction = action;
@@ -64,7 +64,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         try
         {
             var ctx = highlightResolver.Resolve(currentAction.ActionType); 
-            var pos = await gridSelection.WaitGridSelectionAsync(currentAction.Validation, ctx, selectCts.Token);
+            var pos = await gridSelection.WaitSelectionAsync(currentAction.Validation, ctx, selectCts.Token);
 
             await currentAction.Execute(pos);
             
@@ -93,7 +93,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         }
     }
     public bool IsActionInProgress() => currentAction != null;
-    public IAction GetCurrentAction() => currentAction;
+    public IGameAction GetCurrentAction() => currentAction;
 
     void OnActionCanceled()
     {
@@ -115,7 +115,7 @@ public class ActionSystem : MonoBehaviour, IGameSystem
         Exit();
     }
 
-    public bool CanPerformAction(IAction action, int playerID)
+    public bool CanPerformAction(IGameAction action, int playerID)
     {
         IResourceSystem resourceSystem = (action.ResourceType == ResourceType.Action) ? actionResourceSystem : abilityResourceSystem;
         return resourceSystem.IsEnoughResources(playerID, action.Cost); 

@@ -1,8 +1,9 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Linq;
 using UnityEngine;
 
-public class AbilityAction : IAction
+public class AbilityAction : IGameAction
 {
     public int OwnerID => caster.OwnerID; 
 
@@ -10,15 +11,13 @@ public class AbilityAction : IAction
     public BaseObject BaseObject => caster;
 
     public ActionType ActionType => ActionType.Summon;
-
-    public ActionPerformer Performer => ActionPerformer.Player;
-
     public ResourceType ResourceType => ResourceType.Ability;
 
     public int Cost => 0;
-    public Predicate<Vector2Int> Validation => throw new NotImplementedException();
+    public Predicate<Vector2Int> Validation => ValidatePosition;
 
-    Ability ability; 
+    Ability ability;
+    TriggeredEffect activeEffect; 
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
@@ -26,18 +25,15 @@ public class AbilityAction : IAction
     public AbilityAction(Ability ability, BaseObject caster)
     {
         this.caster = caster;
-        this.ability = ability; 
-    }
+        this.ability = ability;
 
-    public void Enter()
-    {
-        Debug.Log("AbilityAction Enter"); 
+        activeEffect = ability.AbilityData.triggeredEffects.FirstOrDefault(e => e.trigger == Trigger.Active); 
     }
 
     public async UniTask Execute(Vector2Int targetPosition)
     {
         Debug.Log("AbilityAction을 실행합니다.");
-        await ability.RunBindings(Trigger.Active, null); 
+        await ability.ExecuteActive(targetPosition); 
     }
 
     public void Exit()
@@ -47,6 +43,21 @@ public class AbilityAction : IAction
 
     public bool IsValid()
     {
+        TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
+        var candidates = resolver.GetValidSelectTarget(caster, activeEffect.targetConditions, activeEffect.filters);
+        
+        if (candidates.Count == 0)
+            return false;
+
         return true; 
+    }
+
+    bool ValidatePosition(Vector2Int pos)
+    {
+        if(activeEffect == null) return false;
+
+        var resolver = ServiceLocator.Get<TargetResolver>();
+        var validTargets = resolver.GetValidSelectTarget(caster, activeEffect.targetConditions, activeEffect.filters);
+        return validTargets.Contains(pos); 
     }
 }

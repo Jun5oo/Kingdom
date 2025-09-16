@@ -65,7 +65,7 @@ public class KingPlacement : IGameState
         }
 
 
-        IAction summon = actionFactory.CreateAction(ActionType.Summon, card);
+        IGameAction summon = actionFactory.CreateAction(ActionType.Summon, card);
         summon.OnActionComplete += completeCallback;
 
         if (summon == null)

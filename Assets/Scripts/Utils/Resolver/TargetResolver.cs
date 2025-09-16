@@ -5,89 +5,131 @@ using UnityEngine;
 
 public class TargetResolver
 {
-    // Target Trigger에 따라서 대상을 다 가져온 후에, TargetCondition에 맞게 Filtering 후 Candidate를 return 
+    TokenManager tokenManager;
+    GridManager gridManager; 
+
+    public void Init()
+    {
+        gridManager = ServiceLocator.Get<GridManager>();
+        tokenManager = ServiceLocator.Get<TokenManager>();
+    }
+
     public async UniTask<List<Vector2Int>> TryResolve(BaseObject caster, Target target, List<ConditionSO> targetConditions, List<FilterSO> filters, EffectContext context)
     {
         var candidates = new List<Vector2Int>();
 
-        GridManager gridManager = ServiceLocator.Get<GridManager>();
-        TokenManager tokenManager = ServiceLocator.Get<TokenManager>(); 
-
-        // 자신을 선택 
-        if(target == Target.Self)
+        switch (target)
         {
-            Vector2Int casterPosition = tokenManager.GetGridPositionOfToken(caster as Token); 
-            
-            if(IsTargetConditionSatisfied(caster, casterPosition, targetConditions))
-            {
-                candidates.Add(casterPosition);
-            }
-
+            case Target.Self:
+                candidates = ResolveSelfTarget(caster, targetConditions);
+                break;
+            case Target.Board:
+                candidates = ResolveBoardTarget(caster, targetConditions);
+                break;
+            case Target.Select:
+                candidates = await ResolveSelectTarget(caster, targetConditions);
+                break;
+            case Target.Kill:
+                candidates = ResolveKillTarget(caster, targetConditions, context);
+                break;
+            case Target.Death:
+                candidates = ResolveDeathTarget(caster, targetConditions, context);
+                break; 
         }
 
-        // 보드 위 모든 카드들 대상 (Condition, filter로 candidates 선별) 
-        if(target == Target.Board)
-        {
-            var positions = gridManager.GetAllPositions(); 
+        Debug.Log($"Resolve Complete:{candidates.Count}"); 
 
-            foreach(var position in positions)
-            {
-                if(IsTargetConditionSatisfied(caster, position, targetConditions))
-                    candidates.Add(position);
-            }
+        return candidates; 
+        // return ApplyFilter(candidates, filters); 
+    }
+
+    #region Resolve Method
+    List<Vector2Int> ResolveSelfTarget(BaseObject caster, List<ConditionSO> targetConditions)
+    {
+        var candidates = new List<Vector2Int>();    
+
+        Vector2Int casterPosition = tokenManager.GetGridPositionOfToken(caster as Token);
+
+        if (IsTargetConditionSatisfied(caster, casterPosition, targetConditions))
+            candidates.Add(casterPosition);
+        
+        return candidates; 
+    }
+    List<Vector2Int> ResolveBoardTarget(BaseObject caster, List<ConditionSO> targetConditions)
+    {
+        var candidates = new List<Vector2Int>();
+
+        var positions = gridManager.GetAllPositions();
+
+        foreach (var position in positions)
+        {
+            if (IsTargetConditionSatisfied(caster, position, targetConditions))
+                candidates.Add(position);
         }
 
-        // 직접 선택, 여러 개 선택가능  
-        if(target == Target.Select)
+        return candidates; 
+    }
+    async UniTask<List<Vector2Int>> ResolveSelectTarget(BaseObject caster, List<ConditionSO> targetConditions)
+    {
+        var candidates = new List<Vector2Int>();
+
+        GridSelection gridSelection = ServiceLocator.Get<GridSelection>();
+
+        Predicate<Vector2Int> canSelect = position => IsTargetConditionSatisfied(caster, position, targetConditions);
+        HighlightContext highlightContext = new HighlightContext { layer = HighlightLayer.Action, type = HighlightType.SummonHighlight };
+
+        var pos = await gridSelection.WaitSelectionAsync(canSelect, highlightContext);
+
+        if (!IsTargetConditionSatisfied(caster, pos, targetConditions))
+            return candidates;
+
+        candidates.Add(pos);
+        return candidates; 
+    }
+    List<Vector2Int> ResolveKillTarget(BaseObject caster, List<ConditionSO> targetConditions, EffectContext context)
+    {
+        var candidates = new List<Vector2Int>(); 
+
+        if (context.TryGet<ObjectContext>(ContextKey.Kill, out var killContext))
         {
-            GridSelection gridSelection = ServiceLocator.Get<GridSelection>(); 
-
-            Predicate<Vector2Int> canSelect = position => IsTargetConditionSatisfied(caster, position, targetConditions);
-            HighlightContext highlightContext = new HighlightContext { layer = HighlightLayer.Action, type = HighlightType.SummonHighlight };
-
-            var pos = await gridSelection.WaitGridSelectionAsync(canSelect, highlightContext);
-
-            if (!IsTargetConditionSatisfied(caster, pos, targetConditions))
-                return candidates; 
-
-            candidates.Add(pos); 
+            if (!IsTargetConditionSatisfied(caster, killContext.gridPosition, targetConditions))
+                return candidates;
         }
 
-        // 처치한 유닛의 위치 
-        if(target == Target.Kill)
-        {
-            // 추후에 
-            if(context.TryGet<ObjectContext>(ContextKey.Kill, out var killContext))
-            {
-                if (!IsTargetConditionSatisfied(caster, killContext.gridPosition, targetConditions))
-                    return candidates; 
-            }
+        candidates.Add(killContext.gridPosition);
+        return candidates; 
+    }
+    List<Vector2Int> ResolveDeathTarget(BaseObject caster, List<ConditionSO> targetConditions, EffectContext context)
+    {
+        var candidates = new List<Vector2Int>(); 
 
-            candidates.Add(killContext.gridPosition);   
+        if (context.TryGet<ObjectContext>(ContextKey.Death, out var deathContext))
+        {
+            if (!IsTargetConditionSatisfied(caster, deathContext.gridPosition, targetConditions))
+                return candidates;
         }
 
-        // 처치당한 유닛의 위치 
-        if(target == Target.Death)
-        {
-            if (context.TryGet<ObjectContext>(ContextKey.Death, out var deathContext))
-            {
-                if (!IsTargetConditionSatisfied(caster, deathContext.gridPosition, targetConditions))
-                    return candidates;
-            }
+        candidates.Add(deathContext.gridPosition);
+        return candidates;
+    }
+    #endregion 
 
-            candidates.Add(deathContext.gridPosition);
+    public List<Vector2Int> GetValidSelectTarget(BaseObject caster, List<ConditionSO> targetConditions, List<FilterSO> filters)
+    {
+        var candidates = new List<Vector2Int>();
+        var positions = gridManager.GetAllPositions();
+
+        foreach (var position in positions)
+        {
+            if (IsTargetConditionSatisfied(caster, position, targetConditions))
+                candidates.Add(position);
         }
 
-        // 마지막으로 파괴된 유닛 선택 
-        if(target == Target.LastDestroyed)
-        {
-            // 추후 
-        }
-
+        // return ApplyFilter(candidates, filters); 
         return candidates;
     }
 
-    bool IsTargetConditionSatisfied(BaseObject caster, Vector2Int gridPosition, List<ConditionSO> targetConditions)
+    public bool IsTargetConditionSatisfied(BaseObject caster, Vector2Int gridPosition, List<ConditionSO> targetConditions)
     {
         var tokenManager = ServiceLocator.Get<TokenManager>();
         
@@ -107,4 +149,10 @@ public class TargetResolver
         return true; 
     }
 
+    /*
+    private UniTask<List<Vector2Int>> ApplyFilter(List<Vector2Int> candidates, List<FilterSO> filters)
+    {
+ 
+    }
+    */ 
 }

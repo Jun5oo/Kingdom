@@ -23,7 +23,6 @@ public class Token : BaseObject, IDamageable, IDestructible, IBuffable
 
     List<Ability> abilities; 
     List<IBuff> buffs;
-    //List<IPassive> passives;
 
     bool isDead;
     #endregion

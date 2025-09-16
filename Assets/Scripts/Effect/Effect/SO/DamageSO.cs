@@ -8,9 +8,8 @@ public class DamageSO : EffectSO
 {
     public int multiplier;
 
-    public override async UniTask Apply(BaseObject caster, TriggerBinding binding, EffectContext context)
+    public override UniTask Apply(BaseObject caster, TriggeredEffect binding, EffectContext context)
     {
-        EventQueue queue = ServiceLocator.Get<EventQueue>();
         TokenManager tokenManager = ServiceLocator.Get<TokenManager>();
         DamageManager damageManager = ServiceLocator.Get<DamageManager>(); 
         
@@ -19,14 +18,11 @@ public class DamageSO : EffectSO
             foreach(var position in positions)
             {
                 if(tokenManager.TryGetTokenFrom(position, out Token target))
-                {
-                    queue.Enqueue(async () =>
-                    {
-                        damageManager.ProcessDamage(caster as Token, target, binding.value);
-                    });
-                }
+                    damageManager.ProcessDamage(caster as Token, target, binding.value);
             }
         }
+
+        return UniTask.CompletedTask; 
     }
 
     public override EffectType GetEffectType() => EffectType.Damage; 

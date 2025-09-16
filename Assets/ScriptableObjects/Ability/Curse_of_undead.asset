@@ -16,17 +16,18 @@ MonoBehaviour:
   abilityDescription: "\uC801\uC744 \uCC98\uCE58\uD558\uBA74 \uB370\uC2A4\uCE74\uC6B4\uD2B8
     1\uC744 \uD68D\uB4DD\uD55C\uB2E4. \n\uC544\uAD70\uC774 \uCC98\uCE58\uB418\uBA74
     \uD574\uB2F9 \uC704\uCE58\uC5D0 \uBB34\uB364\uC744 \uC18C\uD658\uD55C\uB2E4."
-  bindings:
+  triggeredEffects:
   - trigger: 4
     target: 0
     targetCount: 0
-    triggerConditions: []
-    targetConditions:
+    triggerConditions:
     - {fileID: 11400000, guid: 92921d3bd7767f2499b0d702efd09a8e, type: 2}
     - {fileID: 11400000, guid: 9c973d274b124064197ea5f77af3b787, type: 2}
+    targetConditions: []
     value: 1
     duration: 0
     delay: 0
+    cost: 0
     filters: []
     effects:
     - {fileID: 11400000, guid: 57ace92455707674c8760fd08126e896, type: 2}
@@ -34,14 +35,14 @@ MonoBehaviour:
   - trigger: 4
     target: 5
     targetCount: 0
-    triggerConditions: []
-    targetConditions:
+    triggerConditions:
+    - {fileID: 11400000, guid: 38b1670de7434084581ef1947b93633d, type: 2}
     - {fileID: 11400000, guid: 8d1cb6bc646839e48bfeb76df2627a8a, type: 2}
-    - {fileID: 11400000, guid: 5ea8a540b6828d5409429176ecd38b8a, type: 2}
-    - {fileID: 11400000, guid: b544d5966b66fa34080597fdda2285ab, type: 2}
-    value: 0
+    targetConditions: []
+    value: 1
     duration: 0
     delay: 0
+    cost: 0
     filters: []
     effects:
     - {fileID: 11400000, guid: 7ffb436d440d03247b943ff411d1f233, type: 2}

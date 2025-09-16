@@ -30,6 +30,12 @@ public class AIAttackStrategy
 
         attackAction = actionFactory.CreateAction(ActionType.Attack, randomToken) as AttackAction;
 
+        if (attackAction == null)
+        {
+            validGridPosList = new List<Vector2Int>();
+            return false; 
+        }
+
         List<Vector2Int> tempListToRemove = new List<Vector2Int>();
 
         Vector2Int tokenPos = tokenManager.GetGridPositionOfToken(randomToken);

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.VirtualTexturing;
 
 public class ActionDisplayer : MonoBehaviour
 {
@@ -11,7 +10,6 @@ public class ActionDisplayer : MonoBehaviour
     ActionFactory actionFactory;
     ActionSystem actionSystem; 
     
-    ActionResolver actionResolver;
 
     List<ActionPopup> pooled;
 
@@ -23,8 +21,6 @@ public class ActionDisplayer : MonoBehaviour
         selectionSystem = ServiceLocator.Get<SelectionSystem>();
         actionFactory = ServiceLocator.Get<ActionFactory>();
         actionSystem = ServiceLocator.Get<ActionSystem>();
-
-        actionResolver = ServiceLocator.Get<ActionResolver>();  
 
         pooled = new List<ActionPopup>();
 
@@ -50,11 +46,11 @@ public class ActionDisplayer : MonoBehaviour
             return; 
         }
 
-        var actionTypes = actionResolver.GetValidActions(baseObject); 
+        var actionTypes = actionFactory.GetAvailableActions(baseObject); 
 
         foreach (var actionType in actionTypes)
         {
-            IAction action = actionFactory.CreateAction(actionType, baseObject);
+            IGameAction action = actionFactory.CreateAction(actionType, baseObject);
 
             if (action == null)
                 continue;

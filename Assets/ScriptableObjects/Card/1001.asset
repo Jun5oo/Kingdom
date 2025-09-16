@@ -24,3 +24,4 @@ MonoBehaviour:
   moveRange: 010000000100000001000000
   abilitySOs:
   - {fileID: 11400000, guid: 0f4cdd0f0ee13b148bdcfdb51fd319ad, type: 2}
+  - {fileID: 11400000, guid: acea55b01e1060643b783a187111bb86, type: 2}

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "SummonDataSO/SummonFromContextData")]
@@ -26,7 +27,7 @@ public class SummonFromContextDataSO : SummonDataSO
                 return null;  
             }
 
-            return objContext.sourceData[0];
+            return objContext.sourceData.FirstOrDefault();
         }
 
         else

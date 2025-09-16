@@ -10,9 +10,9 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
     [SerializeField] Image iconImage;
     [SerializeField] TextMeshProUGUI actionInitial;  
 
-    private IAction action;
+    private IGameAction action;
     // ActionSystem에 전달하는 delegate 
-    public Action<IAction> OnSelected;
+    public Action<IGameAction> OnSelected;
     // ActionDisplayer에 전달하는 delegate 
     public Action OnClicked;
 
@@ -26,7 +26,7 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
     public void OnPointerEnter(PointerEventData eventData) => transform.localScale = Vector3.one * 1.1f;
     public void OnPointerExit(PointerEventData eventData) => transform.localScale = Vector3.one; 
     
-    public void Init(IAction action)
+    public void Init(IGameAction action)
     {
         this.action = action;
         this.spriteLoader = ServiceLocator.Get<SpriteLoader>(); 
@@ -36,7 +36,7 @@ public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHand
         OnUdatePopup(action);
     }
 
-    public async UniTask OnUdatePopup(IAction action)
+    public async UniTask OnUdatePopup(IGameAction action)
     {
         Sprite sprite = null; 
 

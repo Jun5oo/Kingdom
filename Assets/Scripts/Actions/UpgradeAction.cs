@@ -11,7 +11,7 @@ public enum UpgradeState
     Done
 }
 
-public class UpgradeAction : IAction
+public class UpgradeAction : IGameAction
 {
     ActionType actionType;
 

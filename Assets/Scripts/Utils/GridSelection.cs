@@ -22,7 +22,7 @@ public class GridSelection
         isActive = false; 
     }
 
-    public UniTask<Vector2Int> WaitGridSelectionAsync(Predicate<Vector2Int> predicate, HighlightContext ctx, CancellationToken ct = default )
+    public UniTask<Vector2Int> WaitSelectionAsync(Predicate<Vector2Int> predicate, HighlightContext ctx, CancellationToken ct = default )
     {
         if (isActive)
             throw new Exception("GridSelection: 기다리는 중");
@@ -33,7 +33,10 @@ public class GridSelection
 
         this.selectableGrid = predicate;
         this.highlightLayer = ctx.layer;
-        this.highlightType = ctx.type; 
+        this.highlightType = ctx.type;
+
+        if (predicate == null)
+            return taskCompletionSource.Task;
 
         gridManager?.HighlightGridCells(predicate, highlightType, highlightLayer);
         

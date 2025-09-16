@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe1424eabdc4c9f46aa83175f47b9c68, type: 3}
   m_Name: fixed_data_graveyard
   m_EditorClassIdentifier: 
-  cardData: {fileID: 0}
+  cardData: {fileID: 11400000, guid: 55dd1e1245e395043947d3cbc6cce851, type: 2}

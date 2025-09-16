@@ -7,6 +7,9 @@ public class ConditionOwner : ConditionSO
 
     public override bool IsTargetConditionSatisfied(BaseObject caster, BaseObject target)
     {
+        if (target == null)
+            return false; 
+
         bool sameOwner = caster.OwnerID == target.OwnerID;
         return CompareBool(sameOwner, op);
     }

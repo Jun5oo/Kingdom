@@ -16,10 +16,10 @@ MonoBehaviour:
   abilityDescription: "\uC544\uAD70 \uBB34\uB364\uC744 \uC120\uD0DD\uD569\uB2C8\uB2E4.
     \n\uB370\uC2A4\uCE74\uC6B4\uD2B8 2\uAC1C\uB97C \uC18C\uBAA8\uD558\uC5EC \uD574\uB2F9
     \uBB34\uB364\uC744 \uBD80\uD65C \uC2DC\uD0B5\uB2C8\uB2E4. "
-  bindings:
-  - trigger: 0
-    target: 3
-    targetCount: 1
+  triggeredEffects:
+  - trigger: 1
+    target: 0
+    targetCount: 0
     triggerConditions: []
     targetConditions:
     - {fileID: 11400000, guid: a9f5dfd192689fa41a46a5e744cc92aa, type: 2}
@@ -27,6 +27,7 @@ MonoBehaviour:
     value: 1
     duration: 0
     delay: 0
+    cost: 0
     filters: []
     effects:
     - {fileID: 11400000, guid: a9ce96b95a6b7804ba9baa4aba7a3856, type: 2}
@@ -36,11 +37,12 @@ MonoBehaviour:
       targetCount: 0
       triggerConditions: []
       targetConditions:
-      - {fileID: 0}
-      value: 0
+      - {fileID: 11400000, guid: 46ca1f155ac3ac443bfd8547229cfd3a, type: 2}
+      value: 1
       duration: 0
       delay: 0
+      cost: 0
       filters: []
       effects:
-      - {fileID: 11400000, guid: 7ffb436d440d03247b943ff411d1f233, type: 2}
+      - {fileID: 11400000, guid: 470fc0f3e3950a544816c70220c0eea0, type: 2}
       chainAbilities: []

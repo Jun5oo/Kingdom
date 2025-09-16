@@ -146,7 +146,7 @@ public class HoverSystem : MonoBehaviour, IGameSystem
             if (token.AttackRange == null || token.AttackRange.Count <= 0)
                 return;
 
-            IAction currentAction = actionSystem.GetCurrentAction();
+            IGameAction currentAction = actionSystem.GetCurrentAction();
 
             if (currentAction.ActionType == ActionType.Summon)
                 return;

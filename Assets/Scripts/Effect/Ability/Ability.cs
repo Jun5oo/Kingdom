@@ -1,20 +1,24 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Ability
 {
-    BaseObject abilityOwner;
+    #region Data 
+    BaseObject caster;
     AbilitySO abilityData;
+    public BaseObject Caster => caster;
+    public AbilitySO AbilityData => abilityData;
+    #endregion
 
     HashSet<Trigger> triggers;
-
     bool isSubscribed;
 
     public Ability(BaseObject baseObject, AbilitySO abilityData)
     {
-        this.abilityOwner = baseObject;
+        this.caster = baseObject;
         this.abilityData = abilityData;
 
         triggers = new HashSet<Trigger>();
@@ -23,12 +27,13 @@ public class Ability
         Subscribe(); 
     }
 
+    #region Subscribe 
     public void Subscribe()
     {
         if (isSubscribed)
             return; 
 
-        foreach(var binding in abilityData.bindings)
+        foreach(var binding in abilityData.triggeredEffects)
         {
             switch (binding.trigger)
             {
@@ -61,116 +66,115 @@ public class Ability
 
         isSubscribed = false; 
     }
-
     void TrySubScribe(Trigger trigger, Action action)
     {
         if (triggers.Add(trigger))
             action?.Invoke(); 
     }
+    public void Clear()
+    {
+        Unsubscribe();
+    }
+    #endregion 
 
     #region Event 
     void TurnStart(TurnStartEvent eventData)
     {
-        RunBindings(Trigger.OnTurnStarted, eventData).Forget(); 
+        ExecutePassive(Trigger.OnTurnStarted, eventData).Forget(); 
     }
     void TurnEnd(TurnEndEvent eventData)
     {
-        RunBindings(Trigger.OnTurnEnded, eventData).Forget();
+        ExecutePassive(Trigger.OnTurnEnded, eventData).Forget();
 
     }
     void UnitDead(UnitDeadEvent eventData)
     {
-        RunBindings(Trigger.OnUnitDead, eventData).Forget();
+        ExecutePassive(Trigger.OnUnitDead, eventData).Forget();
+    }
+    #endregion
+
+    #region Conditions 
+    public bool IsTriggerConditionSatisfied(TriggeredEffect binding, EffectContext context)
+    {
+        if (binding.triggerConditions == null || binding.triggerConditions.Count == 0)
+            return true; 
+
+        foreach(var condition in binding.triggerConditions)
+        {
+            if (!condition.IsTriggerConditionSatisfied(caster, context))
+                return false; 
+        }
+
+        return true; 
     }
     #endregion 
 
-    public async UniTask RunBindings(Trigger trigger, IGameEvent eventData)
+    // 액티브 효과 발동 
+    public async UniTask ExecuteActive(Vector2Int targetPosition)
     {
-        TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
-        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+        List<TriggeredEffect> activeEffects = AbilityData.triggeredEffects.Where(e => e.trigger == Trigger.Active).ToList();
 
-        foreach (var binding in abilityData.bindings)
+        if (!activeEffects.Any())
         {
-            if (binding.trigger != trigger)
+            Debug.LogWarning($"{AbilityData.abilityName}은 실행시킬 수 있는 Active 스킬이 없습니다.");
+            return; 
+        }
+
+        var context = new EffectContext(); 
+        context.Set(ContextKey.Position, new List<Vector2Int>() { targetPosition });
+
+        foreach(var effect in activeEffects)
+        {
+            await Execute(effect, context); 
+        }
+    }
+    // 패시브 효과 발동
+    public async UniTask ExecutePassive(Trigger trigger, IGameEvent eventData)
+    {
+        var context = new EffectContext(); 
+        FillContextFromEvent(context, eventData); 
+
+        foreach (var effect in AbilityData.triggeredEffects)
+        {
+            if (effect.trigger != trigger)
                 continue;
 
-            var context = new EffectContext();
-            FillContextFromEvent(context, eventData); 
-
-            bool isAllConditionSatisfied = true; 
-
-            // TriggerCondition 확인 
-            foreach(var condition in binding.triggerConditions)
-            {
-                if (!condition.IsTriggerConditionSatisfied(abilityData, abilityOwner, context))
-                {
-                    isAllConditionSatisfied = false;
-                    break; 
-                }
-
-                if(!condition.IsTriggerConditionSatisfied(abilityOwner, context))
-                {
-                    isAllConditionSatisfied = false;
-                    break; 
-                }
-            }
-
-            if (!isAllConditionSatisfied)
-                continue;
-
-            List<Vector2Int> candidates = await resolver.TryResolve(abilityOwner, binding.target, binding.targetConditions, binding.filters, context);
-
-            if (candidates != null)
-            {
-                context.Set<List<Vector2Int>>(ContextKey.Position, candidates);
-                Debug.Log($"{candidates.Count}");
-            }
-
-            foreach (var effect in binding.effects)
-                await effect.Apply(abilityOwner, binding, context);
-
-            await eventQueue.ExecuteAllAsync();
-
-            if (binding.chainAbilities != null && binding.chainAbilities.Count > 0)
-                await ExecuteChainAbilities(binding.chainAbilities, context); 
+            await Execute(effect, context); 
         }
     }
 
-    async UniTask ExecuteChainAbilities(List<TriggerBinding> chainAbilities, EffectContext parentContext)
+    async UniTask Execute(TriggeredEffect binding, EffectContext context)
     {
-        TargetResolver resolver = ServiceLocator.Get<TargetResolver>();
-        EventQueue eventQueue = ServiceLocator.Get<EventQueue>();
+        if (!CheckTriggerCondition(binding.triggerConditions, context))
+            return; 
 
-        foreach (var chainBinding in chainAbilities)
+        if(binding.trigger != Trigger.Active)
         {
-            var chainContext = parentContext; 
+            var resolver = ServiceLocator.Get<TargetResolver>();
+            var targets = await resolver.TryResolve(caster, binding.target, binding.targetConditions, binding.filters, context);
 
-            bool isAllConditionSatisfied = true;
+            if (targets != null && targets.Count > 0)
+                context.Set(ContextKey.Position, targets); 
+        }
 
-            foreach (var condition in chainBinding.triggerConditions)
+        var eventQueue = ServiceLocator.Get<EventQueue>(); 
+
+        foreach (var effect in binding.effects)
+        {
+            eventQueue.Enqueue(async () =>
             {
-                if (!condition.IsTriggerConditionSatisfied(abilityData, abilityOwner, chainContext))
-                {
-                    isAllConditionSatisfied = false;
-                    break;
-                }
+                await effect.Apply(caster, binding, context);
+            }); 
+        }
+
+        await eventQueue.ExecuteAllAsync(); 
+
+        if(binding.chainAbilities?.Count > 0)
+        {
+            foreach(var chain in binding.chainAbilities)
+            {
+                await Execute(chain, context); 
             }
-
-            if (!isAllConditionSatisfied)
-                continue;
-
-            List<Vector2Int> chainCandidates = await resolver.TryResolve(abilityOwner, chainBinding.target, chainBinding.targetConditions, chainBinding.filters, chainContext); 
-
-            if (chainCandidates != null)
-                chainContext.Set(ContextKey.Position, chainCandidates);
-
-            foreach (var effect in chainBinding.effects)
-                await effect.Apply(abilityOwner, chainBinding, chainContext);
-
-            await eventQueue.ExecuteAllAsync();
-
-            if (chainBinding.chainAbilities != null && chainBinding.chainAbilities.Count > 0)
-                await ExecuteChainAbilities(chainBinding.chainAbilities, chainContext);
         }
     }
 
@@ -193,9 +197,12 @@ public class Ability
         }
     }
 
-
-    public void Clear()
+    bool CheckTriggerCondition(List<ConditionSO> conditions, EffectContext context)
     {
-        Unsubscribe(); 
+        if (conditions == null || conditions.Count == 0)
+            return true;
+
+        return conditions.All(c => c.IsTriggerConditionSatisfied(caster, context)); 
     }
+
 }

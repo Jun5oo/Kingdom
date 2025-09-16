@@ -6,7 +6,7 @@ public class GainSO : EffectSO
 {
     public ResourceType resourceType;
 
-    public override UniTask Apply(BaseObject caster, TriggerBinding binding, EffectContext context)
+    public override UniTask Apply(BaseObject caster, TriggeredEffect binding, EffectContext context)
     {
         ActionResourceSystem actionResourceSystem = ServiceLocator.Get<ActionResourceSystem>();
         AbilityResourceSystem abilityResourceSystem = ServiceLocator.Get<AbilityResourceSystem>();
