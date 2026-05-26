@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 유닛이 적 유닛을 공격하는 액션.
+/// 근접/원거리 공격을 구분하며, 반격(카운터 어택) 및 왕에게의 간접 데미지를 처리한다.
+/// EventQueue를 사용해 공격 → 반격 → 간접 데미지 → 사망 확인 순으로 순차 실행한다.
+/// </summary>
 public class AttackAction : IAction
 {
     ActionType actionType;
@@ -19,14 +24,14 @@ public class AttackAction : IAction
     DamageManager damageManager;
     EventQueue eventQueue;
 
-    Token token;
-    Token target;
+    Token token;   // 공격을 수행하는 유닛
+    Token target;  // 공격을 받는 유닛
 
     ActionPerformer performer;
 
     Vector2Int targetPosition;
 
-    public List<Vector2Int> AttackablePositions { get; private set; }
+    public List<Vector2Int> AttackablePositions { get; private set; } // 공격 가능한 상대 위치 목록
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
@@ -42,6 +47,7 @@ public class AttackAction : IAction
 
     public Predicate<Vector2Int> Validation => CanAttack;
 
+    /// <summary> 공격 액션 초기화. 공격자 토큰과 수행 주체(플레이어/AI)를 받아 설정한다. </summary>
     public AttackAction(Token token, ActionPerformer performer)
     {
         actionType = ActionType.Attack;
@@ -62,10 +68,12 @@ public class AttackAction : IAction
         resourceType = ResourceType.Action;
     }
 
-    public void Enter()
-    {
+    public void Enter() { }
 
-    }
+    /// <summary>
+    /// 현재 토큰의 공격 범위 내에 해당 그리드 좌표가 있는지 검사한다.
+    /// GridSelection의 Validation 조건으로 사용된다.
+    /// </summary>
     bool CanAttack(Vector2Int gridPosition)
     {
         Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
@@ -83,6 +91,10 @@ public class AttackAction : IAction
         return false;
     }
 
+    /// <summary>
+    /// 대상 그리드 위치의 토큰을 검증한 뒤 공격 FSM을 시작한다.
+    /// 대상이 없거나 아군이면 액션을 취소한다.
+    /// </summary>
     public async UniTask Execute(Vector2Int targetPosition)
     {
         var target = tokenManager.GetTokenFrom(targetPosition);
@@ -113,11 +125,9 @@ public class AttackAction : IAction
         await Transition(AttackState.Prepare);
     }
 
-    public void Exit()
-    {
+    public void Exit() { }
 
-    }
-
+    /// <summary> 공격 FSM 상태 전환 </summary>
     async UniTask Transition(AttackState state)
     {
         switch (state)
@@ -137,11 +147,13 @@ public class AttackAction : IAction
         }
     }
 
+    /// <summary>
+    /// 공격 실행에 필요한 이벤트들을 EventQueue에 순서대로 등록한다.
+    /// 순서: 공격 애니메이션 → 반격 → 왕에게 간접 데미지 → 방어자 사망 확인 → 공격자 사망 확인 → 왕 사망 확인
+    /// </summary>
     async UniTask Prepare()
     {
         Exit();
-
-        // EventQueue에 데미지 계산 순서를 넣기. 
 
         Vector3 targetPosition = gridManager.GetWorldPosition(this.targetPosition);
 
@@ -298,6 +310,7 @@ public class AttackAction : IAction
         await Transition(AttackState.Attack);
     }
 
+    /// <summary> Prepare에서 등록된 이벤트들을 순차 실행한다. </summary>
     async UniTask Attack()
     {
         await eventQueue.ExecuteAllAsync();
@@ -309,73 +322,60 @@ public class AttackAction : IAction
         await Transition(AttackState.Done);
     }
 
-    void Done()
-    {
-    }
+    void Done() { }
 
-    // 근접/원거리 공격 구분
+    /// <summary>
+    /// 공격 유닛이 근접 공격인지 원거리 공격인지 판별한다.
+    /// AttackRange에 거리 2 이상의 벡터가 있으면 원거리 유닛으로 간주한다.
+    /// </summary>
     bool IsMeleeAttack()
     {
-        // 원거리 유닛인지 확인 (AttackRange에 2 이상의 거리가 포함되어 있으면 원거리 유닛)
         bool isRangedUnit = IsRangedUnit(token);
+        if (isRangedUnit) return false;
 
-        if (isRangedUnit)
-        {
-            // 원거리 유닛은 항상 화살을 쏨
-            return false;
-        }
-
-        // 근접 유닛은 거리로 판단
         Vector2Int currentGridPosition = tokenManager.GetGridPositionOfToken(token);
         Vector2Int targetGridPosition = this.targetPosition;
         int distance = Mathf.Abs(targetGridPosition.x - currentGridPosition.x) +
                        Mathf.Abs(targetGridPosition.y - currentGridPosition.y);
         return distance == 1;
     }
-    // 원거리 유닛인지 확인
+
+    /// <summary> 해당 유닛이 원거리 유닛인지 확인한다 (AttackRange 최대 거리 기준). </summary>
     bool IsRangedUnit(Token unit)
     {
         if (unit.AttackRange == null || unit.AttackRange.Count == 0)
             return false;
 
-        // AttackRange에 2 이상의 거리가 포함되어 있으면 원거리 유닛
         foreach (var range in unit.AttackRange)
         {
             int distance = Mathf.Abs(range.x) + Mathf.Abs(range.y);
-            if (distance >= 2)
-            {
-                return true;
-            }
+            if (distance >= 2) return true;
         }
 
         return false;
     }
-    // 반격 시 근접/원거리 구분
+
+    /// <summary> 반격 시 방어자가 근접 반격인지 원거리 반격인지 판별한다. </summary>
     bool IsMeleeCounterAttack(Token defender)
     {
-        // 원거리 유닛인지 확인
         bool isRangedUnit = IsRangedUnit(defender);
+        if (isRangedUnit) return false;
 
-        if (isRangedUnit)
-        {
-            // 원거리 유닛은 항상 화살을 쏨
-            return false;
-        }
-
-        // 근접 유닛은 거리로 판단
         Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
         Vector2Int attackerPos = tokenManager.GetGridPositionOfToken(token);
         int distance = Mathf.Abs(attackerPos.x - defenderPos.x) +
                        Mathf.Abs(attackerPos.y - defenderPos.y);
         return distance == 1;
     }
-    // 반격 가능 여부 확인
+
+    /// <summary>
+    /// 방어자가 공격자를 반격할 수 있는지 확인한다.
+    /// 방어자의 AttackRange 내에 공격자가 위치하면 반격 가능하다.
+    /// </summary>
     bool CanCounterAttack(Token defender, Token attacker)
     {
         if (defender.AttackRange == null || defender.AttackRange.Count == 0)
-        {
             return false;
-        }
 
         Vector2Int defenderPos = tokenManager.GetGridPositionOfToken(defender);
         Vector2Int attackerPos = tokenManager.GetGridPositionOfToken(attacker);
@@ -383,14 +383,13 @@ public class AttackAction : IAction
         foreach (var position in defender.AttackRange)
         {
             if (defenderPos + position == attackerPos)
-            {
                 return true;
-            }
         }
 
         return false;
     }
 
+    /// <summary> 공격 범위 내에 적이 있는 경우에만 유효한 액션으로 판단한다. </summary>
     public bool IsValid()
     {
         if (AttackablePositions.Count == 0)

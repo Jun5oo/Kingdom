@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 페이즈 UI 항목(PhaseImage) 목록의 활성/비활성 전환 애니메이션을 제어하는 컨트롤러.
+/// ActivateEffect(index)로 현재 페이즈를 활성화하고 나머지를 비활성/숨김 처리한다.
+/// isFirstActivation이 true이면 너비 0(hideWidth)에서 시작하는 펼침 애니메이션을 실행한다.
+/// </summary>
 public class PhaseUIController : MonoBehaviour
 {
     [SerializeField] private GameObject phaseParent;

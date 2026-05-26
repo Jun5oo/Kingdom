@@ -3,6 +3,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 개별 페이즈 UI 항목의 시각 상태(배경 스프라이트, 알파, 텍스트 색상, 너비 애니메이션)를 관리한다.
+/// DOKickPhase()로 활성/비활성 전환 시 DOTween 애니메이션을 실행한다.
+/// </summary>
 public class PhaseImage : MonoBehaviour
 {
     [SerializeField] private Image backGroundImage;

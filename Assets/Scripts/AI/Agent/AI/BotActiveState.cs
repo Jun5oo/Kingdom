@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
+/// <summary> 봇 액티브(행동) 페이즈 상태 (미구현 스텁). </summary>
 public class BotActiveState : IPhaseState
 {
     private AgentController agent;

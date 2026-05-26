@@ -4,6 +4,10 @@ using System.Linq;
 using Unity.Collections;
 using UnityEngine;
 
+/// <summary>
+/// AI의 소환 행동을 결정하는 전략 클래스.
+/// 핸드에서 무작위 카드를 선택하고, 왕 기준 인접 위치에서 유효한 소환 위치를 필터링한다.
+/// </summary>
 public class AISummonStrategy
 {
     private HandManager handManager;
@@ -17,6 +21,7 @@ public class AISummonStrategy
         this.tokenManager = tokenManager;
     }
 
+    /// <summary> validGirdPos 중 무작위 위치를 선택하여 소환을 실행한다. </summary>
     public async UniTask SummonRandomPos(SummonAction summon, List<Vector2Int> validGirdPos)
     {
         int randomIndex = UnityEngine.Random.Range(0, validGirdPos.Count);
@@ -24,10 +29,14 @@ public class AISummonStrategy
         await summon.Execute(randomGridPos);
     }
 
+    /// <summary>
+    /// 핸드에서 무작위 카드로 소환 가능한 위치 목록을 계산한다.
+    /// 왕 위치 기준으로 ValidPositions에 오프셋을 더하고 보드 외부·토큰 점유 위치를 제외한다.
+    /// 유효 위치가 없으면 false를 반환한다.
+    /// </summary>
     public bool CanSummonAction(int currentPlayerID, out SummonAction summonAction, out List<Vector2Int> validGridPosList)
     {
         List<Card> cards = handManager.GetHandCardsList(currentPlayerID);
-        // 테스트
 
         if (cards.Count == 0)
         {
@@ -42,7 +51,6 @@ public class AISummonStrategy
 
         validGridPosList = summonAction.ValidPositions.ToList();
 
-
         if (summonAction.TryGetKingTokenPos(out Vector2Int gridPos))
         {
             for (int i = 0; i < validGridPosList.Count; i++)
@@ -54,14 +62,12 @@ public class AISummonStrategy
 
             foreach (var tempValidPos in validGridPosList)
             {
-                // 보드 외부 검사
                 if (tempValidPos.y < 0 || tempValidPos.y >= GridManager.WIDTH || tempValidPos.x < 0 || tempValidPos.x >= GridManager.HEIGHT)
                 {
                     tempListToRemove.Add(tempValidPos);
                     continue;
                 }
 
-                // 토큰 검사
                 if (tokenManager.TryGetTokenFrom(tempValidPos, out Token token))
                 {
                     tempListToRemove.Add(tempValidPos);

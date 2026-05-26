@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using Unity.VisualScripting;
 
+/// <summary>
+/// 업그레이드 조건을 정의하는 레시피 클래스. IsMatch()로 선택된 토큰 목록이 조건을 만족하는지 검사한다.
+/// isCardIDSame=true이면 동일 카드 N장, false이면 서로 다른 카드 N장을 요구한다.
+/// </summary>
 public class UpgradeRecipe
 {
     protected string recipeName;

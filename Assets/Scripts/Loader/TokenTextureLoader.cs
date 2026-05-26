@@ -2,6 +2,10 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+/// <summary>
+/// 토큰 전용 텍스처 로더. Art, ArtMask, Frame 3종을 Addressables로 로드하고 캐싱한다.
+/// 주소 규칙: card_art_{id}, token_artmask_{type}, token_frame_{type} (type: "king" | "normal").
+/// </summary>
 public class TokenTextureLoader : TextureLoader
 {
 

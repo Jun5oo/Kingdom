@@ -3,6 +3,9 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 
+/// <summary>
+/// Cinemachine 카메라 전환 컨트롤러. Awake 후 0.5초 뒤 startCamera → endCamera 우선순위를 교체한다.
+/// </summary>
 public class CameraController : MonoBehaviour
 {
     [SerializeField] CinemachineCamera startCamera;

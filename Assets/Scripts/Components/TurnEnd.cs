@@ -2,6 +2,10 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+/// <summary>
+/// 턴 종료 3D 버튼 컴포넌트. TurnSystem 이벤트를 구독해 내 턴/상대 턴에 따라 텍스처와 표시 여부를 전환한다.
+/// OnMouseDown에서 액션 진행 중이거나 내 턴이 아니면 EndTurn()을 차단한다.
+/// </summary>
 public class TurnEnd : MonoBehaviour
 {
     TurnSystem turnSystem;

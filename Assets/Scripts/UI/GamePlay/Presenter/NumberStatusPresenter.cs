@@ -1,6 +1,9 @@
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// 일반 토큰 전용 CP/이동력 텍스트 프레젠터. SetStatus()로 초기값을, OnUpdateCP()로 현재 CP를 갱신한다.
+/// </summary>
 public class NumberStatusPresenter : StatusPresenter
 {
     [SerializeField] TextMeshProUGUI cp;

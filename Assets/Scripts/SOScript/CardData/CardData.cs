@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 카드 한 장의 정적 데이터를 보관하는 ScriptableObject.
+/// ID, 이름, 종족, 레벨별 CP, 공격/이동 RangeType, 액션/패시브 타입 목록을 포함한다.
+/// CSV 임포터(ReadCSVFile)로 자동 생성되거나 에디터에서 직접 작성할 수 있다.
+/// </summary>
 [CreateAssetMenu(fileName = "CardData", menuName = "Card Scriptable")]
 public class CardData : ScriptableObject
 {

@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// AI의 신성방패 능력 사용을 결정하는 전략 클래스.
+/// 왕 토큰을 찾아 DivineShieldAction을 생성하고, 무작위 아군에게 적용한다.
+/// 어빌리티 코인이 부족하면 false를 반환한다.
+/// </summary>
 public class AIDivineShieldStrategy
 {
     private ActionFactory actionFactory;

@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 유닛을 그리드 위의 다른 셀로 이동시키는 액션.
+/// 이동 범위(MoveableRange) 내에서 빈 칸으로만 이동 가능하다.
+/// </summary>
 public class MoveAction : IAction
 {
     ActionType actionType;
@@ -38,9 +42,9 @@ public class MoveAction : IAction
 
     public Predicate<Vector2Int> Validation => CanMoveTo;
 
+    /// <summary> 이동 액션 초기화. 이동할 토큰과 수행 주체(플레이어/AI)를 받아 설정한다. </summary>
     public MoveAction(Token token, ActionPerformer performer)
     {
-        // 이동액션 초기화 
         actionType = ActionType.Move;
         highlightLayer = HighlightLayer.Action;
         highlightType = HighlightType.MoveHighlight;
@@ -57,10 +61,9 @@ public class MoveAction : IAction
         resourceType = ResourceType.Action;
     }
 
-    public void Enter()
-    {
+    public void Enter() { }
 
-    }
+    /// <summary> 대상 그리드 좌표를 저장하고 이동 FSM을 시작한다. </summary>
     public async UniTask Execute(Vector2Int gridPosition)
     {
         if (token == null)
@@ -72,11 +75,10 @@ public class MoveAction : IAction
         targetPosition = gridPosition;
         await Transition(MoveState.Prepare);
     }
-    public void Exit()
-    {
 
-    }
+    public void Exit() { }
 
+    /// <summary> 이동 가능한 위치가 존재하는 경우에만 유효한 액션으로 판단한다. </summary>
     public bool IsValid()
     {
         if (MoveablePositions.Count == 0)
@@ -85,6 +87,7 @@ public class MoveAction : IAction
         return true;
     }
 
+    /// <summary> 이동 FSM 상태 전환 </summary>
     async UniTask Transition(MoveState state)
     {
         switch (state)
@@ -109,9 +112,10 @@ public class MoveAction : IAction
 
     async UniTask Prepare()
     {
-        // Exit(); 
         await Transition(MoveState.Animation);
     }
+
+    /// <summary> DOTween으로 토큰을 목표 위치까지 이동시키는 애니메이션을 실행한다. </summary>
     async UniTask Move()
     {
         TokenMovement tokenMovement = token.GetComponent<TokenMovement>();
@@ -130,12 +134,18 @@ public class MoveAction : IAction
         await taskComplete.Task;
         await Transition(MoveState.Placing);
     }
+
+    /// <summary> 애니메이션 완료 후 TokenManager에 실제 그리드 위치를 갱신한다. </summary>
     async UniTask Placing()
     {
         tokenManager.MoveTokenTo(token, targetPosition);
         await Transition(MoveState.Done);
     }
 
+    /// <summary>
+    /// 이동 목표 위치가 유효한지 검사한다.
+    /// 토큰의 MoveableRange 내에 있고, 해당 위치에 다른 토큰이 없어야 한다.
+    /// </summary>
     bool CanMoveTo(Vector2Int pos)
     {
         if (token == null || tokenManager == null)
@@ -153,7 +163,5 @@ public class MoveAction : IAction
         return false;
     }
 
-    void Done()
-    {
-    }
+    void Done() { }
 }

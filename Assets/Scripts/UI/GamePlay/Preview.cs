@@ -7,6 +7,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 카드/토큰 상세 정보 프리뷰 UI. UpdatePreview()로 텍스처·스탯·어빌리티 설명을 채우고
+/// Show()/Hide()로 CancellationToken 기반 페이드 인/아웃을 제어한다.
+/// </summary>
 public class Preview : MonoBehaviour
 {
     const float FADE_DURATION = 0.2f;

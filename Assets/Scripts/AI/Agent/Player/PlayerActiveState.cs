@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary> 플레이어 액티브(행동) 페이즈 상태 (미구현 스텁). </summary>
 public class PlayerActiveState : IPhaseState
 {
     private AgentController agent;

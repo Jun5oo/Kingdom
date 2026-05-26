@@ -2,6 +2,10 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+/// <summary>
+/// 카드 전용 텍스처 로더. Art, ArtMask, Frame, Background, Back 5종을 Addressables로 로드하고 캐싱한다.
+/// 주소 규칙: card_art_{id}, card_artmask_{race}_{type}, card_frame_{race}_{type}, card_bg_{race}, card_back_{back}.
+/// </summary>
 public class CardTextureLoader : TextureLoader
 {
     Dictionary<(string race, string type), Texture2D> artMaskCache;

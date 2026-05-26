@@ -10,6 +10,11 @@ public enum UpgradeState
     PlacementSelection,
     Done
 }
+/// <summary>
+/// 필드 위의 유닛들을 재료로 삼아 상위 등급 유닛으로 합성(업그레이드)하는 액션.
+/// 왕이 실행하며, RecipeSelection → SourceSelection → PlacementSelection 순서로 진행된다.
+/// UpgradeRecipe를 통해 어떤 재료 조합이 가능한지 판별한다.
+/// </summary>
 public class UpgradeAction : IAction
 {
     ActionType actionType;
@@ -23,23 +28,19 @@ public class UpgradeAction : IAction
     ActionPerformer performer;
     public ActionPerformer Performer { get { return performer; } }
 
-    // UpgradeAction을 실행한 주체, 왕 
-    Token actionOwner;
+    Token actionOwner; // 업그레이드 액션을 실행하는 왕 토큰
     public int OwnerID => actionOwner.OwnerID;
 
-    // 행동 카운트를 소모해서 발동 
-    ResourceType resourceType;
+    ResourceType resourceType; // 행동 포인트(Action)를 소모
     public ResourceType ResourceType { get { return resourceType; } }
 
-    // 행동 코스트 1 
-    int cost;
+    int cost; // 소모 비용 1
     public int Cost { get { return cost; } }
 
     public event Action OnActionCanceled;
     public event Action OnActionComplete;
 
-    // FSM 상태로 행동 진행 
-    UpgradeState currentState;
+    UpgradeState currentState; // 현재 업그레이드 진행 단계
     public UpgradeState UpgradeState { get { return currentState; } }
 
     public BaseObject Executor => actionOwner;
@@ -91,22 +92,28 @@ public class UpgradeAction : IAction
         };
     }
 
+    /// <summary>
+    /// 현재 유효한 레시피 목록을 조회하고 첫 번째 레시피를 자동 선택한다.
+    /// (추후 UI를 통한 레시피 선택으로 대체 예정)
+    /// </summary>
     public void Enter()
     {
         var recipes = upgradeSystem.GetValidRecipes(OwnerID);
 
-        // UI를 보여주고 선택 한 후에 해당 Source에 맞는 유닛들을 Highlight 하려고 하지만, 현재는 Log만 남기고 첫 번째 Recipe만을 선택한다고 가정 
         foreach (var recipe in recipes)
             Debug.Log(recipe.Name);
 
         currentState = UpgradeState.RecipeSelection;
-
         OnRecipeSelected(recipes[0]);
     }
 
+    /// <summary>
+    /// SourceSelection 상태에서는 재료 유닛을 선택하고,
+    /// PlacementSelection 상태에서는 업그레이드 결과 유닛의 배치 위치를 선택한다.
+    /// </summary>
     public async UniTask Execute(Vector2Int targetPosition)
     {
-        // Execute가 되었다는 것은, Highlight된 어느 한 Source를 클릭했다는 것 
+        // 하이라이트된 재료 유닛 셀을 클릭했을 때
         if (currentState == UpgradeState.SourceSelection)
         {
             var selected = tokenManager.GetTokenFrom(targetPosition);
@@ -180,9 +187,10 @@ public class UpgradeAction : IAction
         currentRecipe = null;
     }
 
-    // 하나라도 진화할 수 있는 족보가 있으면 Valid 
+    /// <summary> 현재 플레이어가 사용 가능한 업그레이드 레시피가 하나라도 있으면 유효한 액션이다. </summary>
     public bool IsValid() => upgradeSystem.GetValidRecipes(OwnerID).Count > 0;
 
+    /// <summary> 레시피를 선택하고 해당 레시피의 재료 후보 유닛들을 하이라이트한다. </summary>
     public void OnRecipeSelected(UpgradeRecipe recipe)
     {
         currentRecipe = recipe;
@@ -205,6 +213,7 @@ public class UpgradeAction : IAction
         }, highlightType, highlightLayer);
     }
 
+    /// <summary> 재료 선택이 완료된 후 업그레이드 결과 유닛의 배치 가능 위치를 하이라이트한다. </summary>
     public void OnEnterPlacement()
     {
         gridManager.UnhighlightGridCells(highlightLayer);
@@ -232,7 +241,10 @@ public class UpgradeAction : IAction
         currentState = UpgradeState.PlacementSelection;
     }
 
-    // 진화를 하기 위한 재료 후보들을 찾는 함수 (Highlight를 하기 위함) 
+    /// <summary>
+    /// 레시피 조건에 맞는 재료 후보 유닛 목록을 반환한다.
+    /// 이미 선택된(picked) 유닛은 제외하고, 레시피 레벨·종류 조건에 맞는 유닛만 포함한다.
+    /// </summary>
     public List<Token> GetCandidates(UpgradeRecipe recipe, int playerID, List<Token> picked)
     {
         var result = new List<Token>();

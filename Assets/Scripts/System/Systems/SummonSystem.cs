@@ -3,10 +3,12 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 토큰 소환 공통 로직을 담당하는 시스템.
+/// SummonAction, SummonGraveyard(패시브), ResurrectionAction 등 소환이 필요한 모든 곳에서 사용한다.
+/// </summary>
 public class SummonSystem
 {
-    // SummonAction, SummonGraveyard 등 Summon 중복되는 부분이 많아서 SummonSystem 작성 중. 
-
     TokenManager tokenManager;
     TokenFactory tokenFactory;
     GridManager gridManager;
@@ -18,6 +20,12 @@ public class SummonSystem
         gridManager = ServiceLocator.Get<GridManager>();
     }
 
+    /// <summary>
+    /// 지정한 그리드 위치에 토큰을 생성하고 낙하 애니메이션을 재생한다.
+    /// sourceObject: 이 토큰을 생성한 주체(예: 무덤을 만든 언데드 왕)
+    /// sourceObjects: 업그레이드 재료 목록
+    /// spawnLevel: 소환 시 레벨 (기본 1)
+    /// </summary>
     public async UniTask Summon(int playerID, CardData cardData, Vector2Int targetPosition, CardData sourceObject = null, List<CardData> sourceObjects = null, int spawnLevel = 1)
     {
         if (tokenManager.IsTokenAtGridPosition(targetPosition))
@@ -32,7 +40,7 @@ public class SummonSystem
 
         PRS prs = new PRS(position, rotation, scale);
 
-        // 1. 생성 
+        // 토큰 생성 후 위에서 떨어지는 연출을 위해 높은 위치에서 시작
         Token created = await tokenFactory.CreateToken(cardData, playerID, sourceObject, sourceObjects, spawnLevel);
         created.transform.position = position + Vector3.up * 10f;
         created.transform.rotation = rotation;
@@ -44,7 +52,7 @@ public class SummonSystem
 
         var task = new UniTaskCompletionSource();
 
-        // 2. 애니메이션  
+        // 낙하 애니메이션 완료까지 대기
         if (created.TryGetComponent<TokenMovement>(out TokenMovement movement))
         {
             movement.MoveTransform(prs, 0.5f, false, () =>

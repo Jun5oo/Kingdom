@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 
+/// <summary> 플레이어 서포트 페이즈 상태 (미구현 스텁). </summary>
 public class PlayerSupportState : IPhaseState
 {
     private AgentController agent;

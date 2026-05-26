@@ -1,3 +1,4 @@
+/// <summary>카드/토큰이 수행할 수 있는 행동 종류.</summary>
 public enum ActionType
 {
     None, 

@@ -2,6 +2,11 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// 마우스 호버 감지 시스템. 매 프레임 Raycast로 IHoverable 오브젝트를 탐지하고
+/// OnHover/OffHover 이벤트를 발생시킨다. 0.7초 이상 머물면 onHoverStart로 프리뷰를 표시하고,
+/// 액션 진행 중 Grid Cell 위에 머물면 해당 토큰의 공격 범위를 HoverHighlight로 강조한다.
+/// </summary>
 public class HoverSystem : MonoBehaviour, IGameSystem
 {
     private IHoverable currentHoverable = null;

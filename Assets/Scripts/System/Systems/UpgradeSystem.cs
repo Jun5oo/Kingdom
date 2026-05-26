@@ -3,14 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// 유닛 합성(업그레이드) 로직을 담당하는 시스템.
+/// UpgradeRecipe에 정의된 조합 조건을 검증하고 상위 레벨 유닛을 소환한다.
+/// </summary>
 public class UpgradeSystem
 {
-    List<UpgradeRecipe> recipes;
+    List<UpgradeRecipe> recipes; // 사용 가능한 전체 업그레이드 레시피 목록
 
     CardDatabase database;
     SummonSystem summonSystem;
     TokenManager tokenManager;
 
+    /// <summary> 업그레이드 레시피를 정의하고 의존 시스템을 초기화한다. </summary>
     public void Init()
     {
         recipes = new List<UpgradeRecipe>();
@@ -25,11 +30,12 @@ public class UpgradeSystem
         database = ServiceLocator.Get<CardDatabase>();
     }
 
+    /// <summary>
+    /// 현재 플레이어의 필드 유닛과 코인으로 충족 가능한 레시피 목록을 반환한다.
+    /// </summary>
     public List<UpgradeRecipe> GetValidRecipes(int playerID)
     {
-        // 현재 코인의 개수 
         var coin = ServiceLocator.Get<AbilityResourceSystem>().GetCurrentResources(playerID);
-        // 현재 플레이어의 보드 위 유닛 
         var tokens = tokenManager.GetPlayerToken(playerID);
 
         List<UpgradeRecipe> upgradable = new List<UpgradeRecipe>();
@@ -43,9 +49,12 @@ public class UpgradeSystem
         return upgradable;
     }
 
+    /// <summary>
+    /// 재료 유닛들을 제거하고 다음 레벨 유닛을 지정 위치에 소환한다.
+    /// 레시피에 코인 비용이 있으면 차감한다.
+    /// </summary>
     public async UniTask Upgrade(UpgradeRecipe recipe, List<Token> sources, int playerID, Vector2Int targetPosition, CardData caller)
     {
-        // 조합 식 재차 확인 
         if (!recipe.IsMatch(sources))
         {
             Debug.Log("진화를 할 수 없는 조합 식입니다.");
@@ -74,20 +83,20 @@ public class UpgradeSystem
         }
 
         await summonSystem.Summon(playerID, cardData, targetPosition, caller, dataSources, nextLevel);
-
     }
 
+    /// <summary>
+    /// 해당 종족의 Normal 태그 카드 중 무작위로 업그레이드 결과 CardData를 반환한다.
+    /// </summary>
     public CardData GetRandomValidOutput(Race race)
     {
         List<CardData> raceList = database.GetRaceCardList(race)
-            .OfType<CardData>().
-            Where(u => u.Tag == UnitTag.Normal).
-            ToList();
+            .OfType<CardData>()
+            .Where(u => u.Tag == UnitTag.Normal)
+            .ToList();
 
         if (raceList.Count == 0)
-        {
             Debug.Log($"해당 {race}종족의 카드 데이터를 찾을 수 없습니다.");
-        }
 
         int idx = Random.Range(0, raceList.Count);
         return raceList[idx];

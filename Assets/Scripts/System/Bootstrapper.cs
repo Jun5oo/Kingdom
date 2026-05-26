@@ -1,11 +1,14 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
+/// <summary>
+/// 게임 시작 시 모든 시스템/매니저/팩토리를 생성하고 ServiceLocator에 등록하는 진입점.
+/// [DefaultExecutionOrder(-1)]로 다른 MonoBehaviour보다 먼저 Awake가 실행된다.
+/// Awake → RegisterServices(생성+등록+초기화) → Start → GameStart 순으로 동작한다.
+/// </summary>
 [DefaultExecutionOrder(-1)]
 public class Bootstrapper : MonoBehaviour
 {
-    // 게임에 필요한 매니저, 시스템, 팩토리, 로더 클래스들을 생성하고 ServiceLocator에 등록하는 가장 먼저 실행되어야 하는 클래스
-    // ExecutionOrder를 통해서 가장 먼저 실행 
 
     [SerializeField] PlayerConfig config; 
 
@@ -49,21 +52,25 @@ public class Bootstrapper : MonoBehaviour
     RangeResolver rangeResolver;
     ActionResolver actionResolver;
 
+    // 씬이 비활성화되거나 오브젝트가 파괴될 때 서비스를 모두 해제한다.
     void OnDisable()
     {
-        UnRegisterServices(); 
+        UnRegisterServices();
     }
 
+    // 가장 먼저 실행: 모든 서비스를 생성·등록·초기화한다.
     void Awake()
     {
         RegisterServices();
     }
 
+    // 초기화가 끝난 뒤 게임 흐름을 시작한다.
     void Start()
     {
         gameFlowManager.GameStart();
     }
 
+    /// <summary> 모든 시스템/매니저 인스턴스를 생성하고 ServiceLocator에 등록한 뒤 초기화한다. </summary>
     public async void RegisterServices()
     {
         gameFlowManager = new GameFlowManager();
@@ -134,6 +141,7 @@ public class Bootstrapper : MonoBehaviour
 
         await Initialization();
     }
+    /// <summary> ServiceLocator에 등록된 모든 서비스를 해제한다. </summary>
     public void UnRegisterServices()
     {
         ServiceLocator.Unregister<PlayerManager>();
@@ -175,6 +183,7 @@ public class Bootstrapper : MonoBehaviour
         ServiceLocator.Unregister<RangeResolver>();
         ServiceLocator.Unregister<ActionResolver>();
     }
+    /// <summary> 등록된 서비스들을 의존 순서에 맞게 초기화한다. 비동기 로더가 포함되어 있어 await가 필요하다. </summary>
     public async UniTask Initialization()
     {
         playerManager.Init();

@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// Card와 Token의 공통 기반 클래스.
+/// CardData(스탯·종족·이름 등)와 소유자 ID를 보관하고 기본 프로퍼티를 제공한다.
+/// </summary>
 public abstract class BaseObject : MonoBehaviour
 {
     private CardData cardData;

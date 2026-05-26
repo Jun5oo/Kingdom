@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// King 토큰 전용 HP 슬라이더 프레젠터. SetStatus()로 maxHp를 기록하고 OnUpdateCP()에서 슬라이더 비율을 갱신한다.
+/// </summary>
 public class BarStatusPresenter : StatusPresenter
 {
     Slider hpSlider;

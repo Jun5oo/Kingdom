@@ -2,6 +2,11 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
+/// <summary>
+/// 아군 유닛에게 신성 보호막(DivineShield) 버프를 부여하는 능력 액션.
+/// 왕이 실행하며, 어빌리티 코인 2개를 소모한다.
+/// 대상은 아군 일반 유닛(King 제외)이어야 한다.
+/// </summary>
 public class DivineShieldAction : IAction
 {
     ActionType actionType;
@@ -51,16 +56,16 @@ public class DivineShieldAction : IAction
         resourceType = ResourceType.Ability; 
     }
 
-    public void Enter()
-    {
+    public void Enter() { }
 
-    }
-
+    /// <summary>
+    /// 대상 위치의 토큰에게 DivineShield 버프를 적용한다.
+    /// 대상이 없거나 IBuffable이 아니면 액션을 취소한다.
+    /// </summary>
     public async UniTask Execute(Vector2Int targetPosition)
     {
-        Exit(); 
+        Exit();
 
-        // 나중에는 함수로 따로 작성 
         if (!tokenManager.IsTokenAtGridPosition(targetPosition))
         {
             OnActionCanceled?.Invoke();
@@ -78,13 +83,15 @@ public class DivineShieldAction : IAction
         IBuff buff = new DivineShield(buffable);
         await buff.OnApply();
 
-        OnActionComplete?.Invoke(); 
+        OnActionComplete?.Invoke();
     }
 
-    public void Exit()
-    {
-    }
+    public void Exit() { }
 
+    /// <summary>
+    /// 버프 대상이 유효한지 검사한다.
+    /// 아군이고, King이 아니며, IBuffable을 구현한 유닛이어야 한다.
+    /// </summary>
     bool CanBuff(Vector2Int pos)
     {
         if (!tokenManager.IsTokenAtGridPosition(pos))
@@ -107,9 +114,6 @@ public class DivineShieldAction : IAction
         return false;
     }
 
-    public bool IsValid()
-    {
-        return true; 
-    }
+    public bool IsValid() => true;
 
 }

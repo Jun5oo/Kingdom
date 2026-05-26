@@ -3,6 +3,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 진영 선택 슬라이더 컨트롤러. Prev()/Next()로 raceList를 순환하고 이미지·이름 UI를 갱신한다.
+/// </summary>
 public class CharacterSelectionController : MonoBehaviour
 {
     [SerializeField] List<RaceData> raceList;

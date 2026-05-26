@@ -2,6 +2,10 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+/// <summary>
+/// Addressables 기반 텍스처 로더 기반 클래스. artCache로 아트 텍스처를 캐싱하며
+/// LoadAllTextures()는 서브클래스에서 종류별 텍스처를 조합해 VisualTexture를 반환한다.
+/// </summary>
 public abstract class TextureLoader
 {
     protected Dictionary<string, Texture2D> artCache;

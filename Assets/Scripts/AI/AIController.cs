@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// AI 플레이어의 행동을 결정하는 컨트롤러.
+/// 공격 → 부활/신성방패 → 소환/이동 우선순위로 매 AP마다 전략 클래스에 위임한다.
+/// 가중치 기반 무작위 선택(GetRandomAction)으로 소환과 이동 중 하나를 고른다.
+/// </summary>
 public class AIController
 {
     GridManager gridManager;
@@ -23,19 +28,20 @@ public class AIController
 
     ActionSystem actionSystem;
 
+    // 소환과 이동의 기본 선택 가중치 (각 0.5 = 동확률)
     Dictionary<ActionType, float> baseWeights = new Dictionary<ActionType, float>
     {
         { ActionType.Move, 0.5f },
         { ActionType.Summon, 0.5f },
     };
 
+    /// <summary> 전략 클래스들을 생성하고 서비스 참조를 초기화한다. </summary>
     public void Init()
     {
-        // AI 초기화 로직
         gridManager = ServiceLocator.Get<GridManager>();
         actionFactory = ServiceLocator.Get<ActionFactory>();
         handManager = ServiceLocator.Get<HandManager>();
-        actionTypes = Enum.GetValues(typeof(ActionType)) as ActionType[]; // 모든 ActionType을 가져옴
+        actionTypes = Enum.GetValues(typeof(ActionType)) as ActionType[];
 
         tokenManager = ServiceLocator.Get<TokenManager>();
 
@@ -50,19 +56,21 @@ public class AIController
         actionSystem = ServiceLocator.Get<ActionSystem>();
     }
 
+    /// <summary> AI가 왕을 무작위 X 위치에 배치한다. </summary>
     public async void DecideKingPlacement(SummonAction summon)
     {
         int posY = summon.GetGridPosYForKing();
         Vector2Int targetPos = new Vector2Int(gridManager.GetRandomGridXPos(), posY);
-        await summon.Execute(targetPos); // AI places the king at the center of the board
+        await summon.Execute(targetPos);
     }
 
+    /// <summary>
+    /// 남은 AP만큼 우선순위 순으로 액션을 수행한다.
+    /// 공격 → 부활/신성방패 → 소환/이동 순으로 시도하고, 아무것도 할 수 없으면 루프를 종료한다.
+    /// 모든 액션 소진 후 OnAllActionsDone을 호출한다.
+    /// </summary>
     public async void InvokeRandomAction(int currentPlayerID, Func<UniTask> OnAllActionsDone)
     {
-        // 할 수 있는 액션 나열
-        // 1. 필드 위에 있는 오브젝트들 이동 및 공격
-        // 2. 새로운 유닛 소환
-        // 3. 영웅 능력 사용 (현재는 제외)
 
         int actionCount = actionSystem.GetCurrentActionCount(currentPlayerID);
         List<ActionType> availableActions = new List<ActionType>();
@@ -166,6 +174,10 @@ public class AIController
         await OnAllActionsDone.Invoke();
     }
 
+    /// <summary>
+    /// 가중치 기반 무작위로 ActionType을 선택한다.
+    /// baseWeights 합산 후 정규화하여 누적 확률로 선택한다.
+    /// </summary>
     private ActionType GetRandomAction(List<ActionType> availableActions)
     {
         Dictionary<ActionType, float> weightActionDict = new Dictionary<ActionType, float>();

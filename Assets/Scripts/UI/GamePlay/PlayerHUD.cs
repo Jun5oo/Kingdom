@@ -3,6 +3,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 플레이어 정보(킹 초상화, 이름, CP 슬라이더)를 표시하는 HUD.
+/// Init() 시 킹 토큰의 OnCPUpdate 이벤트를 구독해 실시간으로 슬라이더를 갱신한다.
+/// </summary>
 public class PlayerHUD : MonoBehaviour
 {
     const int MAX_CP = 40;

@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 플레이어의 행동 포인트(Action Point)를 관리하는 리소스 시스템.
+/// 턴 시작 시 ResetResources로 최대값으로 초기화되며, 액션 실행 시 Consume으로 차감된다.
+/// </summary>
 public class ActionResourceSystem : IActionResourceSystem
 {
-    // 행동을 하기 위해 필요한 Cost ResourceSystem 
+    Dictionary<int, int> playerActionResources;    // 플레이어별 현재 행동 포인트
+    Dictionary<int, int> playerMaxActionResources; // 플레이어별 최대 행동 포인트
 
-    // 현재 플레이어의 ActionResource; 
-    Dictionary<int, int> playerActionResources;
-    // 플레이어의 Max ActionResource
-    Dictionary<int, int> playerMaxActionResources;
-
-    public Action<int> onActionResourceChanged;
+    public Action<int> onActionResourceChanged; // 행동 포인트 변경 시 발생 (UI 업데이트용)
 
     public void Init()
     {

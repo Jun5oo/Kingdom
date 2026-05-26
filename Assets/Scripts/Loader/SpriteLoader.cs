@@ -5,9 +5,13 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
+/// <summary>
+/// Addressables 기반 스프라이트 로더. Init() 시 "Icon"/"Coin" 레이블의 스프라이트를 일괄 프리로드하고
+/// spriteCache에 캐싱한다. ActionPopup 아이콘 등에서 LoadSpriteAsync(id)로 사용한다.
+/// </summary>
 public class SpriteLoader
 {
-    // SpriteLoader: Sprite Image를 Addressable Asset을 통해서 가져옴 
+    // SpriteLoader: Sprite Image를 Addressable Asset을 통해서 가져옴
     const string ICON_LABEL = "Icon";
     const string COIN_LABEL = "Coin";
 

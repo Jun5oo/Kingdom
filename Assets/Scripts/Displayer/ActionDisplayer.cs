@@ -2,9 +2,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.VirtualTexturing;
 
+/// <summary>
+/// 오브젝트를 선택했을 때 수행 가능한 ActionType 팝업 버튼을 표시하는 컴포넌트.
+/// SelectionSystem의 onSelectedComplete 이벤트를 구독하고, ActionResolver로 유효한 액션을 조회한 뒤
+/// ActionPopup을 풀에서 꺼내 레이아웃에 배치한다. 선택 해제 시 Clear()로 팝업을 반납한다.
+/// </summary>
 public class ActionDisplayer : MonoBehaviour
 {
-    // 액션 팝업 Displayer. ISelectable한 BaseObject을 클릭했을 때 해당 오브젝트가 할 수 있는 행동을 Popup으로 보여줌 
     PoolManager poolManager;
 
     SelectionSystem selectionSystem;
@@ -41,6 +45,10 @@ public class ActionDisplayer : MonoBehaviour
         selectionSystem.onDeselected += Clear;
     }
 
+    /// <summary>
+    /// 선택된 오브젝트의 유효한 액션 팝업 버튼을 레이아웃에 배치한다.
+    /// IsValid()와 CanPerformAction()을 모두 통과한 액션만 표시한다.
+    /// </summary>
     public void Display(BaseObject baseObject)
     {
         Clear();
@@ -58,11 +66,12 @@ public class ActionDisplayer : MonoBehaviour
 
         var actionTypes = actionResolver.GetValidActions(baseObject);
 
-        if(baseObject is Token && baseObject.Data.Action.Count > 0)
+        // CardData에 정의된 특수 능력 액션도 목록에 추가한다
+        if (baseObject is Token && baseObject.Data.Action.Count > 0)
         {
             foreach (var actionType in baseObject.Data.Action)
             {
-                if(actionType != ActionType.None)
+                if (actionType != ActionType.None)
                     actionTypes.Add(actionType);
             }
         }
@@ -79,7 +88,6 @@ public class ActionDisplayer : MonoBehaviour
                 Debug.Log($"{action} invalid");
                 continue;
             }
-
 
             if (!actionSystem.CanPerformAction(action, baseObject.OwnerID))
             {
@@ -100,6 +108,8 @@ public class ActionDisplayer : MonoBehaviour
             pooled.Add(actionPopup);
         }
     }
+
+    /// <summary> 표시 중인 ActionPopup을 모두 이벤트 해제 후 풀에 반납한다. </summary>
     public void Clear()
     {
         foreach (var action in pooled)

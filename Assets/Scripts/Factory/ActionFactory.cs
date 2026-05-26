@@ -1,7 +1,15 @@
 using UnityEngine;
+
+/// <summary>
+/// ActionType에 따라 적절한 IAction 인스턴스를 생성하는 팩토리.
+/// Resurrection/DivineShield/Upgrade는 King 태그 토큰에서만 생성된다.
+/// </summary>
 public class ActionFactory
 {
-    // IAction을 생성. 생성될 actionType과 action을 실행한 카드를 파라미터 값으로 받음 
+    /// <summary>
+    /// actionType과 baseObject 조합으로 IAction을 생성한다.
+    /// 잘못된 조합(예: Card로 AttackAction 생성 시도)이면 null을 반환한다.
+    /// </summary>
     public IAction CreateAction(ActionType actionType, BaseObject baseObject, ActionPerformer performer = ActionPerformer.Player)
     {
         IAction action = null;

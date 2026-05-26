@@ -5,6 +5,10 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// 에디터 전용 CSV 임포터. Assets/CSV/CardData.csv를 파싱하여
+/// Assets/ScriptableObjects/Cards 경로에 CardData ScriptableObject를 생성한다.
+/// </summary>
 public static class ReadCSVFile
 {
     #region PATH 

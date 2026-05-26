@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
+/// <summary>
+/// AI의 공격 행동을 결정하는 전략 클래스.
+/// 무작위 토큰을 선택하고 공격 가능한 적 위치(보드 내, 적 소유 토큰)를 필터링한다.
+/// </summary>
 public class AIAttackStrategy
 {
     private ActionFactory actionFactory;
@@ -16,6 +20,7 @@ public class AIAttackStrategy
         this.tokenManager = tokenManager;
     }
 
+    /// <summary> validGridPosListForAttack 중 무작위 위치를 선택하여 공격을 실행한다. </summary>
     public async UniTask AttackRandomTarget(AttackAction attackAction, List<Vector2Int> validGridPosListForAttack)
     {
         int randomIndex = UnityEngine.Random.Range(0, validGridPosListForAttack.Count);
@@ -23,6 +28,11 @@ public class AIAttackStrategy
         await attackAction.Execute(randomGridPos);
     }
 
+    /// <summary>
+    /// 무작위 토큰으로 공격 가능한 위치 목록을 계산한다.
+    /// 보드 외부이거나 적 토큰이 없는 위치는 제외한다.
+    /// 유효 위치가 없으면 false를 반환한다.
+    /// </summary>
     public bool CanAttackAction(int currentPlayerID, out AttackAction attackAction, out List<Vector2Int> validGridPosList)
     {
         List<Token> tokens = tokenManager.GetTokens(currentPlayerID);
@@ -43,14 +53,12 @@ public class AIAttackStrategy
 
         foreach (var tempAttackablePos in validGridPosList)
         {
-            // 보드 외부 검사
             if (tempAttackablePos.y < 0 || tempAttackablePos.y >= GridManager.WIDTH || tempAttackablePos.x < 0 || tempAttackablePos.x >= GridManager.HEIGHT)
             {
                 tempListToRemove.Add(tempAttackablePos);
                 continue;
             }
 
-            // 토큰 검사
             if (!tokenManager.TryGetTokenFrom(tempAttackablePos, out Token token) || token.OwnerID == currentPlayerID)
             {
                 tempListToRemove.Add(tempAttackablePos);
@@ -62,6 +70,7 @@ public class AIAttackStrategy
         {
             validGridPosList.Remove(tempGridPos);
         }
+
         if (validGridPosList.Count == 0)
         {
             Debug.Log("유효한 그리드가 없습니다. 소환을 실행할 수 없습니다.");

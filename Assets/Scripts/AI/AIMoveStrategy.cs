@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// AI의 이동 행동을 결정하는 전략 클래스.
+/// 무작위 토큰을 선택하고 이동 가능한 빈 위치(보드 내, 토큰 없음)를 필터링한다.
+/// </summary>
 public class AIMoveStrategy
 {
     private ActionFactory actionFactory;
@@ -14,6 +18,7 @@ public class AIMoveStrategy
         this.tokenManager = tokenManager;
     }
 
+    /// <summary> validGirdPos 중 무작위 위치를 선택하여 이동을 실행한다. </summary>
     public async UniTask MoveRandomPos(MoveAction move, List<Vector2Int> validGirdPos)
     {
         int randomIndex = UnityEngine.Random.Range(0, validGirdPos.Count);
@@ -21,6 +26,11 @@ public class AIMoveStrategy
         await move.Execute(randomGridPos);
     }
 
+    /// <summary>
+    /// 무작위 토큰으로 이동 가능한 위치 목록을 계산한다.
+    /// 보드 외부이거나 다른 토큰이 있는 위치는 제외한다.
+    /// 유효 위치가 없으면 false를 반환한다.
+    /// </summary>
     public bool CanMoveAction(int currentPlayerID, out MoveAction moveAction, out List<Vector2Int> validGridPosList)
     {
         List<Token> tokens = tokenManager.GetTokens(currentPlayerID);
@@ -41,14 +51,12 @@ public class AIMoveStrategy
 
         foreach (var tempMoveablePos in validGridPosList)
         {
-            // 보드 외부 검사
             if (tempMoveablePos.y < 0 || tempMoveablePos.y >= GridManager.WIDTH || tempMoveablePos.x < 0 || tempMoveablePos.x >= GridManager.HEIGHT)
             {
                 tempListToRemove.Add(tempMoveablePos);
                 continue;
             }
 
-            // 토큰 검사
             if (tokenManager.TryGetTokenFrom(tempMoveablePos, out Token token))
             {
                 tempListToRemove.Add(tempMoveablePos);
@@ -60,6 +68,7 @@ public class AIMoveStrategy
         {
             validGridPosList.Remove(tempGridPos);
         }
+
         if (validGridPosList.Count == 0)
         {
             Debug.Log("유효한 그리드가 없습니다. 소환을 실행할 수 없습니다.");

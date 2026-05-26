@@ -2,6 +2,10 @@ using DG.Tweening;
 using System;
 using UnityEngine;
 
+/// <summary>
+/// 토큰의 근접/원거리 공격 애니메이션을 DOTween Sequence로 실행하는 컨트롤러.
+/// 종족(Race)에 따라 다른 무기 프리팹(칼/활/화살)을 인스턴스화하고 히트 시점에 onHitCallback을 호출한다.
+/// </summary>
 public class AttackAnimationController : MonoBehaviour
 {
     [Header("Undead Weapon Prefabs")]

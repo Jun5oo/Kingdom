@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 칼 이펙트 프리팹 컴포넌트. Start 시 지정 색상을 적용하고 lifetime 이후 자동 파괴된다.
+/// TrailRenderer는 0.1초 지연 후 활성화하여 생성 직후 잔상을 방지한다.
+/// </summary>
 public class SwordEffect : MonoBehaviour
 {
     [Header("Sword Settings")]

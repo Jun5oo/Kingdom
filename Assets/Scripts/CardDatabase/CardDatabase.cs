@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CardDatabase : MonoBehaviour 
+/// <summary>
+/// Inspector에서 직접 등록한 CardData 목록을 Name/Race 키 딕셔너리로 관리하는 임시 클래스.
+/// CSV 임포터로 생성된 ScriptableObject를 직렬화 필드에 연결해 사용한다.
+/// </summary>
+public class CardDatabase : MonoBehaviour
 {
     [SerializeField] List<CardData> database;
 

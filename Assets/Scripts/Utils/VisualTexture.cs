@@ -1,5 +1,9 @@
 using UnityEngine;
 
+/// <summary>
+/// 카드/토큰 시각 표현에 필요한 텍스처 묶음. Art, Mask, Frame, Background, Back 5개 슬롯으로 구성된다.
+/// CardTextureLoader/TokenTextureLoader가 Addressables에서 로드한 결과를 담아 Factory에 전달한다.
+/// </summary>
 public class VisualTexture
 {
     protected Texture2D cardArt;

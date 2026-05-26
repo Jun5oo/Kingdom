@@ -4,6 +4,10 @@ using TMPro;
 using UnityEngine;
 
 
+/// <summary>
+/// 데미지 수치를 팝업으로 표시하는 UI 컴포넌트. IPoolable로 풀에서 관리된다.
+/// Play() 호출 시 확대(0.5s) → 대기(1.5s) → 페이드아웃(0.5s) 후 onCompleteCallback을 실행하고 풀로 반환된다.
+/// </summary>
 public class DamagePopup : MonoBehaviour, IPoolable
 {
     [SerializeField] TextMeshProUGUI damage;

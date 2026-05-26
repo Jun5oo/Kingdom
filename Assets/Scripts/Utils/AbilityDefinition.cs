@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 
+/// <summary>
+/// 능력(어빌리티/패시브)의 이름과 설명 텍스트를 (ActionType/PassiveType, Race) 키로 관리하는 임시 클래스.
+/// Effect 시스템이 구현되지 않은 현재 브랜치에서 UI 표시용으로만 사용한다.
+/// </summary>
 public class AbilityDefinition
 {
-    // 이 Branch에는 Effect가 구현되지 않았기에 임시로 사용하는 클래스 
+    public Dictionary<(object, Race race), (string name, string definition)> definitionDict;
 
-    public Dictionary<(object, Race race), (string name, string definition)> definitionDict; 
     public AbilityDefinition()
     {
         definitionDict = new Dictionary<(object, Race race), (string name, string definition)> ();

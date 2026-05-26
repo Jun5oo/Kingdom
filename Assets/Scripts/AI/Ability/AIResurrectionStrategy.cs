@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// AI의 부활 능력 사용을 결정하는 전략 클래스.
+/// 필드 위 무덤(Graveyard) 토큰 중 하나를 무작위로 선택하여 부활시킨다.
+/// 어빌리티 코인이 부족하거나 무덤이 없으면 false를 반환한다.
+/// </summary>
 public class AIResurrectionStrategy
 {
     private ActionFactory actionFactory;

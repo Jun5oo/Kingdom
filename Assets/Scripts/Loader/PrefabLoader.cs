@@ -6,10 +6,15 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.InputSystem;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
+/// <summary>
+/// Addressables 기반 프리팹 로더. 생성자에서 Type → Addressable 키 매핑을 등록해두고
+/// LoadPrefabAsync&lt;T&gt;()로 MonoBehaviour 타입 기반 캐시 조회 또는 LoadPrefabAsync(string)으로 키 직접 조회한다.
+/// ReleaseAll()로 모든 핸들을 해제한다.
+/// </summary>
 public class PrefabLoader
 {
-    // Prefab을 Addressable을 통해서 가져오는 클래스 
-    // 가져오기 위해서는 미리 PrefabLoader 생성자에서 등록해줄 필요가 있다. 
+    // Prefab을 Addressable을 통해서 가져오는 클래스
+    // 가져오기 위해서는 미리 PrefabLoader 생성자에서 등록해줄 필요가 있다.
 
     // 오브젝트 타입을 통해서 Addressable Asset 키를 찾는 딕셔너리 
     Dictionary<Type, string> prefabDictionary;

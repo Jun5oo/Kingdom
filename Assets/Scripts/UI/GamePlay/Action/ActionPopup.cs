@@ -5,6 +5,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// 선택된 IAction을 나타내는 팝업 버튼. IPoolable로 PoolManager에서 관리된다.
+/// 클릭 시 OnSelected(action)으로 ActionSystem에 전달하고 OnClicked()로 ActionDisplayer에 닫기를 알린다.
+/// </summary>
 public class ActionPopup : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerExitHandler, IPoolable
 {
     [SerializeField] Image iconImage;

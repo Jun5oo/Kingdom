@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+/// <summary>
+/// 손패의 카드를 그리드 위에 토큰으로 소환하는 액션.
+/// 왕 유닛은 자신의 진영 Y 라인에만, 일반 유닛은 아군 왕 주변 8칸 중 빈 칸에만 소환 가능하다.
+/// </summary>
 public class SummonAction : IAction
 {
     private ActionType actionType;
@@ -79,18 +83,18 @@ public class SummonAction : IAction
             Debug.LogError("null 인 카드입니다.");
             return;
         }
-
     }
+
+    /// <summary> 대상 그리드 좌표를 저장하고 소환 FSM을 시작한다. </summary>
     public async UniTask Execute(Vector2Int targetPosition)
     {
         this.targetPosition = targetPosition;
         await Transition(SummonState.Prepare);
     }
+
     public void Exit() => gridManager.UnhighlightGridCells(highlightLayer);
-    public bool IsValid()
-    {
-        return true;
-    }
+
+    public bool IsValid() => true;
     async UniTask Transition(SummonState state)
     {
         switch (state)
@@ -110,12 +114,14 @@ public class SummonAction : IAction
                 break;
         }
     }
+    /// <summary>
+    /// 손패에서 카드를 제거하고 카드를 위로 올리는 연출을 실행한 뒤 소환 단계로 진행한다.
+    /// </summary>
     async UniTask Prepare()
     {
         Exit();
 
         int playerID = card.OwnerID;
-
         handManager.RemoveCardFromHand(playerID, card);
 
         CardMovement cardMovement = card.GetComponent<CardMovement>();
@@ -133,20 +139,28 @@ public class SummonAction : IAction
         await taskCompletion.Task;
         await Transition(SummonState.Summon);
     }
+
+    /// <summary> SummonSystem을 통해 대상 위치에 토큰을 생성한다. </summary>
     async UniTask Summon()
     {
         await summonSystem.Summon(card.OwnerID, card.Data, targetPosition);
         await Transition(SummonState.Placing);
     }
+
     async UniTask Placing()
     {
         await Transition(SummonState.Done);
     }
+
     void Done()
     {
         OnActionComplete?.Invoke();
     }
 
+    /// <summary>
+    /// 왕 카드 소환 시 배치 가능한 Y 좌표를 반환한다.
+    /// 로컬 플레이어는 Y=0, 원격 플레이어는 Y=6 라인이다.
+    /// </summary>
     public int GetGridPosYForKing()
     {
         if (handManager.IsMyCard(card))
@@ -155,12 +169,14 @@ public class SummonAction : IAction
             return 6;
     }
 
+    /// <summary>
+    /// 소환 위치가 유효한지 검사한다.
+    /// 왕은 자신의 Y 라인에만, 일반 유닛은 아군 왕 주변 8칸 중 빈 칸에만 소환 가능하다.
+    /// </summary>
     public bool CanSummonAt(Vector2Int pos)
     {
         if (card.Tag == UnitTag.King)
-        {
             return pos.y == GetGridPosYForKing();
-        }
 
         if (TryGetKingTokenPos(out Vector2Int gridPos))
         {
@@ -173,7 +189,6 @@ public class SummonAction : IAction
 
             return false;
         }
-
         else
         {
             Debug.LogError("왕 토큰이 존재하지 않습니다!");
@@ -183,6 +198,7 @@ public class SummonAction : IAction
         }
     }
 
+    /// <summary> 소유자 플레이어의 왕 토큰 그리드 위치를 반환한다. </summary>
     public bool TryGetKingTokenPos(out Vector2Int gridPos)
     {
         int playerID = card.OwnerID;
