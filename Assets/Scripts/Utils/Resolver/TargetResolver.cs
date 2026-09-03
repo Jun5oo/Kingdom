@@ -37,9 +37,7 @@ public class TargetResolver
                 break; 
         }
 
-        Debug.Log($"Resolve Complete:{candidates.Count}"); 
-
-        return candidates; 
+        return candidates;
         // return ApplyFilter(candidates, filters); 
     }
 
@@ -90,11 +88,11 @@ public class TargetResolver
     {
         var candidates = new List<Vector2Int>(); 
 
-        if (context.TryGet<ObjectContext>(ContextKey.Kill, out var killContext))
-        {
-            if (!IsTargetConditionSatisfied(caster, killContext.gridPosition, targetConditions))
-                return candidates;
-        }
+        if (!context.TryGet<ObjectContext>(ContextKey.Kill, out var killContext))
+            return candidates;
+
+        if (!IsTargetConditionSatisfied(caster, killContext.gridPosition, targetConditions))
+            return candidates;
 
         candidates.Add(killContext.gridPosition);
         return candidates; 
@@ -103,11 +101,11 @@ public class TargetResolver
     {
         var candidates = new List<Vector2Int>(); 
 
-        if (context.TryGet<ObjectContext>(ContextKey.Death, out var deathContext))
-        {
-            if (!IsTargetConditionSatisfied(caster, deathContext.gridPosition, targetConditions))
-                return candidates;
-        }
+        if (!context.TryGet<ObjectContext>(ContextKey.Death, out var deathContext))
+            return candidates;
+
+        if (!IsTargetConditionSatisfied(caster, deathContext.gridPosition, targetConditions))
+            return candidates;
 
         candidates.Add(deathContext.gridPosition);
         return candidates;
@@ -132,9 +130,8 @@ public class TargetResolver
     public bool IsTargetConditionSatisfied(BaseObject caster, Vector2Int gridPosition, List<ConditionSO> targetConditions)
     {
         var tokenManager = ServiceLocator.Get<TokenManager>();
-        
-        if(tokenManager.TryGetTokenFrom(gridPosition, out var token))
-            Debug.Log("해당 위치에서 하수인을 찾을 수 없습니다."); 
+
+        tokenManager.TryGetTokenFrom(gridPosition, out var token);
 
         foreach (var targetCondition in targetConditions)
         {

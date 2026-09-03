@@ -25,15 +25,6 @@ public class DestroySO : EffectSO
                         sourceData = token.SourceData
                     });
 
-                    // 디버깅
-                    Debug.Log($"Destroying: {token.name}");
-                    Debug.Log($"Token.Data: {token.Data?.name}");
-                    Debug.Log($"Token.SourceData: {token.SourceData?.Count} items");
-                    if (token.SourceData != null && token.SourceData.Count > 0)
-                    {
-                        Debug.Log($"First SourceData: {token.SourceData[0]?.name}");
-                    }
-
                     tokenManager.DestroyToken(token);
                 }
 

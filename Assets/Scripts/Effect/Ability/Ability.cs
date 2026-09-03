@@ -38,17 +38,18 @@ public class Ability
             switch (binding.trigger)
             {
                 case Trigger.OnTurnStarted:
-                    TrySubScribe(binding.trigger, () => { EventBus<TurnStartEvent>.Subscribe(TurnStart); Debug.Log("OnTurnStarted Event가 연결되었습니다."); });
+                    TrySubScribe(binding.trigger, () => EventBus<TurnStartEvent>.Subscribe(TurnStart));
                     break;
                 case Trigger.OnTurnEnded:
-                    TrySubScribe(binding.trigger, () => { EventBus<TurnEndEvent>.Subscribe(TurnEnd); Debug.Log("OnTurnEnded Event가 연결되었습니다."); });
+                    TrySubScribe(binding.trigger, () => EventBus<TurnEndEvent>.Subscribe(TurnEnd));
                     break;
                 case Trigger.OnUnitDead:
-                    TrySubScribe(binding.trigger, () => { EventBus<UnitDeadEvent>.Subscribe(UnitDead); Debug.Log("UnitDead Event가 연결되었습니다."); });
+                    TrySubScribe(binding.trigger, () => EventBus<UnitDeadEvent>.Subscribe(UnitDead));
                     break;
             }
         }
 
+        isSubscribed = true;
     }
     public void Unsubscribe()
     {
@@ -66,14 +67,14 @@ public class Ability
 
         isSubscribed = false; 
     }
+    public void Clear()
+    {
+        Unsubscribe();
+    }
     void TrySubScribe(Trigger trigger, Action action)
     {
         if (triggers.Add(trigger))
             action?.Invoke(); 
-    }
-    public void Clear()
-    {
-        Unsubscribe();
     }
     #endregion 
 
