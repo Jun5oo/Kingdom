@@ -9,17 +9,22 @@ namespace Refactor
         public string CardDefinitionId { get; }
         public int OwnerId { get; internal set; }
         public int CP { get; internal set; }
+        public int Level { get; internal set; }
 
         // 위치는 BoardState에서만 보관한다.
-        public UnitState(int id, string cardDefinitionId, int ownerId, int cp)
+        public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int level = 1)
         {
             if (string.IsNullOrWhiteSpace(cardDefinitionId))
                 throw new ArgumentException("카드 ID가 필요합니다.", nameof(cardDefinitionId));
+
+            if (level < 1)
+                throw new ArgumentOutOfRangeException(nameof(level), "등급은 1 이상이어야 합니다.");
 
             Id = id;
             CardDefinitionId = cardDefinitionId;
             OwnerId = ownerId;
             CP = cp;
+            Level = level;
         }
     }
 }
