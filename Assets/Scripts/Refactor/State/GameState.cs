@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -6,8 +7,8 @@ namespace Refactor
     // 진행 중인 한 판의 상태. 규칙 판정과 연출은 별도 처리기가 담당한다.
     public sealed class GameState
     {
-        public int TurnNumber { get; internal set; } = 1;
         public int CurrentPlayerId { get; internal set; }
+        public int TurnNumber { get; internal set; } = 1;
 
         private readonly Dictionary<int, PlayerState> players = new();
         private readonly Dictionary<int, UnitState> units = new();
@@ -18,21 +19,24 @@ namespace Refactor
 
         public BoardState Board { get; }
 
-        public GameState(int currentPlayerId, int boardWidth = 7, int boardHeight = 7)
+        // 항상 2인 게임이므로 생성 시 두 플레이어를 받는다. firstPlayer가 선공이다.
+        public GameState(PlayerState firstPlayer, PlayerState secondPlayer,
+            int boardWidth = 7, int boardHeight = 7)
         {
-            CurrentPlayerId = currentPlayerId;
+            if (firstPlayer == null)
+                throw new ArgumentNullException(nameof(firstPlayer));
+            if (secondPlayer == null)
+                throw new ArgumentNullException(nameof(secondPlayer));
+            if (firstPlayer.Id == secondPlayer.Id)
+                throw new ArgumentException("플레이어 ID가 중복되었습니다.", nameof(secondPlayer));
+
+            players.Add(firstPlayer.Id, firstPlayer);
+            players.Add(secondPlayer.Id, secondPlayer);
+            CurrentPlayerId = firstPlayer.Id;
+
             Board = new BoardState(boardWidth, boardHeight);
             Players = new ReadOnlyDictionary<int, PlayerState>(players);
             Units = new ReadOnlyDictionary<int, UnitState>(units);
-        }
-
-        public bool TryAddPlayer(PlayerState player)
-        {
-            if (player == null || players.ContainsKey(player.Id))
-                return false;
-
-            players.Add(player.Id, player);
-            return true;
         }
 
         // 상태의 기본 제약만 검사한다. 소환 비용/범위는 행동 처리기가 검사한다.

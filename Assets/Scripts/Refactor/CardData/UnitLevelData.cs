@@ -10,8 +10,10 @@ namespace Refactor
     {
         [SerializeField, Min(1)] private int level = 1;
         [SerializeField, Min(0)] private int baseCP;
+        [SerializeField, Min(1)] private int baseHP = 10;
 
-        [SerializeField] private RangeData movement = new();
+        [SerializeReference, SubclassSelector]
+        private MovementRule movement = new LineMovementRule();
         [SerializeField] private RangeData attack = new();
 
         // 해당 등급의 전체 효과 목록. 이전 등급에서 자동으로 상속하지 않는다.
@@ -19,7 +21,8 @@ namespace Refactor
 
         public int Level => level;
         public int BaseCP => baseCP;
-        public RangeData Movement => movement;
+        public int BaseHP => baseHP;
+        public MovementRule Movement => movement;
         public RangeData Attack => attack;
         public IReadOnlyList<EffectData> Effects => effects;
     }
