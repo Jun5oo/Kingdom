@@ -13,7 +13,7 @@ namespace Refactor
     [Serializable]
     public class DamageOperation : Operation
     {
-        [SerializeReference, SubclassSelector] Amount damage;   // FlatAmount / TargetScaledAmount / CasterScaledAmount
+        [SerializeReference, SubclassSelector] Amount damage;   // FlatAmount / CountScaledAmount
 
         public override EffectCategory Category => EffectCategory.Damage;
     }

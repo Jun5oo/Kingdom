@@ -94,12 +94,12 @@ namespace Refactor
     public class Effect
     {
         public EffectData Data { get; }
-        public BaseObject Owner { get; }
+        public UnitState Owner { get; }
 
         int usedThisTurn;
         int usedTotal;
 
-        public Effect(EffectData data, BaseObject owner)
+        public Effect(EffectData data, UnitState owner)
         {
             Data = data;
             Owner = owner;

@@ -32,26 +32,4 @@ namespace Refactor
                 c?.Pay(context);
         }
     }
-
-    [Serializable]
-    public class ResourceCost : Cost
-    {
-        [SerializeField] ResourceType resourceType = ResourceType.Action;
-        [SerializeField, Min(0)] int amount = 1;
-
-        public override bool IsCostEnough(EffectContext context)
-            => GetSystem().IsEnoughResources(context.CasterOwnerId, amount);
-
-        public override void Pay(EffectContext context)
-            => GetSystem().Consume(context.CasterOwnerId, amount);
-
-        IResourceSystem GetSystem()
-        {
-            switch (resourceType)
-            {
-                case ResourceType.Ability: return ServiceLocator.Get<AbilityResourceSystem>();
-                default:                   return ServiceLocator.Get<ActionResourceSystem>();
-            }
-        }
-    }
 }

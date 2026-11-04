@@ -10,7 +10,7 @@ namespace Refactor
     [Serializable]
     public abstract class Amount
     {
-        public abstract int Resolve(EffectContext context, Token target);
+        public abstract int Resolve(EffectContext context, UnitState target);
     }
 
     // 1. 고정 수치
@@ -19,54 +19,17 @@ namespace Refactor
     {
         [SerializeField] int value;
 
-        public override int Resolve(EffectContext context, Token target) => value;
+        public override int Resolve(EffectContext context, UnitState target) => value;
     }
 
-    // 2. 맞은 대상의 스탯 기반 (예: 대상 CP의 절반)
-    [Serializable]
-    public class TargetScaledAmount : Amount
-    {
-        public enum Stat { CurrentCP, MaxCP }
-
-        [SerializeField] Stat stat = Stat.CurrentCP;
-        [SerializeField] float multiplier = 1f;
-        [SerializeField] int flatBonus;
-
-        public override int Resolve(EffectContext context, Token target)
-        {
-            if (target == null) return 0;
-            int baseStat = stat == Stat.MaxCP ? target.MAXCP : target.CP;
-            return Mathf.RoundToInt(baseStat * multiplier) + flatBonus;
-        }
-    }
-
-    // 3. 시전자의 스탯 기반 (공격력 배수)
-    [Serializable]
-    public class CasterScaledAmount : Amount
-    {
-        public enum Stat { CurrentCP, MaxCP }
-
-        [SerializeField] Stat stat = Stat.CurrentCP;
-        [SerializeField] float multiplier = 1f;
-        [SerializeField] int flatBonus;
-
-        public override int Resolve(EffectContext context, Token target)
-        {
-            Token caster = context.Caster as Token;
-            if (caster == null) return 0;
-            int baseStat = stat == Stat.MaxCP ? caster.MAXCP : caster.CP;
-            return Mathf.RoundToInt(baseStat * multiplier) + flatBonus;
-        }
-    }
-
-    // 4. 피격한 대상 수 기반 
+    // 2. 피격한 대상 수 기반
     [Serializable]
     public class CountScaledAmount : Amount
     {
         [SerializeField] int perTarget = 1;
         [SerializeField] int flatBonus;
 
-        public override int Resolve(EffectContext context, Token target)
+        public override int Resolve(EffectContext context, UnitState target)
             => context.Targets.Count * perTarget + flatBonus;
     }
 }

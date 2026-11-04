@@ -17,7 +17,7 @@ namespace Refactor
 
     // ── 복합 조건: SerializeReference 중첩으로 트리 구성 ──
 
-    // 복수 조건 
+    // 복수 조건
     [Serializable]
     public class AllCondition : Condition
     {
@@ -45,38 +45,5 @@ namespace Refactor
 
         public override bool CanExecute(EffectContext context)
             => inner == null || !inner.CanExecute(context);
-    }
-
-
-    // 시전자의 턴인지 (ConditionTurn)
-    [Serializable]
-    public class TurnCondition : Condition
-    {
-        [SerializeField] bool mustBeCasterTurn = true;
-
-        public override bool CanExecute(EffectContext context)
-        {
-            if (context.Caster == null) return false;
-
-            TurnSystem turnSystem = ServiceLocator.Get<TurnSystem>();
-            bool isCasterTurn = context.Caster.OwnerID == turnSystem.GetCurrentTurnPlayerID();
-            return isCasterTurn == mustBeCasterTurn;
-        }
-    }
-
-    // OnUnitDead 트리거: 처치한 주체가 아군인지 (ConditionOnKilled)
-    [Serializable]
-    public class KillerSideCondition : Condition
-    {
-        [SerializeField] bool expectAlly = true;
-
-        public override bool CanExecute(EffectContext context)
-        {
-            if (context.Caster == null) return false;
-            if (!context.TryGet(ContextKey.Killer, out ObjectContext killer)) return false;
-
-            bool isAlly = context.Caster.OwnerID == killer.ownerID;
-            return isAlly == expectAlly;
-        }
     }
 }

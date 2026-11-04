@@ -10,12 +10,12 @@ namespace Refactor
     public class EffectContext
     {
         // 효과를 발동하는 주체
-        public BaseObject Caster { get; set; }
-        public int CasterOwnerId => Caster != null ? Caster.OwnerID : -1;
+        public UnitState Caster { get; set; }
+        public int CasterOwnerId => Caster != null ? Caster.OwnerId : -1;
 
         // 발동 중인 효과(런타임)와 이를 촉발한 이벤트
         public Effect Source { get; set; }
-        public IGameEvent SourceEvent { get; set; }
+        public GameEvent? SourceEvent { get; set; }
 
         // Target.Resolve가 채운다. Operation이 읽는다.
         public List<Vector2Int> Targets { get; } = new List<Vector2Int>();
