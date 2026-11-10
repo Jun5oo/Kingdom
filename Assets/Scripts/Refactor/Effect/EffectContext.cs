@@ -20,16 +20,16 @@ namespace Refactor
         // Target.Resolve가 채운다. Operation이 읽는다.
         public List<Vector2Int> Targets { get; } = new List<Vector2Int>();
 
-        // 특수 정보 (파괴된 유닛 스냅샷 등). 키는 ContextKey.
-        Dictionary<ContextKey, object> payload;
+        // 특수 정보 (파괴된 유닛 스냅샷 등). 키는 PayloadKey.
+        Dictionary<PayloadKey, object> payload;
 
-        public void Set<T>(ContextKey key, T value)
+        public void Set<T>(PayloadKey key, T value)
         {
-            payload ??= new Dictionary<ContextKey, object>();
+            payload ??= new Dictionary<PayloadKey, object>();
             payload[key] = value;
         }
 
-        public bool TryGet<T>(ContextKey key, out T value)
+        public bool TryGet<T>(PayloadKey key, out T value)
         {
             if (payload != null && payload.TryGetValue(key, out object o) && o is T t)
             {
@@ -49,14 +49,16 @@ namespace Refactor
         }
     }
 
-    public enum ContextKey
+    public enum PayloadKey
     {
         None,
 
-        Killer,
-        Victim,
+        // 이 효과를 촉발한 파괴 이벤트의 정보
+        Destroyer,              // 파괴를 일으킨 유닛
+        DestroyedUnit,          // 파괴된 유닛
 
-        LastSummoned,
-        LastDestroyed,
+        // 가장 최근 기록
+        LastSummonedUnit,       // 마지막으로 소환된 유닛
+        LastDestroyedUnit,      // 마지막으로 파괴된 유닛
     }
 }
