@@ -51,6 +51,7 @@ if (rule == null)
 - 외부에 공개할 값은 필드 대신 프로퍼티로 노출합니다.
 - 외부에서 수정하면 안 되는 컬렉션은 읽기 전용 타입으로 노출합니다.
 - Inspector에서 설정할 값은 `[SerializeField] private` 필드와 읽기 전용 프로퍼티로 작성합니다.
+- 카드 JSON에서 읽을 값은 `[JsonProperty]`를 붙인 `{ get; private set; }` 프로퍼티로 작성합니다. JSON 항목 이름은 프로퍼티 이름의 camelCase입니다(`BaseCP` → `baseCP`). 컬렉션은 `IReadOnlyList<T>` 타입으로 선언합니다. 클래스 안에서만 쓰는 값은 `[JsonProperty] private` 필드로 둡니다.
 
 ```csharp
 [SerializeField] private string cardId;
@@ -62,15 +63,15 @@ public string CardId => cardId;
 
 | 역할 | 담당 | 하는 일 |
 |---|---|---|
-| 원본 데이터 | `CardData`, `UnitLevelData` | 카드의 변하지 않는 정의를 보관합니다. |
+| 원본 데이터 | 카드 JSON, `CardDefinition` | 카드의 변하지 않는 정의를 보관합니다. |
 | 런타임 상태 | `GameState`, `BoardState`, `UnitState` | 진행 중인 게임의 값을 보관합니다. |
 | 규칙 처리 | `GameEngine`, `MovementValidator`, `CombatResolver`, `EffectProcessor` | 행동을 검증하고 상태를 변경하며, 결과를 이벤트로 남깁니다. |
 | UI | `BoardView`, `UnitView`, `GamePresenter` | 엔진이 돌려준 이벤트를 화면에 재생하고 입력을 명령으로 전달합니다. |
 
 - UI는 상태를 직접 변경하지 않고, 엔진의 `Submit`으로 명령을 보냅니다. 가능한 행동은 `GetAvailableCommands`로 조회합니다.
 - 규칙 처리와 상태 코드는 UI 클래스를 참조하지 않습니다.
-- 규칙 처리와 상태 코드는 별도 asmdef에 두고, `[SerializeReference]` 말고는 Unity 타입(`Vector2Int`, `Debug`, `Random`, `Time`, `GameObject`, `MonoBehaviour`, `ScriptableObject` 등)을 쓰지 않습니다. 이후 .NET 서버로 옮기기 위한 제약입니다.
-- `ScriptableObject`는 원본 데이터 계층에만 둡니다.
+- 규칙 처리와 상태 코드는 Unity 참조를 끈 별도 asmdef에 둡니다. 이후 .NET 서버로 옮기기 위한 제약입니다.
+- 카드 정의는 JSON 파일로 작성합니다. 그림 같은 Unity 자원은 클라이언트 코드에서만 다룹니다.
 - 규칙 처리 코드는 객체 참조 대신 ID로 유닛, 플레이어, 카드를 가리킵니다.
 - 게임 중 변하는 값은 ScriptableObject가 아니라 런타임 상태에 저장합니다.
 - 같은 값을 여러 곳에 중복 저장하지 않습니다. 예를 들어 유닛의 위치는 `BoardState`에서만 관리합니다.

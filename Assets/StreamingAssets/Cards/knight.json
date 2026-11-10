@@ -1,0 +1,17 @@
+{
+  "id": "2",
+  "name": "knight",
+  "description": "",
+  "race": "Undead",
+  "tag": "Normal",
+  "levels": [
+    {
+      "level": 1,
+      "baseCP": 5,
+      "baseHP": 15,
+      "movement": { "type": "Knight" },
+      "attack": { "directions": "Orthogonal, Diagonal", "maxDistance": 1 },
+      "effects": []
+    }
+  ]
+}

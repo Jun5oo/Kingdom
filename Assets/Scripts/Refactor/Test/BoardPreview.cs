@@ -11,7 +11,6 @@ namespace Refactor
     {
         [SerializeField] private BoardView boardView;
         [SerializeField] private UnitView unitPrefab;
-        [SerializeField] private List<UnitCardData> cards = new();
 
         [Header("테스트 유닛")]
         [SerializeField] private string cardId;
@@ -66,21 +65,15 @@ namespace Refactor
             if (canvas.GetComponent<GraphicRaycaster>() == null)
                 canvas.gameObject.AddComponent<GraphicRaycaster>();
 
-            try
-            {
-                database = new CardDatabase(cards);
-            }
-            catch (ArgumentException exception)
-            {
-                Debug.LogError(exception.Message, this);
+            if (!CardFiles.TryCreateDatabase(this, out database))
                 return;
-            }
 
             string enemyCardId = string.IsNullOrWhiteSpace(opponentCardId) ? cardId : opponentCardId;
             UnitPlacement[] placements =
             {
-                new UnitPlacement(1, cardId, level, spawnPosition),
-                new UnitPlacement(2, enemyCardId, opponentLevel, opponentSpawnPosition)
+                new UnitPlacement(1, cardId, level, new GridPos(spawnPosition.x, spawnPosition.y)),
+                new UnitPlacement(2, enemyCardId, opponentLevel,
+                    new GridPos(opponentSpawnPosition.x, opponentSpawnPosition.y))
             };
 
             state = new GameState(new PlayerState(1), new PlayerState(2));
@@ -96,14 +89,14 @@ namespace Refactor
             boardView.Show(state.Board);
             foreach (UnitState unit in state.Units.Values)
             {
-                if (database.TryGetCard(unit.CardDefinitionId, out UnitCardData card))
+                if (database.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
                     ShowUnit(unit, card);
             }
 
             status = "플레이어 1의 유닛을 선택해주세요.";
         }
 
-        private void ShowUnit(UnitState unit, UnitCardData card)
+        private void ShowUnit(UnitState unit, CardDefinition card)
         {
             if (!state.Board.TryGetPosition(unit.Id, out int x, out int y))
                 return;

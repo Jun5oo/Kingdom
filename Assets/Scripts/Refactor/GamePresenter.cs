@@ -44,7 +44,7 @@ namespace Refactor
 
         private void CreateUnitView(UnitState unit, CardDatabase database, UnitView unitPrefab)
         {
-            if (!database.TryGetCard(unit.CardDefinitionId, out UnitCardData card))
+            if (!database.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
                 throw new InvalidOperationException($"등록되지 않은 카드입니다: {unit.CardDefinitionId}");
             if (!State.Board.TryGetPosition(unit.Id, out int x, out int y))
                 throw new InvalidOperationException($"보드에 없는 유닛입니다: {unit.Id}");

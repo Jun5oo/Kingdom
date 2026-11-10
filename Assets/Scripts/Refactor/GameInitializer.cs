@@ -15,30 +15,34 @@ namespace Refactor
         [SerializeField] private BoardView boardView;
         [SerializeField] private UnitView unitPrefab;
         [SerializeField] private GamePresenter presenter;
-        [SerializeField] private List<UnitCardData> cards = new();
-        [SerializeField] private List<UnitPlacement> initialUnits = new();
+        [SerializeField] private List<PlacementEntry> initialUnits = new();
+
+        // 규칙 코드의 UnitPlacement는 Unity 직렬화를 쓰지 않으므로, 인스펙터 입력용 구조체를 따로 둔다.
+        [Serializable]
+        private struct PlacementEntry
+        {
+            [SerializeField] private int ownerId;
+            [SerializeField] private string cardId;
+            [SerializeField, Min(1)] private int level;
+            [SerializeField] private Vector2Int position;
+
+            public UnitPlacement ToPlacement() =>
+                new(ownerId, cardId, level, new GridPos(position.x, position.y));
+        }
 
         private void Start()
         {
             if (!IsSceneConfigured())
                 return;
 
-            CardDatabase database;
-            
-            try
-            {
-                database = new CardDatabase(cards);
-            }
-            catch (ArgumentException exception)
-            {
-                Debug.LogError(exception.Message, this);
+            if (!CardFiles.TryCreateDatabase(this, out CardDatabase database))
                 return;
-            }
 
             GameState state = new(new PlayerState(FirstPlayerId), new PlayerState(SecondPlayerId));
-            
+
             GameEngine engine = new(state, database);
-            if (!engine.StartGame(initialUnits, out string reason))
+            List<UnitPlacement> placements = initialUnits.ConvertAll(entry => entry.ToPlacement());
+            if (!engine.StartGame(placements, out string reason))
             {
                 Debug.LogError(reason, this);
                 return;

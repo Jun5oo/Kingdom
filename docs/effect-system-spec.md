@@ -13,17 +13,18 @@
 - 락스텝(양쪽이 같은 엔진 실행) 방식은 쓰지 않는다.
 
 ### 1.2 서버 형태
-- **1단계 (현재):** Unity Dedicated Server 빌드. 카드 ScriptableObject와 `SerializeReference` 효과 데이터를 그대로 쓴다.
-- **최종 단계:** 순수 .NET 콘솔 서버로 옮긴다. 카드 데이터는 JSON으로 내보내고, 규칙 코드는 공유 DLL로 만든다.
+- **1단계 (현재):** Unity Dedicated Server 빌드. 카드 데이터는 JSON 파일(§5.7)이라 서버와 클라이언트가 같은 파일을 읽는다.
+- **최종 단계:** 순수 .NET 콘솔 서버로 옮긴다. 카드 JSON 폴더는 그대로 쓰고, 규칙 코드는 공유 DLL로 만든다.
 - 이번 단계에는 네트워크 전송 계층을 만들지 않는다.
 
 ### 1.3 규칙 코드 제약 (.NET 서버 이전 대비)
 - 규칙 코드(State, Engine, Effect)는 **별도 asmdef**로 분리한다. EditMode 테스트 asmdef가 이 asmdef를 참조한다.
-- 규칙 asmdef 안에서는 **`[SerializeReference]` 속성 말고는 Unity 타입을 쓰지 않는다.**
+- 규칙 asmdef는 **Unity 참조를 끈다**(`noEngineReferences`). Unity 타입을 쓰면 컴파일러가 막는다.
   - 좌표는 `Vector2Int` 대신 자체 타입 `GridPos`를 쓴다.
-  - 로그는 `Debug.Log` 대신 주입받는 인터페이스로 남긴다.
-  - `UnityEngine.Random`, `Time`, `GameObject`, `MonoBehaviour`는 쓰지 않는다. 난수는 시드 기반 RNG를 쓴다.
-  - `ScriptableObject`는 규칙 asmdef 바깥의 데이터 계층에만 둔다.
+  - 로그가 필요해지면 `Debug.Log` 대신 주입받는 인터페이스로 남긴다.
+  - 난수는 시드 기반 RNG를 쓴다.
+  - 카드 정의는 JSON(§5.7)에서 읽는다. 그림 같은 Unity 자원은 클라이언트 쪽에만 둔다.
+  - 외부 의존은 Newtonsoft Json만 허용한다. .NET 서버에서도 같은 라이브러리를 쓴다.
 - 규칙 로직에서는 async/await와 코루틴을 쓰지 않는다. 입력 대기는 데이터 상태로 표현한다(§2.3).
 - 엔티티는 **ID로 참조**한다(유닛, 플레이어, 카드). 효과 계층이 객체 참조를 들고 있지 않는다.
 
@@ -102,7 +103,7 @@
 
 - 트리거는 `EffectData`의 "발동 이벤트 종류" 항목 하나로 둔다.
 - 횟수 제한(턴당 1회 등)을 지원한다.
-- 저작은 `SerializeReference`와 `[SubclassSelector]`로 한다.
+- 저작은 카드별 JSON 파일로 한다(§5.7).
 
 ### 5.2 효과 종류
 | 종류 | 설명 | 예 |
@@ -151,6 +152,16 @@ EffectData
   Condition:  죽은 유닛 = 상대 영웅 AND 죽인 쪽 = 나
   Operations: 1. 능력 자원 +1
 ```
+
+### 5.7 카드 데이터 (JSON)
+- **파일:** 카드 한 장 = JSON 파일 하나. 위치는 `Assets/StreamingAssets/Cards/*.json`이다. 빌드할 때 원본 그대로 복사되어 클라이언트와 서버가 같은 파일을 읽는다.
+- **다형성:** 각 부품은 `"type"` 값(예: `"Damage"`)으로 C# 클래스를 고른다. 이름과 클래스의 대응은 등록표 한 곳에서 관리한다.
+  - Newtonsoft의 `$type`(전체 타입 이름 자동 기록)은 쓰지 않는다. 어셈블리 이름이 데이터에 박히고, 받은 데이터로 임의의 클래스를 만들 수 있는 보안 문제가 있기 때문이다.
+- **읽기:** 규칙 코드의 `CardJsonLoader`가 폴더 또는 JSON 문자열을 받아 `CardDefinition`을 만든다. 폴더 경로는 호출하는 쪽(Unity 또는 서버)이 정한다.
+- **검증:** 모르는 `type`, 빠진 항목, 중복 ID, 잘못된 레벨을 로딩할 때 검사한다. 오류에는 파일 이름과 JSON 경로를 담는다.
+  - 모든 카드 파일을 읽어 오류가 없음을 확인하는 테스트를 둔다.
+- **그림:** 카드 그림은 JSON에 넣지 않는다. 클라이언트가 카드 ID로 찾는다. 현재 그림이 있는 카드가 없으므로, 그림 연결은 그림이 생길 때 만든다.
+- **표현력의 한계:** JSON은 이미 구현된 부품을 조합할 뿐이다. 새 메커니즘에는 부품 클래스 추가(등록표 1줄 포함)나 엔진 수정이 필요하다. 특이한 카드 하나는 전용 Operation(`"Custom_카드이름"`)으로 처리하고, JSON을 프로그래밍 언어처럼 확장하지 않는다.
 
 ---
 
@@ -208,7 +219,8 @@ EffectData
 - `EffectContext.Targets`는 `List<Vector2Int>`인데 `Amount.Resolve`는 `UnitState`를 받는다. 대상 표현을 통일해야 한다.
 - `GameEvent`가 객체 참조(`TriggerCard`, `ReasonEffect`)를 쓴다. ID로 바꾼다.
 - State에 손패, 덱, 묘지, 상태 목록, 승패가 없다. `nextUnitId`가 State가 아니라 Engine에 있다.
-- asmdef가 없어서 전부 `Assembly-CSharp`에 들어간다. asmdef로 분리하면 기존 에셋에 저장된 `SerializeReference` 타입 정보(asm 이름)를 옮겨야 한다. 대상은 `pawn.asset`과 `knight.asset`이고, `[MovedFrom]` 속성을 붙이거나 에셋을 다시 입력한다.
+- asmdef가 없어서 전부 `Assembly-CSharp`에 들어간다.
+- 카드가 ScriptableObject(`UnitCardData`)와 `SerializeReference`로 저장되어 있다. `pawn.asset`과 `knight.asset`을 JSON으로 옮기고 에셋은 삭제한다.
 - Presenter가 엔진 메서드를 직접 부르고 상태를 다시 읽는다. 이벤트를 재생하는 방식으로 바꾼다.
 - 옛 카드와 효과 데이터(`Assets/CSV`, `AbilityTable.csv`)는 작업 트리에서 삭제되어 git 히스토리에만 남아 있다.
 
@@ -220,7 +232,7 @@ EffectData
 ### 10.1 1부: 효과 시스템 (이번 범위, 네트워크 없음)
 | 단계 | 내용 | 관련 장 | 완료 확인 |
 |---|---|---|---|
-| 0 | 규칙 asmdef 분리, 테스트 asmdef, `GridPos`, 기존 에셋 2개의 `SerializeReference` 타입 이전 | 1.3, 9 | 기존 게임이 그대로 동작하고, 빈 테스트가 실행됨 |
+| 0 | 규칙 asmdef 분리(Unity 참조 차단), 테스트 asmdef, `GridPos`, 카드 JSON 읽기와 검증, 기존 카드 2장 JSON 이전 | 1.3, 5.7, 9 | 기존 게임이 그대로 동작하고, 카드 JSON 로딩 테스트가 통과함 |
 | 1 | 엔진 입구: 명령 타입, `Submit`, `GetAvailableCommands`, 이벤트 목록, 사망자 일괄 처리. 이동과 공격을 이 구조로 옮기고 Presenter를 이벤트 재생 방식으로 변경 | 2, 4.3 | 이동과 공격 테스트 |
 | 2 | 효과 실행 핵심: `Operation` 실행, 트리거 큐(필드에 나온 순서), ID 기반 이벤트, 이벤트를 읽는 Condition | 4.2, 5.1, 5.2 | 카드 ① 사망 트리거, ② 자기희생 |
 | 3 | 비용, 선택 대기, Operation 목록 | 2.3, 4.4 | 카드 ③ 부활 |
@@ -241,7 +253,7 @@ EffectData
 | 10 | 서버가 이벤트를 보내기 전에 플레이어별 필터를 적용한다. 숨겨진 정보가 상대에게 새지 않는지 테스트한다. |
 | 11 | Unity Dedicated Server 빌드: 서버 실행 파일 하나와 클라이언트 두 개로 실제 대전을 한다. |
 | 12 | 접속 끊김, 재접속, 선택 대기 시간 초과를 처리한다. |
-| 13 | 순수 .NET 서버로 이전한다. 카드 데이터를 JSON으로 내보내고, 규칙 asmdef를 공유 DLL로 만든다. |
+| 13 | 순수 .NET 서버로 이전한다. 카드 JSON 폴더를 그대로 쓰고, 규칙 asmdef를 공유 DLL로 만든다. |
 
 - 전송 방식(직접 만든 TCP 소켓 또는 Unity Transport)은 8단계를 시작할 때 정한다. 13단계(.NET 이전)를 고려하면 Unity에 묶이지 않는 방식이 유리하다.
 

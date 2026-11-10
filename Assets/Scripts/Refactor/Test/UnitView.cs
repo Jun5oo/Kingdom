@@ -14,14 +14,14 @@ namespace Refactor
         public int UnitId { get; private set; }
         public bool IsConfigured => artwork != null && nameText != null && cpText != null;
 
-        public void Bind(UnitState unit, UnitCardData card)
+        public void Bind(UnitState unit, CardDefinition card)
         {
             // 클릭은 부모 칸의 Button으로 전달한다.
             foreach (Graphic graphic in GetComponentsInChildren<Graphic>(true))
                 graphic.raycastTarget = false;
             UnitId = unit.Id;
-            artwork.sprite = card.Artwork;
-            artwork.enabled = card.Artwork != null;
+            // shortcut: 그림이 있는 카드가 없어 숨긴다, 그림이 생기면 카드 ID → Sprite 연결 추가
+            artwork.enabled = false;
             nameText.text = $"P{unit.OwnerId} · {card.CardName}";
             nameText.color = unit.OwnerId == 1
                 ? new Color(0.4f, 0.75f, 1f)
