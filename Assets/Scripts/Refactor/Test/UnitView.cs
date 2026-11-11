@@ -18,22 +18,23 @@ namespace Refactor
         public int OwnerId { get; private set; }
         public bool IsConfigured => artwork != null && nameText != null && cpText != null;
 
-        public void Bind(UnitState unit, CardDefinition card)
+        // 소환 이벤트로도 만들 수 있게 UnitState 대신 값을 받는다.
+        public void Bind(int unitId, int ownerId, int cp, int maxHP, int currentHP, CardDefinition card)
         {
             // 클릭은 부모 칸의 Button으로 전달한다.
             foreach (Graphic graphic in GetComponentsInChildren<Graphic>(true))
                 graphic.raycastTarget = false;
-            UnitId = unit.Id;
-            OwnerId = unit.OwnerId;
-            cp = unit.CP;
-            maxHP = unit.MaxHP;
+            UnitId = unitId;
+            OwnerId = ownerId;
+            this.cp = cp;
+            this.maxHP = maxHP;
             // shortcut: 그림이 있는 카드가 없어 숨긴다, 그림이 생기면 카드 ID → Sprite 연결 추가
             artwork.enabled = false;
-            nameText.text = $"P{unit.OwnerId} · {card.CardName}";
-            nameText.color = unit.OwnerId == 1
+            nameText.text = $"P{ownerId} · {card.CardName}";
+            nameText.color = ownerId == 1
                 ? new Color(0.4f, 0.75f, 1f)
                 : new Color(1f, 0.55f, 0.4f);
-            SetHP(unit.CurrentHP);
+            SetHP(currentHP);
         }
 
         public void SetHP(int currentHP)

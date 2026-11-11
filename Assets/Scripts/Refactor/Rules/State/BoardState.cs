@@ -70,7 +70,6 @@ namespace Refactor
             return false;
         }
 
-        // GameStateから呼ぶ変更用メソッド。移動距離/コストはここでは扱わない。
         internal bool TryMove(int unitId, int x, int y)
         {
             if (!Contains(x, y) || occupants[x, y].HasValue ||

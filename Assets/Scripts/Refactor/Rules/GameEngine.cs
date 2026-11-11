@@ -18,7 +18,6 @@ namespace Refactor
         // 공격 처리 
         private readonly CombatResolver combatResolver = new();
         private bool isStarted;
-        private int nextUnitId = 1;
 
         public GameEngine(GameState state, CardDatabase cardDatabase)
         {
@@ -27,6 +26,7 @@ namespace Refactor
         }
 
         // 시작 유닛을 배치하고 선공에게 행동을 지급한다. 실패 시 상태를 변경하지 않는다.
+        // shortcut: placements는 손패와 소환이 없어 유닛을 올릴 수단이 없는 동안의 임시 입력이다. 7단계에서 빈 보드와 킹 배치 단계로 시작하도록 바꾼다.
         public bool StartGame(IReadOnlyList<UnitPlacement> placements, out string reason)
         {
             if (placements == null)
@@ -38,7 +38,7 @@ namespace Refactor
                 return false;
             }
 
-            List<UnitState> units = new(placements.Count);
+            List<UnitLevelData> levels = new(placements.Count);
             HashSet<(int x, int y)> reservedCells = new();
 
             foreach (UnitPlacement placement in placements)
@@ -77,8 +77,15 @@ namespace Refactor
                     return false;
                 }
 
-                units.Add(new UnitState(nextUnitId + units.Count, card.CardId, placement.OwnerId,
-                    levelData.BaseCP, levelData.BaseHP, placement.Level));
+                levels.Add(levelData);
+            }
+
+            // 검증이 끝난 뒤에만 ID를 발급한다.
+            List<UnitState> units = new(placements.Count);
+            for (int i = 0; i < placements.Count; i++)
+            {
+                units.Add(new UnitState(State.AllocateUnitId(), placements[i].CardId, placements[i].OwnerId,
+                    levels[i].BaseCP, levels[i].BaseHP, placements[i].Level));
             }
 
             for (int i = 0; i < units.Count; i++)
@@ -94,7 +101,6 @@ namespace Refactor
                 return false;
             }
 
-            nextUnitId += units.Count;
             State.Players[State.CurrentPlayerId].ActionResource = ActionsPerTurn;
             isStarted = true;
             reason = string.Empty;
@@ -109,6 +115,7 @@ namespace Refactor
                 MoveCommand move => SubmitMove(playerId, move),
                 AttackCommand attack => SubmitAttack(playerId, attack),
                 EndTurnCommand => SubmitEndTurn(playerId),
+                ActivateEffectCommand activate => SubmitActivateEffect(playerId, activate),
                 null => throw new ArgumentNullException(nameof(command)),
                 _ => throw new ArgumentException($"처리할 수 없는 명령입니다: {command.GetType().Name}", nameof(command)),
             };
@@ -258,6 +265,46 @@ namespace Refactor
             return combatResolver.CanReach(State.Board, data.Attack,
                 fromX, fromY, targetX, targetY, out reason);
         }
+        // UI의 효과 버튼 표시에도 사용할 수 있는 읽기 전용 검증. 기동 효과만 직접 발동할 수 있다.
+        public bool CanActivateEffect(int playerId, int unitId, int effectIndex, out string reason)
+        {
+            if (!CanActWithUnit(playerId, unitId, out reason))
+                return false;
+
+            if (!TryGetUnitLevelData(unitId, out UnitLevelData data, out reason))
+                return false;
+
+            if (effectIndex < 0 || effectIndex >= data.Effects.Count)
+            {
+                reason = "존재하지 않는 효과입니다.";
+                return false;
+            }
+
+            EffectData effect = data.Effects[effectIndex];
+            if (effect.Type != EffectType.Ignition)
+            {
+                reason = "직접 발동하는 효과가 아닙니다.";
+                return false;
+            }
+
+            if (!State.Units[unitId].CanUseEffect(effectIndex, effect.UsesPerTurn))
+            {
+                reason = "이번 턴에는 더 사용할 수 없는 효과입니다.";
+                return false;
+            }
+
+            // Condition은 상태를 바꾸지 않으므로 Processor 없이 확인한다.
+            EffectContext context = new(State, cardDatabase, null, unitId, playerId, null);
+            if (effect.Condition != null && !effect.Condition.CanExecute(context))
+            {
+                reason = "효과의 발동 조건을 만족하지 않습니다.";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
         // 유닛 행동의 공통 검증만 수행한다. 상태는 변경하지 않는다.
         // 이후 이동/공격 진입점에서 이 검증과 행동별 규칙을 모두 확인한 뒤 실행한다.
         // true는 이동 거리, 비용, 공격 대상까지 유효하다는 뜻이 아니다.
@@ -317,6 +364,15 @@ namespace Refactor
                         commands.Add(new AttackCommand(unitId, targetId.Value));
                 }
             }
+
+            if (!TryGetUnitLevelData(unitId, out UnitLevelData data, out _))
+                return;
+
+            for (int i = 0; i < data.Effects.Count; i++)
+            {
+                if (CanActivateEffect(playerId, unitId, i, out _))
+                    commands.Add(new ActivateEffectCommand(unitId, i));
+            }
         }
 
         private SubmitResult SubmitMove(int playerId, MoveCommand command)
@@ -329,9 +385,11 @@ namespace Refactor
             if (!State.TryMoveUnit(command.UnitId, target.X, target.Y))
                 return SubmitResult.Fail("유닛을 이동할 수 없습니다.");
 
-            List<GameEvent> events = new() { new UnitMoved(command.UnitId, new GridPos(fromX, fromY), target) };
-            SpendAction(playerId, events);
-            return SubmitResult.Ok(events);
+            EffectProcessor processor = new(State, cardDatabase);
+            processor.Raise(new UnitMoved(command.UnitId, new GridPos(fromX, fromY), target));
+            processor.ChangeActionResource(playerId, -1);
+            processor.RunToCompletion();
+            return SubmitResult.Ok(processor.Events);
         }
 
         private SubmitResult SubmitAttack(int playerId, AttackCommand command)
@@ -342,11 +400,23 @@ namespace Refactor
             UnitState attacker = State.Units[command.AttackerId];
             UnitState defender = State.Units[command.DefenderId];
 
-            List<GameEvent> events = new();
-            ApplyDamage(defender, combatResolver.CalculateDamage(attacker, defender), events);
-            SpendAction(playerId, events);
-            ResolveDeaths(events);
-            return SubmitResult.Ok(events);
+            EffectProcessor processor = new(State, cardDatabase);
+            processor.Damage(defender.Id, combatResolver.CalculateDamage(attacker, defender), playerId);
+            processor.ChangeActionResource(playerId, -1);
+            processor.RunToCompletion();
+            return SubmitResult.Ok(processor.Events);
+        }
+
+        // 기동 효과는 행동 횟수를 쓰지 않는다. 비용은 3단계에서 효과의 Cost로 처리한다.
+        private SubmitResult SubmitActivateEffect(int playerId, ActivateEffectCommand command)
+        {
+            if (!CanActivateEffect(playerId, command.UnitId, command.EffectIndex, out string reason))
+                return SubmitResult.Fail(reason);
+
+            EffectProcessor processor = new(State, cardDatabase);
+            processor.Activate(command.UnitId, command.EffectIndex);
+            processor.RunToCompletion();
+            return SubmitResult.Ok(processor.Events);
         }
 
         // 한 플레이어의 차례를 1턴으로 센다. 남은 행동은 이월하지 않는다.
@@ -362,51 +432,17 @@ namespace Refactor
                     nextPlayer = player;
             }
 
-            State.Players[playerId].ActionResource = 0;
+            EffectProcessor processor = new(State, cardDatabase);
+            processor.ChangeActionResource(playerId, -State.Players[playerId].ActionResource);
             State.CurrentPlayerId = nextPlayer.Id;
             State.TurnNumber += 1;
-            nextPlayer.ActionResource = ActionsPerTurn;
-
-            return SubmitResult.Ok(new List<GameEvent>
-            {
-                new ActionResourceChanged(playerId, 0),
-                new TurnStarted(nextPlayer.Id, State.TurnNumber),
-                new ActionResourceChanged(nextPlayer.Id, ActionsPerTurn),
-            });
-        }
-
-        private void SpendAction(int playerId, List<GameEvent> events)
-        {
-            PlayerState player = State.Players[playerId];
-            player.ActionResource -= 1;
-            events.Add(new ActionResourceChanged(playerId, player.ActionResource));
-        }
-
-        // 모든 피해가 지나가는 지점. 5단계에서 여신의 성역 확인을 여기에 넣는다.
-        private void ApplyDamage(UnitState unit, int amount, List<GameEvent> events)
-        {
-            unit.CurrentHP -= amount;
-            events.Add(new UnitDamaged(unit.Id, amount, unit.CurrentHP));
-        }
-
-        // 진행 중인 처리가 끝난 뒤 호출한다. 동시 사망은 나온 순서(ID)로 처리한다.
-        private void ResolveDeaths(List<GameEvent> events)
-        {
-            List<int> deadIds = new();
             foreach (UnitState unit in State.Units.Values)
-            {
-                if (unit.CurrentHP <= 0)
-                    deadIds.Add(unit.Id);
-            }
+                unit.ResetEffectUses();
 
-            deadIds.Sort();
-            foreach (int unitId in deadIds)
-            {
-                if (!State.TryRemoveUnit(unitId))
-                    throw new InvalidOperationException($"사망 유닛을 제거할 수 없습니다: {unitId}");
-
-                events.Add(new UnitDied(unitId, DeathCause.Damage));
-            }
+            processor.Raise(new TurnStarted(nextPlayer.Id, State.TurnNumber));
+            processor.ChangeActionResource(nextPlayer.Id, ActionsPerTurn - nextPlayer.ActionResource);
+            processor.RunToCompletion();
+            return SubmitResult.Ok(processor.Events);
         }
     }
 }

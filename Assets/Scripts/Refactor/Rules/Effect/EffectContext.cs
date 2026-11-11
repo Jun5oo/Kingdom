@@ -2,62 +2,32 @@ using System.Collections.Generic;
 
 namespace Refactor
 {
-    // 한 번의 효과 해석 동안 파이프라인 각 단계로 넘어가는 정보.
-    // 자주 쓰는 것은 타입 필드, 나머지는 payload로.
-    // 수정 예정. 
-
-    public class EffectContext
+    // 효과 하나를 해결하는 동안 부품(Condition, Operation 등)이 읽는 정보.
+    public sealed class EffectContext
     {
-        // 효과를 발동하는 주체
-        public UnitState Caster { get; set; }
-        public int CasterOwnerId => Caster != null ? Caster.OwnerId : -1;
+        public GameState State { get; }
+        public CardDatabase Cards { get; }
+        // 효과를 가진 유닛. 이미 보드를 떠났을 수 있다.
+        public int SourceUnitId { get; }
+        public int OwnerId { get; }
+        // 효과를 발동시킨 이벤트. 기동 효과면 null.
+        public GameEvent TriggerEvent { get; }
 
-        // 발동 중인 효과(런타임)와 이를 촉발한 이벤트
-        public Effect Source { get; set; }
-        public GameEvent SourceEvent { get; set; }
+        // 상태 변경 입구. 발동 가능 여부만 확인할 때는 null이다.
+        internal EffectProcessor Processor { get; }
 
-        // Target.Resolve가 채운다. Operation이 읽는다.
-        public List<GridPos> Targets { get; } = new List<GridPos>();
+        // Target.Resolve가 채운다. 대상 표현은 3, 4단계에서 정리한다.
+        public List<GridPos> Targets { get; } = new();
 
-        // 특수 정보 (파괴된 유닛 스냅샷 등). 키는 PayloadKey.
-        Dictionary<PayloadKey, object> payload;
-
-        public void Set<T>(PayloadKey key, T value)
+        internal EffectContext(GameState state, CardDatabase cards, EffectProcessor processor,
+            int sourceUnitId, int ownerId, GameEvent triggerEvent)
         {
-            payload ??= new Dictionary<PayloadKey, object>();
-            payload[key] = value;
+            State = state;
+            Cards = cards;
+            Processor = processor;
+            SourceUnitId = sourceUnitId;
+            OwnerId = ownerId;
+            TriggerEvent = triggerEvent;
         }
-
-        public bool TryGet<T>(PayloadKey key, out T value)
-        {
-            if (payload != null && payload.TryGetValue(key, out object o) && o is T t)
-            {
-                value = t;
-                return true;
-            }
-
-            value = default;
-            return false;
-        }
-
-        public void SetTargets(IEnumerable<GridPos> positions)
-        {
-            Targets.Clear();
-            if (positions != null)
-                Targets.AddRange(positions);
-        }
-    }
-
-    public enum PayloadKey
-    {
-        None,
-
-        // 이 효과를 촉발한 파괴 이벤트의 정보
-        Destroyer,              // 파괴를 일으킨 유닛
-        DestroyedUnit,          // 파괴된 유닛
-
-        // 가장 최근 기록
-        LastSummonedUnit,       // 마지막으로 소환된 유닛
-        LastDestroyedUnit,      // 마지막으로 파괴된 유닛
     }
 }

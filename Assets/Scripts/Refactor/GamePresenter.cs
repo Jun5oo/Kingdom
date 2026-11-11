@@ -9,9 +9,12 @@ namespace Refactor
     {
         private readonly Dictionary<int, UnitView> unitViews = new();
         private readonly Dictionary<int, GridPos> unitPositions = new();
+        private readonly Dictionary<int, int> abilityResources = new();
         private IReadOnlyList<GameCommand> availableCommands = Array.Empty<GameCommand>();
         private GameEngine engine;
+        private CardDatabase database;
         private BoardView boardView;
+        private UnitView unitPrefab;
         private int? selectedUnitId;
         private int currentPlayerId;
         private int turnNumber;
@@ -23,11 +26,8 @@ namespace Refactor
         {
             if (this.engine != null)
                 throw new InvalidOperationException("이미 초기화되었습니다.");
-            if (database == null)
-                throw new ArgumentNullException(nameof(database));
-            if (unitPrefab == null)
-                throw new ArgumentNullException(nameof(unitPrefab));
-
+            this.database = database ?? throw new ArgumentNullException(nameof(database));
+            this.unitPrefab = unitPrefab != null ? unitPrefab : throw new ArgumentNullException(nameof(unitPrefab));
             this.boardView = boardView != null ? boardView : throw new ArgumentNullException(nameof(boardView));
             this.engine = engine ?? throw new ArgumentNullException(nameof(engine));
             this.boardView.CellClicked += OnCellClicked;
@@ -36,7 +36,16 @@ namespace Refactor
             // Show는 기존 칸을 다시 만들므로 유닛 UI 생성 전에 한 번 호출한다.
             this.boardView.Show(state.Board);
             foreach (UnitState unit in state.Units.Values)
-                CreateUnitView(state, unit, database, unitPrefab);
+            {
+                if (!state.Board.TryGetPosition(unit.Id, out int x, out int y))
+                    throw new InvalidOperationException($"보드에 없는 유닛입니다: {unit.Id}");
+
+                CreateUnitView(unit.Id, unit.OwnerId, unit.CardDefinitionId, new GridPos(x, y),
+                    unit.CP, unit.MaxHP, unit.CurrentHP);
+            }
+
+            foreach (PlayerState player in state.Players.Values)
+                abilityResources[player.Id] = player.AbilityResource;
 
             currentPlayerId = state.CurrentPlayerId;
             turnNumber = state.TurnNumber;
@@ -51,17 +60,16 @@ namespace Refactor
                 boardView.CellClicked -= OnCellClicked;
         }
 
-        private void CreateUnitView(GameState state, UnitState unit, CardDatabase database, UnitView unitPrefab)
+        private void CreateUnitView(int unitId, int ownerId, string cardId, GridPos position,
+            int cp, int maxHP, int currentHP)
         {
-            if (!database.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
-                throw new InvalidOperationException($"등록되지 않은 카드입니다: {unit.CardDefinitionId}");
-            if (!state.Board.TryGetPosition(unit.Id, out int x, out int y))
-                throw new InvalidOperationException($"보드에 없는 유닛입니다: {unit.Id}");
+            if (!database.TryGetCard(cardId, out CardDefinition card))
+                throw new InvalidOperationException($"등록되지 않은 카드입니다: {cardId}");
 
-            UnitView view = boardView.CreateUnitView(unitPrefab, x, y);
-            view.Bind(unit, card);
-            unitViews.Add(unit.Id, view);
-            unitPositions.Add(unit.Id, new GridPos(x, y));
+            UnitView view = boardView.CreateUnitView(unitPrefab, position.X, position.Y);
+            view.Bind(unitId, ownerId, cp, maxHP, currentHP, card);
+            unitViews.Add(unitId, view);
+            unitPositions.Add(unitId, position);
         }
 
         private void OnCellClicked(int x, int y)
@@ -149,8 +157,19 @@ namespace Refactor
                     unitPositions.Remove(died.UnitId);
                     break;
 
+                case UnitSummoned summoned:
+                    CreateUnitView(summoned.UnitId, summoned.OwnerId, summoned.CardId, summoned.Position,
+                        summoned.CP, summoned.HP, summoned.HP);
+                    break;
+
                 case ActionResourceChanged changed:
-                    remainingActions = changed.Remaining;
+                    // 효과로 상대 자원이 바뀔 수 있으므로 현재 플레이어 것만 반영한다.
+                    if (changed.PlayerId == currentPlayerId)
+                        remainingActions = changed.Remaining;
+                    break;
+
+                case AbilityResourceChanged ability:
+                    abilityResources[ability.PlayerId] = ability.Remaining;
                     break;
 
                 case TurnStarted started:
@@ -197,7 +216,7 @@ namespace Refactor
 
             GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(520, Screen.width - 24), 150), GUI.skin.box);
             GUILayout.Label($"{turnNumber}턴 · 플레이어 {currentPlayerId}");
-            GUILayout.Label($"남은 행동: {remainingActions} / {GameEngine.ActionsPerTurn}");
+            GUILayout.Label($"남은 행동: {remainingActions} / {GameEngine.ActionsPerTurn} · 능력 자원: {abilityResources[currentPlayerId]}");
             GUILayout.Label(status);
             if (GUILayout.Button("턴 종료"))
                 SubmitCommand(new EndTurnCommand());

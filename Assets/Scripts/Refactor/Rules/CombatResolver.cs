@@ -23,7 +23,9 @@ namespace Refactor
             int dy = targetY - fromY;
             int absX = Math.Abs(dx);
             int absY = Math.Abs(dy);
+
             int distance = Math.Max(absX, absY);
+            
             bool allowed =
                 ((dx == 0 || dy == 0) && (range.Directions & RangeDirection.Orthogonal) != 0) ||
                 (absX == absY && (range.Directions & RangeDirection.Diagonal) != 0);

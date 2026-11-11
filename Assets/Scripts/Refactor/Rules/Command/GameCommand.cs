@@ -32,4 +32,17 @@ namespace Refactor
     public sealed class EndTurnCommand : GameCommand
     {
     }
+
+    // EffectIndex는 유닛의 현재 레벨 효과 목록에서의 위치다.
+    public sealed class ActivateEffectCommand : GameCommand
+    {
+        public int UnitId { get; }
+        public int EffectIndex { get; }
+
+        public ActivateEffectCommand(int unitId, int effectIndex)
+        {
+            UnitId = unitId;
+            EffectIndex = effectIndex;
+        }
+    }
 }

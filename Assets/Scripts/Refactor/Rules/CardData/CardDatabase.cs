@@ -39,5 +39,11 @@ namespace Refactor
 
             return cards.TryGetValue(cardId, out card);
         }
+
+        public bool TryGetLevel(string cardId, int level, out UnitLevelData levelData)
+        {
+            levelData = null;
+            return TryGetCard(cardId, out CardDefinition card) && card.TryGetLevel(level, out levelData);
+        }
     }
 }

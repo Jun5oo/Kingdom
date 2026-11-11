@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Refactor
 {
@@ -12,6 +13,9 @@ namespace Refactor
         public int MaxHP { get; internal set; }
         public int CurrentHP { get; internal set; }
         public int Level { get; internal set; }
+
+        // 효과 인덱스별 이번 턴 사용 횟수. 레벨이 바뀌면 효과 목록이 교체되므로 함께 초기화한다(§6.4).
+        private readonly Dictionary<int, int> effectUsesThisTurn = new();
 
         // 위치는 BoardState에서만 보관한다.
         public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int maxHP, int level = 1)
@@ -33,5 +37,20 @@ namespace Refactor
             CurrentHP = maxHP;
             Level = level;
         }
+
+        // usesPerTurn이 0이면 무제한이다.
+        public bool CanUseEffect(int effectIndex, int usesPerTurn)
+        {
+            effectUsesThisTurn.TryGetValue(effectIndex, out int uses);
+            return usesPerTurn == 0 || uses < usesPerTurn;
+        }
+
+        internal void MarkEffectUsed(int effectIndex)
+        {
+            effectUsesThisTurn.TryGetValue(effectIndex, out int uses);
+            effectUsesThisTurn[effectIndex] = uses + 1;
+        }
+
+        internal void ResetEffectUses() => effectUsesThisTurn.Clear();
     }
 }

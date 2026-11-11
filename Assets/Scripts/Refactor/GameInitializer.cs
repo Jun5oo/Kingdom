@@ -18,6 +18,7 @@ namespace Refactor
         [SerializeField] private List<PlacementEntry> initialUnits = new();
 
         // 규칙 코드의 UnitPlacement는 Unity 직렬화를 쓰지 않으므로, 인스펙터 입력용 구조체를 따로 둔다.
+        // shortcut: UnitPlacement와 같은 임시 시작 배치 입력이다. 7단계에서 킹 배치 단계가 생기면 initialUnits와 함께 삭제한다.
         [Serializable]
         private struct PlacementEntry
         {

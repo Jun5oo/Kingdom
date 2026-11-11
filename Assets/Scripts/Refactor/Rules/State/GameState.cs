@@ -12,6 +12,8 @@ namespace Refactor
 
         private readonly Dictionary<int, PlayerState> players = new();
         private readonly Dictionary<int, UnitState> units = new();
+        // 트리거 순서(§4.2)의 기준이므로 생성 순으로만 증가하고 재사용하지 않는다.
+        private int nextUnitId = 1;
 
         // 외부에서는 목록을 조회만 한다. 등록/제거는 아래 메서드를 거친다.
         public IReadOnlyDictionary<int, PlayerState> Players { get; }
@@ -38,6 +40,8 @@ namespace Refactor
             Players = new ReadOnlyDictionary<int, PlayerState>(players);
             Units = new ReadOnlyDictionary<int, UnitState>(units);
         }
+
+        internal int AllocateUnitId() => nextUnitId++;
 
         // 상태의 기본 제약만 검사한다. 소환 비용/범위는 행동 처리기가 검사한다.
         // 실패할 때는 유닛 목록과 보드를 모두 변경하지 않는다.

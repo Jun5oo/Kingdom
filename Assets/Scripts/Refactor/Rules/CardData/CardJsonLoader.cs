@@ -25,6 +25,7 @@ namespace Refactor
                 ["All"] = typeof(AllCondition),
                 ["Any"] = typeof(AnyCondition),
                 ["Not"] = typeof(NotCondition),
+                ["DeadUnit"] = typeof(DeadUnitCondition),
             },
             [typeof(Cost)] = new()
             {
@@ -33,12 +34,9 @@ namespace Refactor
             [typeof(Target)] = new(),
             [typeof(Operation)] = new()
             {
-                ["Damage"] = typeof(DamageOperation),
-            },
-            [typeof(Amount)] = new()
-            {
-                ["Flat"] = typeof(FlatAmount),
-                ["CountScaled"] = typeof(CountScaledAmount),
+                ["Release"] = typeof(ReleaseOperation),
+                ["ChangeAbilityResource"] = typeof(ChangeAbilityResourceOperation),
+                ["Summon"] = typeof(SummonOperation),
             },
         };
 
@@ -64,6 +62,7 @@ namespace Refactor
         public static List<CardDefinition> Load(IEnumerable<(string fileName, string json)> files)
         {
             List<CardDefinition> cards = new();
+            List<string> fileNames = new();
             foreach ((string fileName, string json) in files)
             {
                 CardDefinition card;
@@ -79,18 +78,23 @@ namespace Refactor
                 if (card == null)
                     throw new InvalidDataException($"{fileName}: 파일이 비어 있습니다.");
 
-                string error = Validate(card);
-                if (error != null)
-                    throw new InvalidDataException($"{fileName}: {error}");
-
                 cards.Add(card);
+                fileNames.Add(fileName);
+            }
+
+            // 소환할 카드가 다른 파일에 있을 수 있으므로 모두 읽은 뒤 검사한다.
+            for (int i = 0; i < cards.Count; i++)
+            {
+                string error = Validate(cards[i], cards);
+                if (error != null)
+                    throw new InvalidDataException($"{fileNames[i]}: {error}");
             }
 
             return cards;
         }
 
         // JSON 형식으로는 잡히지 않는 값의 범위를 검사한다. 문제가 없으면 null.
-        private static string Validate(CardDefinition card)
+        private static string Validate(CardDefinition card, List<CardDefinition> cards)
         {
             if (string.IsNullOrWhiteSpace(card.CardId))
                 return "id가 비어 있습니다.";
@@ -115,6 +119,39 @@ namespace Refactor
                     return $"levels[{i}].movement가 비어 있습니다.";
                 if (level.Attack == null || level.Attack.MaxDistance < 0)
                     return $"levels[{i}].attack.maxDistance는 0 이상이어야 합니다.";
+
+                string effectError = ValidateEffects(level.Effects, $"levels[{i}]", cards);
+                if (effectError != null)
+                    return effectError;
+            }
+
+            return null;
+        }
+
+        private static string ValidateEffects(IReadOnlyList<EffectData> effects, string path, List<CardDefinition> cards)
+        {
+            if (effects == null)
+                return $"{path}.effects가 비어 있습니다.";
+
+            for (int e = 0; e < effects.Count; e++)
+            {
+                EffectData effect = effects[e];
+                string at = $"{path}.effects[{e}]";
+                if (effect == null)
+                    return $"{at}가 비어 있습니다.";
+                if (effect.Type == EffectType.Trigger && effect.Trigger == EventTrigger.None)
+                    return $"{at}.trigger가 필요합니다.";
+                if (effect.UsesPerTurn < 0)
+                    return $"{at}.usesPerTurn은 0 이상이어야 합니다.";
+                if (effect.Operations == null || effect.Operations.Contains(null))
+                    return $"{at}.operations에 빈 항목이 있습니다.";
+
+                for (int o = 0; o < effect.Operations.Count; o++)
+                {
+                    if (effect.Operations[o] is SummonOperation summon &&
+                        !cards.Any(card => card.CardId == summon.CardId && card.TryGetLevel(summon.Level, out _)))
+                        return $"{at}.operations[{o}]: 소환할 카드 '{summon.CardId}' {summon.Level}성이 없습니다.";
+                }
             }
 
             return null;

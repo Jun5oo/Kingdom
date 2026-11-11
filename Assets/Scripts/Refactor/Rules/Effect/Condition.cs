@@ -1,9 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
 namespace Refactor
 {
+    // 효과 주인을 기준으로 본 플레이어.
+    public enum PlayerRelation
+    {
+        Any,
+        Self,
+        Opponent,
+    }
+
     // "이 효과를 지금 발동해도 되는가?" 만 판정한다.
     // 대상이 유효한지(소유자/태그/빈 칸 등)는 Target 슬롯이 담당한다.
     // JSON에서는 "type"으로 구체 클래스를 고른다(CardJsonLoader 등록표).
@@ -39,5 +48,35 @@ namespace Refactor
 
         public override bool CanExecute(EffectContext context)
             => inner == null || !inner.CanExecute(context);
+    }
+
+    // 발동 이벤트가 유닛 사망일 때, 죽은 유닛의 주인·분류와 죽인 쪽을 확인한다.
+    public class DeadUnitCondition : Condition
+    {
+        [JsonProperty] private PlayerRelation owner = PlayerRelation.Any;
+        [JsonProperty] private UnitTag? tag = null;
+        [JsonProperty] private PlayerRelation killer = PlayerRelation.Any;
+
+        public override bool CanExecute(EffectContext context)
+        {
+            if (context.TriggerEvent is not UnitDied died)
+                return false;
+
+            if (!Matches(owner, died.OwnerId, context.OwnerId) || !Matches(killer, died.KillerPlayerId, context.OwnerId))
+                return false;
+
+            if (!tag.HasValue)
+                return true;
+
+            return context.Cards.TryGetCard(died.CardId, out CardDefinition card) && card.Tag == tag.Value;
+        }
+
+        private static bool Matches(PlayerRelation relation, int? playerId, int ownerId) => relation switch
+        {
+            PlayerRelation.Any => true,
+            PlayerRelation.Self => playerId == ownerId,
+            PlayerRelation.Opponent => playerId.HasValue && playerId != ownerId,
+            _ => throw new ArgumentOutOfRangeException(nameof(relation)),
+        };
     }
 }
