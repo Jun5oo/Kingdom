@@ -101,8 +101,37 @@ namespace Refactor
             return true;
         }
 
-        // 한 플레이어의 차례를 1턴으로 센다. 남은 행동은 이월하지 않는다.
-        public bool EndTurn(int playerId, out string reason)
+        // 모든 행동의 입구. 검증에 실패하면 상태를 변경하지 않는다.
+        public SubmitResult Submit(int playerId, GameCommand command)
+        {
+            return command switch
+            {
+                MoveCommand move => SubmitMove(playerId, move),
+                AttackCommand attack => SubmitAttack(playerId, attack),
+                EndTurnCommand => SubmitEndTurn(playerId),
+                null => throw new ArgumentNullException(nameof(command)),
+                _ => throw new ArgumentException($"처리할 수 없는 명령입니다: {command.GetType().Name}", nameof(command)),
+            };
+        }
+
+        // 지금 실행할 수 있는 명령 전체. 현재 플레이어가 아니면 비어 있다.
+        public IReadOnlyList<GameCommand> GetAvailableCommands(int playerId)
+        {
+            List<GameCommand> commands = new();
+            if (!CanEndTurn(playerId, out _))
+                return commands;
+
+            commands.Add(new EndTurnCommand());
+            foreach (UnitState unit in State.Units.Values)
+            {
+                if (unit.OwnerId == playerId)
+                    AddUnitCommands(playerId, unit.Id, commands);
+            }
+
+            return commands;
+        }
+
+        public bool CanEndTurn(int playerId, out string reason)
         {
             if (!isStarted)
             {
@@ -122,17 +151,6 @@ namespace Refactor
                 return false;
             }
 
-            PlayerState nextPlayer = null;
-            foreach (PlayerState player in State.Players.Values)
-            {
-                if (player.Id != playerId)
-                    nextPlayer = player;
-            }
-
-            State.Players[playerId].ActionResource = 0;
-            State.CurrentPlayerId = nextPlayer.Id;
-            State.TurnNumber += 1;
-            nextPlayer.ActionResource = ActionsPerTurn;
             reason = string.Empty;
             return true;
         }
@@ -285,48 +303,110 @@ namespace Refactor
             return true;
         }
 
-        // 검증부터 비용 차감까지 대기 없이 실행한다. 실패 시 상태를 변경하지 않는다.
-        public bool MoveUnit(int playerId, int unitId, int targetX, int targetY, out string reason)
+        private void AddUnitCommands(int playerId, int unitId, List<GameCommand> commands)
         {
-            if (!CanMoveUnit(playerId, unitId, targetX, targetY, out reason))
-                return false;
-
-            if (!State.TryMoveUnit(unitId, targetX, targetY))
+            for (int y = 0; y < State.Board.Height; y++)
             {
-                reason = "유닛을 이동할 수 없습니다.";
-                return false;
+                for (int x = 0; x < State.Board.Width; x++)
+                {
+                    if (CanMoveUnit(playerId, unitId, x, y, out _))
+                        commands.Add(new MoveCommand(unitId, new GridPos(x, y)));
+
+                    int? targetId = State.Board.GetUnitIdAt(x, y);
+                    if (targetId.HasValue && CanAttackUnit(playerId, unitId, targetId.Value, out _))
+                        commands.Add(new AttackCommand(unitId, targetId.Value));
+                }
             }
-
-            State.Players[playerId].ActionResource -= 1;
-            reason = string.Empty;
-            return true;
-        }
-        // 검증 후 피해 반영, 사망 유닛 제거, 행동 횟수 차감까지 실행한다. 실패 시 상태를 변경하지 않는다.
-        public bool AttackUnit(int playerId, int attackerId, int defenderId,
-            out CombatResult result, out string reason)
-        {
-            result = null;
-            if (!CanAttackUnit(playerId, attackerId, defenderId, out reason))
-                return false;
-
-            UnitState attacker = State.Units[attackerId];
-            UnitState defender = State.Units[defenderId];
-            CombatResult calculated = combatResolver.Calculate(attacker, defender);
-
-            // 퇴장 실패 시 HP와 행동 횟수도 변경하지 않는다.
-            if (calculated.DefenderDied && !State.TryRemoveUnit(defenderId))
-            {
-                reason = "사망한 유닛을 보드에서 제거할 수 없습니다.";
-                return false;
-            }
-
-            defender.CurrentHP = calculated.RemainingHP;
-            State.Players[playerId].ActionResource -= 1;
-            result = calculated;
-            reason = string.Empty;
-            return true;
         }
 
+        private SubmitResult SubmitMove(int playerId, MoveCommand command)
+        {
+            GridPos target = command.Target;
+            if (!CanMoveUnit(playerId, command.UnitId, target.X, target.Y, out string reason))
+                return SubmitResult.Fail(reason);
 
+            State.Board.TryGetPosition(command.UnitId, out int fromX, out int fromY);
+            if (!State.TryMoveUnit(command.UnitId, target.X, target.Y))
+                return SubmitResult.Fail("유닛을 이동할 수 없습니다.");
+
+            List<GameEvent> events = new() { new UnitMoved(command.UnitId, new GridPos(fromX, fromY), target) };
+            SpendAction(playerId, events);
+            return SubmitResult.Ok(events);
+        }
+
+        private SubmitResult SubmitAttack(int playerId, AttackCommand command)
+        {
+            if (!CanAttackUnit(playerId, command.AttackerId, command.DefenderId, out string reason))
+                return SubmitResult.Fail(reason);
+
+            UnitState attacker = State.Units[command.AttackerId];
+            UnitState defender = State.Units[command.DefenderId];
+
+            List<GameEvent> events = new();
+            ApplyDamage(defender, combatResolver.CalculateDamage(attacker, defender), events);
+            SpendAction(playerId, events);
+            ResolveDeaths(events);
+            return SubmitResult.Ok(events);
+        }
+
+        // 한 플레이어의 차례를 1턴으로 센다. 남은 행동은 이월하지 않는다.
+        private SubmitResult SubmitEndTurn(int playerId)
+        {
+            if (!CanEndTurn(playerId, out string reason))
+                return SubmitResult.Fail(reason);
+
+            PlayerState nextPlayer = null;
+            foreach (PlayerState player in State.Players.Values)
+            {
+                if (player.Id != playerId)
+                    nextPlayer = player;
+            }
+
+            State.Players[playerId].ActionResource = 0;
+            State.CurrentPlayerId = nextPlayer.Id;
+            State.TurnNumber += 1;
+            nextPlayer.ActionResource = ActionsPerTurn;
+
+            return SubmitResult.Ok(new List<GameEvent>
+            {
+                new ActionResourceChanged(playerId, 0),
+                new TurnStarted(nextPlayer.Id, State.TurnNumber),
+                new ActionResourceChanged(nextPlayer.Id, ActionsPerTurn),
+            });
+        }
+
+        private void SpendAction(int playerId, List<GameEvent> events)
+        {
+            PlayerState player = State.Players[playerId];
+            player.ActionResource -= 1;
+            events.Add(new ActionResourceChanged(playerId, player.ActionResource));
+        }
+
+        // 모든 피해가 지나가는 지점. 5단계에서 여신의 성역 확인을 여기에 넣는다.
+        private void ApplyDamage(UnitState unit, int amount, List<GameEvent> events)
+        {
+            unit.CurrentHP -= amount;
+            events.Add(new UnitDamaged(unit.Id, amount, unit.CurrentHP));
+        }
+
+        // 진행 중인 처리가 끝난 뒤 호출한다. 동시 사망은 나온 순서(ID)로 처리한다.
+        private void ResolveDeaths(List<GameEvent> events)
+        {
+            List<int> deadIds = new();
+            foreach (UnitState unit in State.Units.Values)
+            {
+                if (unit.CurrentHP <= 0)
+                    deadIds.Add(unit.Id);
+            }
+
+            deadIds.Sort();
+            foreach (int unitId in deadIds)
+            {
+                if (!State.TryRemoveUnit(unitId))
+                    throw new InvalidOperationException($"사망 유닛을 제거할 수 없습니다: {unitId}");
+
+                events.Add(new UnitDied(unitId, DeathCause.Damage));
+            }
+        }
     }
 }

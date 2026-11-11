@@ -3004,6 +3004,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lightColor: {r: 0.82, g: 0.85, b: 0.79, a: 1}
   darkColor: {r: 0.25, g: 0.34, b: 0.32, a: 1}
+  moveHighlightColor: {r: 0.35, g: 0.65, b: 0.45, a: 1}
+  attackHighlightColor: {r: 0.85, g: 0.35, b: 0.35, a: 1}
+  selectedHighlightColor: {r: 0.9, g: 0.7, b: 0.25, a: 1}
   gap: 2
   width: 7
   height: 7
@@ -3910,7 +3913,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1915189373}
-  - component: {fileID: 1915189372}
+  - component: {fileID: 1915189375}
+  - component: {fileID: 1915189374}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -3918,29 +3922,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1915189372
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1915189371}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3585d808ede33ff419d9847370cfe566, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  boardView: {fileID: 1359160882}
-  unitPrefab: {fileID: 9195061059093412887, guid: 6f61abfa4be080a4d9f9513dcfb5051c, type: 3}
-  cards:
-  - {fileID: 11400000, guid: 02787479ecd3c5d42bc4f3b0613e9486, type: 2}
-  - {fileID: 11400000, guid: f5e637fa1691e8d4aadbb75c63589ff8, type: 2}
-  cardId: 1
-  level: 1
-  spawnPosition: {x: 2, y: 0}
-  opponentCardId: 2
-  opponentLevel: 1
-  opponentSpawnPosition: {x: 4, y: 6}
 --- !u!4 &1915189373
 Transform:
   m_ObjectHideFlags: 0
@@ -3956,6 +3937,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1915189374
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915189371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bcf6b67dbe95914c98927dd950579bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1915189375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915189371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21638a0da22b379439f52a59474a0bc7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardView: {fileID: 1359160882}
+  unitPrefab: {fileID: 9195061059093412887, guid: 6f61abfa4be080a4d9f9513dcfb5051c, type: 3}
+  presenter: {fileID: 1915189374}
+  initialUnits:
+  - ownerId: 1
+    cardId: 1
+    level: 1
+    position: {x: 2, y: 0}
+  - ownerId: 2
+    cardId: 2
+    level: 1
+    position: {x: 4, y: 6}
 --- !u!1 &1953024909
 GameObject:
   m_ObjectHideFlags: 0

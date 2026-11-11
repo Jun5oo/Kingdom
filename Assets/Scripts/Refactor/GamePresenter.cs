@@ -4,17 +4,21 @@ using UnityEngine;
 
 namespace Refactor
 {
-    // 보드 입력을 엔진에 전달하고 결과를 화면에 반영한다.
+    // 입력을 명령으로 보내고, 엔진이 돌려준 이벤트를 화면에 재생한다.
     public sealed class GamePresenter : MonoBehaviour
     {
         private readonly Dictionary<int, UnitView> unitViews = new();
+        private readonly Dictionary<int, GridPos> unitPositions = new();
+        private IReadOnlyList<GameCommand> availableCommands = Array.Empty<GameCommand>();
         private GameEngine engine;
         private BoardView boardView;
         private int? selectedUnitId;
+        private int currentPlayerId;
+        private int turnNumber;
+        private int remainingActions;
         private string status = string.Empty;
 
-        private GameState State => engine.State;
-
+        // 엔진 상태는 여기서만 읽는다. 이후 변화는 이벤트로만 받는다.
         public void Initialize(GameEngine engine, CardDatabase database, BoardView boardView, UnitView unitPrefab)
         {
             if (this.engine != null)
@@ -28,12 +32,17 @@ namespace Refactor
             this.engine = engine ?? throw new ArgumentNullException(nameof(engine));
             this.boardView.CellClicked += OnCellClicked;
 
+            GameState state = engine.State;
             // Show는 기존 칸을 다시 만들므로 유닛 UI 생성 전에 한 번 호출한다.
-            this.boardView.Show(State.Board);
-            foreach (UnitState unit in State.Units.Values)
-                CreateUnitView(unit, database, unitPrefab);
+            this.boardView.Show(state.Board);
+            foreach (UnitState unit in state.Units.Values)
+                CreateUnitView(state, unit, database, unitPrefab);
 
-            status = $"플레이어 {State.CurrentPlayerId}의 유닛을 선택해주세요.";
+            currentPlayerId = state.CurrentPlayerId;
+            turnNumber = state.TurnNumber;
+            remainingActions = state.Players[currentPlayerId].ActionResource;
+            availableCommands = engine.GetAvailableCommands(currentPlayerId);
+            status = $"플레이어 {currentPlayerId}의 유닛을 선택해주세요.";
         }
 
         private void OnDestroy()
@@ -42,16 +51,17 @@ namespace Refactor
                 boardView.CellClicked -= OnCellClicked;
         }
 
-        private void CreateUnitView(UnitState unit, CardDatabase database, UnitView unitPrefab)
+        private void CreateUnitView(GameState state, UnitState unit, CardDatabase database, UnitView unitPrefab)
         {
             if (!database.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
                 throw new InvalidOperationException($"등록되지 않은 카드입니다: {unit.CardDefinitionId}");
-            if (!State.Board.TryGetPosition(unit.Id, out int x, out int y))
+            if (!state.Board.TryGetPosition(unit.Id, out int x, out int y))
                 throw new InvalidOperationException($"보드에 없는 유닛입니다: {unit.Id}");
 
             UnitView view = boardView.CreateUnitView(unitPrefab, x, y);
             view.Bind(unit, card);
             unitViews.Add(unit.Id, view);
+            unitPositions.Add(unit.Id, new GridPos(x, y));
         }
 
         private void OnCellClicked(int x, int y)
@@ -59,9 +69,8 @@ namespace Refactor
             if (!isActiveAndEnabled)
                 return;
 
-            int playerId = State.CurrentPlayerId;
-            int? occupant = State.Board.GetUnitIdAt(x, y);
-            if (occupant.HasValue && State.Units[occupant.Value].OwnerId == playerId)
+            int? occupant = FindUnitAt(x, y);
+            if (occupant.HasValue && unitViews[occupant.Value].OwnerId == currentPlayerId)
             {
                 selectedUnitId = selectedUnitId == occupant ? null : occupant;
                 status = selectedUnitId.HasValue ? "빈칸은 이동, 적 유닛은 공격입니다." : "선택을 해제했습니다.";
@@ -76,76 +85,84 @@ namespace Refactor
             }
 
             if (occupant.HasValue)
-                AttackUnit(playerId, selectedUnitId.Value, occupant.Value);
+                SubmitCommand(new AttackCommand(selectedUnitId.Value, occupant.Value));
             else
-                MoveUnit(playerId, selectedUnitId.Value, x, y);
+                SubmitCommand(new MoveCommand(selectedUnitId.Value, new GridPos(x, y)));
         }
 
-        private void MoveUnit(int playerId, int unitId, int x, int y)
+        private int? FindUnitAt(int x, int y)
         {
-            if (!engine.MoveUnit(playerId, unitId, x, y, out string reason))
+            foreach (KeyValuePair<int, GridPos> entry in unitPositions)
             {
-                status = reason;
+                if (entry.Value.X == x && entry.Value.Y == y)
+                    return entry.Key;
+            }
+
+            return null;
+        }
+
+        private void SubmitCommand(GameCommand command)
+        {
+            SubmitResult result = engine.Submit(currentPlayerId, command);
+            if (!result.Succeeded)
+            {
+                status = result.Reason;
                 return;
             }
 
-            // 엔진이 확정한 위치를 기준으로 UI를 옮긴다.
-            if (State.Board.TryGetPosition(unitId, out int newX, out int newY))
+            foreach (GameEvent gameEvent in result.Events)
+                Play(gameEvent);
+
+            if (remainingActions == 0)
             {
-                UnitView view = unitViews[unitId];
-                boardView.MoveUnitView(view, newX, newY);
-                view.Refresh(State.Units[unitId]);
+                status = command is MoveCommand
+                    ? "행동을 모두 사용했습니다. 턴 종료 버튼을 눌러주세요."
+                    : status + " 턴 종료 버튼을 눌러주세요.";
             }
 
-            status = State.Players[playerId].ActionResource == 0
-                ? "행동을 모두 사용했습니다. 턴 종료 버튼을 눌러주세요."
-                : "이동했습니다. 같은 유닛으로 한 번 더 행동할 수 있습니다.";
+            availableCommands = engine.GetAvailableCommands(currentPlayerId);
             RefreshHighlights();
         }
 
-        private void AttackUnit(int playerId, int attackerId, int defenderId)
+        private void Play(GameEvent gameEvent)
         {
-            if (!engine.AttackUnit(playerId, attackerId, defenderId,
-                    out CombatResult result, out string reason))
+            switch (gameEvent)
             {
-                status = reason;
-                return;
-            }
+                case UnitMoved moved:
+                    boardView.MoveUnitView(unitViews[moved.UnitId], moved.To.X, moved.To.Y);
+                    unitPositions[moved.UnitId] = moved.To;
+                    status = "이동했습니다. 같은 유닛으로 한 번 더 행동할 수 있습니다.";
+                    break;
 
-            if (unitViews.TryGetValue(defenderId, out UnitView view))
-            {
-                if (result.DefenderDied)
-                {
+                case UnitDamaged damaged:
+                    unitViews[damaged.UnitId].SetHP(damaged.RemainingHP);
+                    status = damaged.RemainingHP > 0
+                        ? $"{damaged.Amount} 피해. 상대 HP: {damaged.RemainingHP}"
+                        : $"{damaged.Amount} 피해. 적을 처치했습니다.";
+                    break;
+
+                case UnitDied died:
+                    UnitView view = unitViews[died.UnitId];
                     view.gameObject.SetActive(false);
                     Destroy(view.gameObject);
-                    unitViews.Remove(defenderId);
-                }
-                else
-                {
-                    view.Refresh(State.Units[defenderId]);
-                }
+                    unitViews.Remove(died.UnitId);
+                    unitPositions.Remove(died.UnitId);
+                    break;
+
+                case ActionResourceChanged changed:
+                    remainingActions = changed.Remaining;
+                    break;
+
+                case TurnStarted started:
+                    currentPlayerId = started.PlayerId;
+                    turnNumber = started.TurnNumber;
+                    selectedUnitId = null;
+                    status = $"플레이어 {started.PlayerId}의 턴입니다.";
+                    break;
+
+                default:
+                    throw new ArgumentException($"재생할 수 없는 이벤트입니다: {gameEvent.GetType().Name}", nameof(gameEvent));
             }
-
-            status = result.DefenderDied
-                ? $"{result.Damage} 피해. 적을 처치했습니다."
-                : $"{result.Damage} 피해. 상대 HP: {result.RemainingHP}";
-            if (State.Players[playerId].ActionResource == 0)
-                status += " 턴 종료 버튼을 눌러주세요.";
-            RefreshHighlights();
-        }
-
-        private void EndTurn()
-        {
-            // 양쪽을 번갈아 조작하는 화면이므로 현재 플레이어로 요청한다.
-            if (!engine.EndTurn(State.CurrentPlayerId, out string reason))
-            {
-                status = reason;
-                return;
-            }
-
-            selectedUnitId = null;
-            boardView.ClearHighlights();
-            status = $"플레이어 {State.CurrentPlayerId}의 턴입니다.";
         }
 
         private void RefreshHighlights()
@@ -155,21 +172,21 @@ namespace Refactor
                 return;
 
             int unitId = selectedUnitId.Value;
-            for (int y = 0; y < State.Board.Height; y++)
+            foreach (GameCommand command in availableCommands)
             {
-                for (int x = 0; x < State.Board.Width; x++)
+                if (command is MoveCommand move && move.UnitId == unitId)
                 {
-                    if (engine.CanMoveUnit(State.CurrentPlayerId, unitId, x, y, out _))
-                        boardView.HighlightCell(x, y, CellHighlight.Move);
-
-                    int? targetId = State.Board.GetUnitIdAt(x, y);
-                    if (targetId.HasValue && engine.CanAttackUnit(State.CurrentPlayerId, unitId, targetId.Value, out _))
-                        boardView.HighlightCell(x, y, CellHighlight.Attack);
+                    boardView.HighlightCell(move.Target.X, move.Target.Y, CellHighlight.Move);
+                }
+                else if (command is AttackCommand attack && attack.AttackerId == unitId)
+                {
+                    GridPos target = unitPositions[attack.DefenderId];
+                    boardView.HighlightCell(target.X, target.Y, CellHighlight.Attack);
                 }
             }
 
-            if (State.Board.TryGetPosition(unitId, out int unitX, out int unitY))
-                boardView.HighlightCell(unitX, unitY, CellHighlight.Selected);
+            GridPos selected = unitPositions[unitId];
+            boardView.HighlightCell(selected.X, selected.Y, CellHighlight.Selected);
         }
 
         // 임시 HUD. 별도 HUD View를 만들면 옮긴다.
@@ -179,11 +196,11 @@ namespace Refactor
                 return;
 
             GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(520, Screen.width - 24), 150), GUI.skin.box);
-            GUILayout.Label($"{State.TurnNumber}턴 · 플레이어 {State.CurrentPlayerId}");
-            GUILayout.Label($"남은 행동: {State.Players[State.CurrentPlayerId].ActionResource} / {GameEngine.ActionsPerTurn}");
+            GUILayout.Label($"{turnNumber}턴 · 플레이어 {currentPlayerId}");
+            GUILayout.Label($"남은 행동: {remainingActions} / {GameEngine.ActionsPerTurn}");
             GUILayout.Label(status);
             if (GUILayout.Button("턴 종료"))
-                EndTurn();
+                SubmitCommand(new EndTurnCommand());
             GUILayout.EndArea();
         }
     }

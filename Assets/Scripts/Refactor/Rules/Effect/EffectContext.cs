@@ -14,7 +14,7 @@ namespace Refactor
 
         // 발동 중인 효과(런타임)와 이를 촉발한 이벤트
         public Effect Source { get; set; }
-        public GameEvent? SourceEvent { get; set; }
+        public GameEvent SourceEvent { get; set; }
 
         // Target.Resolve가 채운다. Operation이 읽는다.
         public List<GridPos> Targets { get; } = new List<GridPos>();

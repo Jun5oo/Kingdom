@@ -46,12 +46,10 @@ namespace Refactor
             return true;
         }
 
-        // 상태를 변경하지 않고 결과만 계산한다. 실제 반영은 엔진이 담당한다.
-        public CombatResult Calculate(UnitState attacker, UnitState defender)
+        // 상태를 변경하지 않고 피해량만 계산한다. 실제 반영은 엔진이 담당한다.
+        public int CalculateDamage(UnitState attacker, UnitState defender)
         {
-            int damage = Math.Min(Math.Max(0, attacker.CP), Math.Max(0, defender.CurrentHP));
-            return new CombatResult(attacker.Id, defender.Id, damage,
-                Math.Max(0, defender.CurrentHP) - damage);
+            return Math.Min(Math.Max(0, attacker.CP), Math.Max(0, defender.CurrentHP));
         }
     }
 }
