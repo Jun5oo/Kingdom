@@ -21,6 +21,16 @@ namespace Refactor
 
         public BoardState Board { get; }
 
+        // 플레이어의 선택을 기다리는 중이면 값이 있다(§2.3). 그동안 다른 명령은 받지 않는다.
+        public PendingChoice PendingChoice { get; internal set; }
+
+        // 선택 대기로 해결이 Submit 사이에서 멈출 수 있으므로, 진행 중인 해결 정보도 상태에 둔다.
+        internal Queue<PendingEffect> TriggerQueue { get; } = new();
+        // 사망은 큐가 빈 뒤 한꺼번에 처리하므로, 그때까지 마지막으로 피해를 준 플레이어를 기억한다.
+        internal Dictionary<int, int> LastDamageSource { get; } = new();
+        // 선택 대기로 멈춘 효과. 비용은 이미 지불했다.
+        internal PendingEffect? ChoosingEffect { get; set; }
+
         // 항상 2인 게임이므로 생성 시 두 플레이어를 받는다. firstPlayer가 선공이다.
         public GameState(PlayerState firstPlayer, PlayerState secondPlayer,
             int boardWidth = 7, int boardHeight = 7)

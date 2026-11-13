@@ -10,11 +10,14 @@ namespace Refactor
         private readonly Dictionary<int, UnitView> unitViews = new();
         private readonly Dictionary<int, GridPos> unitPositions = new();
         private readonly Dictionary<int, int> abilityResources = new();
+
         private IReadOnlyList<GameCommand> availableCommands = Array.Empty<GameCommand>();
+
         private GameEngine engine;
         private CardDatabase database;
         private BoardView boardView;
         private UnitView unitPrefab;
+
         private int? selectedUnitId;
         private int currentPlayerId;
         private int turnNumber;
@@ -26,6 +29,7 @@ namespace Refactor
         {
             if (this.engine != null)
                 throw new InvalidOperationException("이미 초기화되었습니다.");
+
             this.database = database ?? throw new ArgumentNullException(nameof(database));
             this.unitPrefab = unitPrefab != null ? unitPrefab : throw new ArgumentNullException(nameof(unitPrefab));
             this.boardView = boardView != null ? boardView : throw new ArgumentNullException(nameof(boardView));

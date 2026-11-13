@@ -65,7 +65,7 @@ public string CardId => cardId;
 |---|---|---|
 | 원본 데이터 | 카드 JSON, `CardDefinition` | 카드의 변하지 않는 정의를 보관합니다. |
 | 런타임 상태 | `GameState`, `BoardState`, `UnitState` | 진행 중인 게임의 값을 보관합니다. |
-| 규칙 처리 | `GameEngine`, `MovementValidator`, `CombatResolver`, `EffectProcessor` | 행동을 검증하고 상태를 변경하며, 결과를 이벤트로 남깁니다. |
+| 규칙 처리 | `GameEngine`, `MovementValidator`, `CombatResolver`, `Processor` | 행동을 검증하고 상태를 변경하며, 결과를 이벤트로 남깁니다. |
 | UI | `BoardView`, `UnitView`, `GamePresenter` | 엔진이 돌려준 이벤트를 화면에 재생하고 입력을 명령으로 전달합니다. |
 
 - UI는 상태를 직접 변경하지 않고, 엔진의 `Submit`으로 명령을 보냅니다. 가능한 행동은 `GetAvailableCommands`로 조회합니다.

@@ -108,6 +108,17 @@ namespace Refactor
         }
     }
 
+    // 선택 대기 시작. 후보가 숨겨진 정보일 수 있으므로 고르는 플레이어에게만 공개한다.
+    public sealed class ChoiceRequested : GameEvent
+    {
+        public PendingChoice Choice { get; }
+
+        public ChoiceRequested(PendingChoice choice) : base(choice.PlayerId)
+        {
+            Choice = choice;
+        }
+    }
+
     public sealed class TurnStarted : GameEvent
     {
         public int PlayerId { get; }

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Refactor
 {
     // 플레이어의 행동 요청. 데이터만 담고 실행은 GameEngine이 맡는다.
@@ -43,6 +46,17 @@ namespace Refactor
         {
             UnitId = unitId;
             EffectIndex = effectIndex;
+        }
+    }
+
+    // 선택 대기(GameState.PendingChoice)에 대한 응답.
+    public sealed class ChooseCommand : GameCommand
+    {
+        public IReadOnlyList<int> UnitIds { get; }
+
+        public ChooseCommand(params int[] unitIds)
+        {
+            UnitIds = unitIds ?? throw new ArgumentNullException(nameof(unitIds));
         }
     }
 }

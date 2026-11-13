@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Refactor
@@ -14,12 +15,12 @@ namespace Refactor
         public GameEvent TriggerEvent { get; }
 
         // 상태 변경 입구. 발동 가능 여부만 확인할 때는 null이다.
-        internal EffectProcessor Processor { get; }
+        internal Processor Processor { get; }
 
-        // Target.Resolve가 채운다. 대상 표현은 3, 4단계에서 정리한다.
-        public List<GridPos> Targets { get; } = new();
+        // 고른 대상. 해결 도중 보드를 떠나도 위치와 원래 카드를 읽을 수 있게 고른 시점의 값을 둔다.
+        public IReadOnlyList<TargetUnit> Targets { get; internal set; } = Array.Empty<TargetUnit>();
 
-        internal EffectContext(GameState state, CardDatabase cards, EffectProcessor processor,
+        internal EffectContext(GameState state, CardDatabase cards, Processor processor,
             int sourceUnitId, int ownerId, GameEvent triggerEvent)
         {
             State = state;
@@ -28,6 +29,20 @@ namespace Refactor
             SourceUnitId = sourceUnitId;
             OwnerId = ownerId;
             TriggerEvent = triggerEvent;
+        }
+    }
+
+    public readonly struct TargetUnit
+    {
+        public int UnitId { get; }
+        public GridPos Position { get; }
+        public string OriginCardId { get; }
+
+        public TargetUnit(int unitId, GridPos position, string originCardId)
+        {
+            UnitId = unitId;
+            Position = position;
+            OriginCardId = originCardId;
         }
     }
 }

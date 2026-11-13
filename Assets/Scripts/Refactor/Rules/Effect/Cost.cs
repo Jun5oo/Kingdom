@@ -27,4 +27,16 @@ namespace Refactor
                 c?.Pay(context);
         }
     }
+
+    // 효과 주인의 능력 자원을 쓴다.
+    public sealed class AbilityResourceCost : Cost
+    {
+        [JsonProperty(Required = Required.Always)] private int amount = 0;
+
+        public override bool IsCostEnough(EffectContext context)
+            => context.State.Players[context.OwnerId].AbilityResource >= amount;
+
+        public override void Pay(EffectContext context)
+            => context.Processor.ChangeAbilityResource(context.OwnerId, -amount);
+    }
 }

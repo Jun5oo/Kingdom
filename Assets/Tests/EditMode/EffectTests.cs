@@ -21,6 +21,17 @@ namespace Kingdom.Tests
             { ""type"": ""Ignition"", ""usesPerTurn"": 1,
               ""operations"": [ { ""type"": ""Release"" }, { ""type"": ""ChangeAbilityResource"", ""amount"": 1 } ] }";
 
+        // 카드 ③ 부활: 자원 2를 쓰고 아군 무덤을 골라, 무덤을 릴리스하고 그 칸에 원래 유닛을 소환.
+        private const string NecromancerEffects = @"
+            { ""type"": ""Ignition"", ""usesPerTurn"": 1,
+              ""cost"": { ""type"": ""AbilityResource"", ""amount"": 2 },
+              ""target"": { ""type"": ""ChooseUnit"", ""owner"": ""Self"", ""tag"": ""Graveyard"" },
+              ""operations"": [ { ""type"": ""Release"", ""target"": ""Targets"" }, { ""type"": ""Revive"" } ] }";
+
+        private const string BankerEffects = @"
+            { ""type"": ""Ignition"", ""usesPerTurn"": 1,
+              ""operations"": [ { ""type"": ""ChangeAbilityResource"", ""amount"": 2 } ] }";
+
         private const string DrummerEffects = @"
             { ""type"": ""Ignition"", ""usesPerTurn"": 1,
               ""operations"": [ { ""type"": ""ChangeAbilityResource"", ""amount"": 1 } ] }";
@@ -59,6 +70,8 @@ namespace Kingdom.Tests
                 ("drummer.json", UnitJson("drummer", "Normal", DrummerEffects)),
                 ("avenger.json", UnitJson("avenger", "Normal", AvengerEffects)),
                 ("gravedigger.json", UnitJson("gravedigger", "Normal", GravediggerEffects)),
+                ("necromancer.json", UnitJson("necromancer", "Normal", NecromancerEffects)),
+                ("banker.json", UnitJson("banker", "Normal", BankerEffects)),
             }));
             engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
             Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
@@ -154,6 +167,64 @@ namespace Kingdom.Tests
             GridPos[] summonedAt = result.Events.OfType<UnitSummoned>().Select(e => e.Position).ToArray();
             CollectionAssert.AreEqual(new[] { new GridPos(2, 1), new GridPos(0, 0) }, summonedAt);
             Assert.AreEqual(DeathCause.Release, result.Events.OfType<UnitDied>().Last().Cause);
+        }
+
+        [Test]
+        public void ReviveWaitsForChoiceThenSummonsOriginalHero()
+        {
+            StartGame(Place(1, "watcher", 0, 0), Place(1, "hero", 2, 1), Place(2, "fighter", 2, 0),
+                Place(1, "necromancer", 6, 6), Place(1, "banker", 0, 6));
+            SubmitOk(1, new EndTurnCommand());
+            SubmitOk(2, new AttackCommand(3, 2));
+            SubmitOk(2, new EndTurnCommand());
+            int graveId = engine.State.Board.GetUnitIdAt(2, 1).Value;
+
+            SubmitResult poor = engine.Submit(1, new ActivateEffectCommand(4, 0));
+            Assert.IsFalse(poor.Succeeded);
+            StringAssert.Contains("비용", poor.Reason);
+
+            SubmitOk(1, new ActivateEffectCommand(5, 0));
+            SubmitResult activated = engine.Submit(1, new ActivateEffectCommand(4, 0));
+
+            Assert.IsTrue(activated.Succeeded, activated.Reason);
+            Assert.AreEqual(0, engine.State.Players[1].AbilityResource);
+            ChoiceRequested requested = activated.Events.OfType<ChoiceRequested>().Single();
+            Assert.AreEqual(1, requested.VisibleTo);
+            CollectionAssert.AreEqual(new[] { graveId }, requested.Choice.Candidates);
+
+            // 선택하기 전에는 다른 명령과 잘못된 선택을 받지 않는다.
+            Assert.IsFalse(engine.Submit(1, new EndTurnCommand()).Succeeded);
+            Assert.IsFalse(engine.Submit(1, new ChooseCommand(3)).Succeeded);
+            Assert.IsFalse(engine.Submit(2, new ChooseCommand(graveId)).Succeeded);
+            Assert.IsEmpty(engine.GetAvailableCommands(2));
+            Assert.AreEqual(graveId, ((ChooseCommand)engine.GetAvailableCommands(1).Single()).UnitIds.Single());
+
+            SubmitResult chosen = engine.Submit(1, new ChooseCommand(graveId));
+
+            Assert.IsTrue(chosen.Succeeded, chosen.Reason);
+            Assert.AreEqual(DeathCause.Release, chosen.Events.OfType<UnitDied>().Single().Cause);
+            UnitSummoned revived = chosen.Events.OfType<UnitSummoned>().Single();
+            Assert.AreEqual("hero", revived.CardId);
+            Assert.AreEqual(1, revived.OwnerId);
+            Assert.AreEqual(new GridPos(2, 1), revived.Position);
+            // 새 ID를 받으므로 트리거 순서가 가장 나중이 된다(§4.2).
+            Assert.Greater(revived.UnitId, graveId);
+            Assert.IsNull(engine.State.PendingChoice);
+            SubmitOk(1, new EndTurnCommand());
+        }
+
+        [Test]
+        public void ReviveCannotBeUsedWithoutAllyGrave()
+        {
+            StartGame(Place(1, "necromancer", 6, 6), Place(1, "banker", 0, 6), Place(2, "grave", 3, 3));
+            SubmitOk(1, new ActivateEffectCommand(2, 0));
+
+            SubmitResult result = engine.Submit(1, new ActivateEffectCommand(1, 0));
+
+            Assert.IsFalse(result.Succeeded);
+            StringAssert.Contains("대상", result.Reason);
+            Assert.AreEqual(2, engine.State.Players[1].AbilityResource);
+            Assert.IsFalse(engine.GetAvailableCommands(1).OfType<ActivateEffectCommand>().Any(c => c.UnitId == 1));
         }
 
         [Test]

@@ -3,45 +3,55 @@ using System.Collections.Generic;
 
 namespace Refactor
 {
-    // 한 번의 Submit 동안 상태 변경, 이벤트 기록, 트리거 해결을 맡는다.
-    internal sealed class EffectProcessor
+    // 게임 내내 하나를 유지하며 상태 변경, 이벤트 기록, 트리거 해결을 맡는다. Submit 사이에 남는 해결 정보는 GameState에 둔다.
+    internal sealed class Processor
     {
         // 트리거가 서로를 끝없이 부르는 카드 조합이 서버를 멈추지 않게 한다.
         private const int MaxResolveSteps = 1000;
 
         private readonly GameState state;
         private readonly CardDatabase cards;
-        private readonly List<GameEvent> events = new();
-        // shortcut: Submit 안에서만 유지된다. 3단계 선택 대기가 생기면 GameState로 옮긴다.
-        private readonly Queue<PendingTrigger> triggerQueue = new();
-        // 사망은 큐가 빈 뒤 한꺼번에 처리하므로, 그때까지 마지막으로 피해를 준 플레이어를 기억한다.
-        private readonly Dictionary<int, int> lastDamageSource = new();
+        // 진행 중인 Submit의 이벤트. Submit이 끝날 때 TakeEvents로 꺼낸다.
+        private List<GameEvent> events = new();
 
-        public EffectProcessor(GameState state, CardDatabase cards)
+        public Processor(GameState state, CardDatabase cards)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.cards = cards ?? throw new ArgumentNullException(nameof(cards));
         }
 
-        public IReadOnlyList<GameEvent> Events => events;
+        // 꺼낸 목록은 결과가 가져가므로 새 목록으로 바꿔, 다음 Submit이 이전 결과를 건드리지 않게 한다.
+        public IReadOnlyList<GameEvent> TakeEvents()
+        {
+            List<GameEvent> taken = events;
+            events = new();
+            return taken;
+        }
 
         public void Raise(GameEvent gameEvent) => Raise(gameEvent, null);
 
         // 큐를 모두 처리한 뒤 사망자를 한꺼번에 처리한다. 사망 트리거가 생기면 반복한다(§4.3, 하스스톤식).
+        // 선택 대기가 생기면 멈추고, 선택 응답을 받은 Submit에서 다시 부른다.
         public void RunToCompletion()
         {
             for (int step = 0; step < MaxResolveSteps; step++)
             {
-                if (triggerQueue.Count > 0)
+                if (state.PendingChoice != null)
+                    return;
+
+                if (state.TriggerQueue.Count > 0)
                 {
-                    PendingTrigger pending = triggerQueue.Dequeue();
+                    PendingEffect pending = state.TriggerQueue.Dequeue();
                     if (IsStillActive(pending))
-                        Execute(pending.Effect, pending.EffectIndex, pending.SourceUnitId, pending.OwnerId, pending.TriggerEvent);
+                        Execute(pending);
                     continue;
                 }
 
                 if (!ResolveDeaths())
+                {
+                    state.LastDamageSource.Clear();
                     return;
+                }
             }
 
             throw new InvalidOperationException("트리거 해결이 끝나지 않습니다. 카드 데이터를 확인하세요.");
@@ -51,7 +61,27 @@ namespace Refactor
         public void Activate(int unitId, int effectIndex)
         {
             UnitState unit = state.Units[unitId];
-            Execute(GetEffects(unit)[effectIndex], effectIndex, unitId, unit.OwnerId, null);
+            Execute(new PendingEffect(unitId, unit.OwnerId, GetEffects(unit)[effectIndex], effectIndex, null));
+        }
+
+        // 엔진이 CanChoose로 검증을 끝낸 뒤 부른다. 멈췄던 효과를 Operation부터 이어서 실행한다.
+        public void Choose(IReadOnlyList<int> unitIds)
+        {
+            PendingEffect pending = state.ChoosingEffect.Value;
+            state.ChoosingEffect = null;
+            state.PendingChoice = null;
+
+            List<TargetUnit> targets = new(unitIds.Count);
+            foreach (int unitId in unitIds)
+            {
+                state.Board.TryGetPosition(unitId, out int x, out int y);
+                targets.Add(new TargetUnit(unitId, new GridPos(x, y), state.Units[unitId].OriginCardId));
+            }
+
+            EffectContext context = CreateContext(pending);
+            context.Targets = targets;
+            foreach (Operation operation in pending.Effect.Operations)
+                operation.Execute(context);
         }
 
         // 모든 피해가 지나가는 지점. 5단계에서 여신의 성역 확인을 여기에 넣는다.
@@ -61,7 +91,7 @@ namespace Refactor
                 return;
 
             unit.CurrentHP -= amount;
-            lastDamageSource[unitId] = sourcePlayerId;
+            state.LastDamageSource[unitId] = sourcePlayerId;
             Raise(new UnitDamaged(unitId, amount, unit.CurrentHP));
         }
 
@@ -76,7 +106,7 @@ namespace Refactor
         }
 
         // 칸이 비어 있지 않으면 소환하지 않는다(§4.4).
-        public bool TrySummon(string cardId, int level, int ownerId, GridPos position)
+        public bool TrySummon(string cardId, int level, int ownerId, GridPos position, string originCardId = null)
         {
             if (!state.Board.Contains(position.X, position.Y) || state.Board.GetUnitIdAt(position.X, position.Y).HasValue)
                 return false;
@@ -84,7 +114,7 @@ namespace Refactor
             if (!cards.TryGetLevel(cardId, level, out UnitLevelData data))
                 throw new InvalidOperationException($"소환할 카드 정의가 없습니다: {cardId}, {level}성");
 
-            UnitState unit = new(state.AllocateUnitId(), cardId, ownerId, data.BaseCP, data.BaseHP, level);
+            UnitState unit = new(state.AllocateUnitId(), cardId, ownerId, data.BaseCP, data.BaseHP, level, originCardId);
             if (!state.TrySpawnUnit(unit, position.X, position.Y))
                 throw new InvalidOperationException($"유닛을 소환할 수 없습니다: {cardId}");
 
@@ -132,36 +162,56 @@ namespace Refactor
                 for (int i = 0; i < effects.Count; i++)
                 {
                     if (effects[i].Type == EffectType.Trigger && effects[i].Trigger == trigger)
-                        triggerQueue.Enqueue(new PendingTrigger(unit.Id, unit.OwnerId, effects[i], i, gameEvent));
+                        state.TriggerQueue.Enqueue(new PendingEffect(unit.Id, unit.OwnerId, effects[i], i, gameEvent));
                 }
             }
         }
 
         // 큐에서 기다리는 동안 보드를 떠난 유닛의 트리거는 발동하지 않는다. 자기 사망에 반응하는 트리거는 예외다.
-        private bool IsStillActive(PendingTrigger pending)
+        private bool IsStillActive(PendingEffect pending)
         {
             return state.Units.ContainsKey(pending.SourceUnitId) ||
                    (pending.TriggerEvent is UnitDied died && died.UnitId == pending.SourceUnitId);
         }
 
-        private void Execute(EffectData effect, int effectIndex, int sourceUnitId, int ownerId, GameEvent triggerEvent)
+        // 조건, 횟수, 비용을 확인한 뒤 지불한다. 고를 대상이 있으면 선택 대기로 멈춘다.
+        private void Execute(PendingEffect pending)
         {
-            EffectContext context = new(state, cards, this, sourceUnitId, ownerId, triggerEvent);
+            EffectData effect = pending.Effect;
+            EffectContext context = CreateContext(pending);
             if (effect.Condition != null && !effect.Condition.CanExecute(context))
                 return;
 
+            if (effect.Cost != null && !effect.Cost.IsCostEnough(context))
+                return;
+
             // 주인이 이미 떠났으면 다시 쓸 일이 없으므로 횟수를 세지 않는다.
-            if (state.Units.TryGetValue(sourceUnitId, out UnitState source))
+            if (state.Units.TryGetValue(pending.SourceUnitId, out UnitState source))
             {
-                if (!source.CanUseEffect(effectIndex, effect.UsesPerTurn))
+                if (!source.CanUseEffect(pending.EffectIndex, effect.UsesPerTurn))
                     return;
 
-                source.MarkEffectUsed(effectIndex);
+                source.MarkEffectUsed(pending.EffectIndex);
+            }
+
+            effect.Cost?.Pay(context);
+
+            // 후보가 없으면 대상이 필요한 Operation만 건너뛴다(§4.4).
+            List<int> candidates = effect.Target?.GetCandidates(context);
+            if (candidates != null && candidates.Count > 0)
+            {
+                state.ChoosingEffect = pending;
+                state.PendingChoice = new PendingChoice(pending.OwnerId, candidates, Math.Min(effect.Target.Count, candidates.Count));
+                Raise(new ChoiceRequested(state.PendingChoice));
+                return;
             }
 
             foreach (Operation operation in effect.Operations)
                 operation.Execute(context);
         }
+
+        private EffectContext CreateContext(PendingEffect pending)
+            => new(state, cards, this, pending.SourceUnitId, pending.OwnerId, pending.TriggerEvent);
 
         // HP가 0 이하인 유닛을 한꺼번에 제거한 뒤 나온 순서로 사망 이벤트를 낸다. 사망자가 있었으면 true.
         // 모두 제거한 뒤 이벤트를 내므로, 함께 죽은 유닛끼리는 서로의 사망에 반응하지 않는다.
@@ -185,7 +235,7 @@ namespace Refactor
             for (int i = 0; i < dead.Count; i++)
             {
                 UnitState unit = dead[i];
-                int? killer = lastDamageSource.TryGetValue(unit.Id, out int source) ? source : (int?)null;
+                int? killer = state.LastDamageSource.TryGetValue(unit.Id, out int source) ? source : (int?)null;
                 Raise(new UnitDied(unit.Id, unit.CardDefinitionId, unit.OwnerId, positions[i], DeathCause.Damage, killer), unit);
             }
 
@@ -206,24 +256,6 @@ namespace Refactor
                 throw new InvalidOperationException($"유닛의 카드 정의가 없습니다: {unit.CardDefinitionId}, {unit.Level}성");
 
             return data.Effects;
-        }
-
-        private readonly struct PendingTrigger
-        {
-            public int SourceUnitId { get; }
-            public int OwnerId { get; }
-            public EffectData Effect { get; }
-            public int EffectIndex { get; }
-            public GameEvent TriggerEvent { get; }
-
-            public PendingTrigger(int sourceUnitId, int ownerId, EffectData effect, int effectIndex, GameEvent triggerEvent)
-            {
-                SourceUnitId = sourceUnitId;
-                OwnerId = ownerId;
-                Effect = effect;
-                EffectIndex = effectIndex;
-                TriggerEvent = triggerEvent;
-            }
         }
     }
 }

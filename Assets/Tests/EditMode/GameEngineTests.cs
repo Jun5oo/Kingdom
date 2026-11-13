@@ -50,6 +50,22 @@ namespace Kingdom.Tests
         }
 
         [Test]
+        public void NextSubmitDoesNotChangePreviousResultEvents()
+        {
+            // Processor를 게임 내내 쓰므로, 이전 결과의 이벤트 목록이 다음 Submit과 섞이지 않는지 확인한다.
+            StartWithTwoPawns();
+
+            SubmitResult first = engine.Submit(1, new MoveCommand(1, new GridPos(2, 1)));
+            SubmitResult second = engine.Submit(1, new MoveCommand(1, new GridPos(2, 2)));
+
+            Assert.IsTrue(second.Succeeded, second.Reason);
+            Assert.AreEqual(2, first.Events.Count);
+            Assert.AreEqual(2, second.Events.Count);
+            Assert.AreEqual(new GridPos(2, 1), ((UnitMoved)first.Events[0]).To);
+            Assert.AreEqual(new GridPos(2, 2), ((UnitMoved)second.Events[0]).To);
+        }
+
+        [Test]
         public void MoveBeyondMaxDistanceFailsWithoutChangingState()
         {
             StartWithTwoPawns();

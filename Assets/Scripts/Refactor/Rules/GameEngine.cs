@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Refactor
 {
@@ -17,12 +18,15 @@ namespace Refactor
         private readonly MovementValidator movementValidator = new();
         // 공격 처리 
         private readonly CombatResolver combatResolver = new();
+        // 상태 변경과 트리거 해결. 게임 내내 하나를 쓴다.
+        private readonly Processor processor;
         private bool isStarted;
 
         public GameEngine(GameState state, CardDatabase cardDatabase)
         {
             State = state ?? throw new ArgumentNullException(nameof(state));
             this.cardDatabase = cardDatabase ?? throw new ArgumentNullException(nameof(cardDatabase));
+            processor = new Processor(State, this.cardDatabase);
         }
 
         // 시작 유닛을 배치하고 선공에게 행동을 지급한다. 실패 시 상태를 변경하지 않는다.
@@ -116,15 +120,29 @@ namespace Refactor
                 AttackCommand attack => SubmitAttack(playerId, attack),
                 EndTurnCommand => SubmitEndTurn(playerId),
                 ActivateEffectCommand activate => SubmitActivateEffect(playerId, activate),
+                ChooseCommand choose => SubmitChoose(playerId, choose),
                 null => throw new ArgumentNullException(nameof(command)),
                 _ => throw new ArgumentException($"처리할 수 없는 명령입니다: {command.GetType().Name}", nameof(command)),
             };
         }
 
-        // 지금 실행할 수 있는 명령 전체. 현재 플레이어가 아니면 비어 있다.
+        // 지금 실행할 수 있는 명령 전체. 선택 대기 중이면 고르는 플레이어의 선택 명령만 있다.
         public IReadOnlyList<GameCommand> GetAvailableCommands(int playerId)
         {
             List<GameCommand> commands = new();
+            PendingChoice choice = State.PendingChoice;
+            if (choice != null)
+            {
+                // shortcut: 1개를 고를 때만 후보별로 나열한다. 여러 개를 고르는 카드가 생기면 조합을 나열할 방법을 정한다.
+                if (choice.PlayerId == playerId && choice.Count == 1)
+                {
+                    foreach (int candidate in choice.Candidates)
+                        commands.Add(new ChooseCommand(candidate));
+                }
+
+                return commands;
+            }
+
             if (!CanEndTurn(playerId, out _))
                 return commands;
 
@@ -143,6 +161,12 @@ namespace Refactor
             if (!isStarted)
             {
                 reason = "게임이 아직 시작되지 않았습니다.";
+                return false;
+            }
+
+            if (State.PendingChoice != null)
+            {
+                reason = "선택을 기다리는 중입니다.";
                 return false;
             }
 
@@ -301,6 +325,51 @@ namespace Refactor
                 return false;
             }
 
+            if (effect.Cost != null && !effect.Cost.IsCostEnough(context))
+            {
+                reason = "효과의 비용이 부족합니다.";
+                return false;
+            }
+
+            // 유효한 대상이 없으면 사용할 수 없다(§4.4).
+            if (effect.Target != null && effect.Target.GetCandidates(context).Count == 0)
+            {
+                reason = "선택할 수 있는 대상이 없습니다.";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
+        // 선택 대기에 대한 응답을 검증한다. 상태는 변경하지 않는다.
+        public bool CanChoose(int playerId, IReadOnlyList<int> unitIds, out string reason)
+        {
+            PendingChoice choice = State.PendingChoice;
+            if (choice == null)
+            {
+                reason = "선택을 기다리는 중이 아닙니다.";
+                return false;
+            }
+
+            if (choice.PlayerId != playerId)
+            {
+                reason = "선택할 플레이어가 아닙니다.";
+                return false;
+            }
+
+            if (unitIds.Count != choice.Count || unitIds.Distinct().Count() != unitIds.Count)
+            {
+                reason = $"서로 다른 대상 {choice.Count}개를 골라야 합니다.";
+                return false;
+            }
+
+            if (!unitIds.All(choice.Candidates.Contains))
+            {
+                reason = "고를 수 없는 대상입니다.";
+                return false;
+            }
+
             reason = string.Empty;
             return true;
         }
@@ -310,6 +379,12 @@ namespace Refactor
         // true는 이동 거리, 비용, 공격 대상까지 유효하다는 뜻이 아니다.
         public bool CanActWithUnit(int requestingPlayerId, int unitId, out string reason)
         {
+            if (State.PendingChoice != null)
+            {
+                reason = "선택을 기다리는 중입니다.";
+                return false;
+            }
+
             if (!State.Players.ContainsKey(requestingPlayerId))
             {
                 reason = "등록되지 않은 플레이어입니다.";
@@ -385,11 +460,10 @@ namespace Refactor
             if (!State.TryMoveUnit(command.UnitId, target.X, target.Y))
                 return SubmitResult.Fail("유닛을 이동할 수 없습니다.");
 
-            EffectProcessor processor = new(State, cardDatabase);
             processor.Raise(new UnitMoved(command.UnitId, new GridPos(fromX, fromY), target));
             processor.ChangeActionResource(playerId, -1);
             processor.RunToCompletion();
-            return SubmitResult.Ok(processor.Events);
+            return SubmitResult.Ok(processor.TakeEvents());
         }
 
         private SubmitResult SubmitAttack(int playerId, AttackCommand command)
@@ -400,23 +474,31 @@ namespace Refactor
             UnitState attacker = State.Units[command.AttackerId];
             UnitState defender = State.Units[command.DefenderId];
 
-            EffectProcessor processor = new(State, cardDatabase);
             processor.Damage(defender.Id, combatResolver.CalculateDamage(attacker, defender), playerId);
             processor.ChangeActionResource(playerId, -1);
             processor.RunToCompletion();
-            return SubmitResult.Ok(processor.Events);
+            return SubmitResult.Ok(processor.TakeEvents());
         }
 
-        // 기동 효과는 행동 횟수를 쓰지 않는다. 비용은 3단계에서 효과의 Cost로 처리한다.
+        // 기동 효과는 행동 횟수를 쓰지 않는다. 비용은 효과의 Cost로 낸다.
         private SubmitResult SubmitActivateEffect(int playerId, ActivateEffectCommand command)
         {
             if (!CanActivateEffect(playerId, command.UnitId, command.EffectIndex, out string reason))
                 return SubmitResult.Fail(reason);
 
-            EffectProcessor processor = new(State, cardDatabase);
             processor.Activate(command.UnitId, command.EffectIndex);
             processor.RunToCompletion();
-            return SubmitResult.Ok(processor.Events);
+            return SubmitResult.Ok(processor.TakeEvents());
+        }
+
+        private SubmitResult SubmitChoose(int playerId, ChooseCommand command)
+        {
+            if (!CanChoose(playerId, command.UnitIds, out string reason))
+                return SubmitResult.Fail(reason);
+
+            processor.Choose(command.UnitIds);
+            processor.RunToCompletion();
+            return SubmitResult.Ok(processor.TakeEvents());
         }
 
         // 한 플레이어의 차례를 1턴으로 센다. 남은 행동은 이월하지 않는다.
@@ -432,7 +514,6 @@ namespace Refactor
                     nextPlayer = player;
             }
 
-            EffectProcessor processor = new(State, cardDatabase);
             processor.ChangeActionResource(playerId, -State.Players[playerId].ActionResource);
             State.CurrentPlayerId = nextPlayer.Id;
             State.TurnNumber += 1;
@@ -442,7 +523,7 @@ namespace Refactor
             processor.Raise(new TurnStarted(nextPlayer.Id, State.TurnNumber));
             processor.ChangeActionResource(nextPlayer.Id, ActionsPerTurn - nextPlayer.ActionResource);
             processor.RunToCompletion();
-            return SubmitResult.Ok(processor.Events);
+            return SubmitResult.Ok(processor.TakeEvents());
         }
     }
 }

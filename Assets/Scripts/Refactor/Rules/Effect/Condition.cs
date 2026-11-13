@@ -13,6 +13,18 @@ namespace Refactor
         Opponent,
     }
 
+    internal static class PlayerRelationExtensions
+    {
+        // playerId가 효과 주인(ownerId) 기준으로 relation에 해당하는지.
+        public static bool Matches(this PlayerRelation relation, int? playerId, int ownerId) => relation switch
+        {
+            PlayerRelation.Any => true,
+            PlayerRelation.Self => playerId == ownerId,
+            PlayerRelation.Opponent => playerId.HasValue && playerId != ownerId,
+            _ => throw new ArgumentOutOfRangeException(nameof(relation)),
+        };
+    }
+
     // "이 효과를 지금 발동해도 되는가?" 만 판정한다.
     // 대상이 유효한지(소유자/태그/빈 칸 등)는 Target 슬롯이 담당한다.
     // JSON에서는 "type"으로 구체 클래스를 고른다(CardJsonLoader 등록표).
@@ -62,7 +74,7 @@ namespace Refactor
             if (context.TriggerEvent is not UnitDied died)
                 return false;
 
-            if (!Matches(owner, died.OwnerId, context.OwnerId) || !Matches(killer, died.KillerPlayerId, context.OwnerId))
+            if (!owner.Matches(died.OwnerId, context.OwnerId) || !killer.Matches(died.KillerPlayerId, context.OwnerId))
                 return false;
 
             if (!tag.HasValue)
@@ -70,13 +82,5 @@ namespace Refactor
 
             return context.Cards.TryGetCard(died.CardId, out CardDefinition card) && card.Tag == tag.Value;
         }
-
-        private static bool Matches(PlayerRelation relation, int? playerId, int ownerId) => relation switch
-        {
-            PlayerRelation.Any => true,
-            PlayerRelation.Self => playerId == ownerId,
-            PlayerRelation.Opponent => playerId.HasValue && playerId != ownerId,
-            _ => throw new ArgumentOutOfRangeException(nameof(relation)),
-        };
     }
 }

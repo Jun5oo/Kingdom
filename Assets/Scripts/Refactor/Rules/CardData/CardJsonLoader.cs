@@ -30,13 +30,18 @@ namespace Refactor
             [typeof(Cost)] = new()
             {
                 ["All"] = typeof(AllCost),
+                ["AbilityResource"] = typeof(AbilityResourceCost),
             },
-            [typeof(Target)] = new(),
+            [typeof(Target)] = new()
+            {
+                ["ChooseUnit"] = typeof(ChooseUnitTarget),
+            },
             [typeof(Operation)] = new()
             {
                 ["Release"] = typeof(ReleaseOperation),
                 ["ChangeAbilityResource"] = typeof(ChangeAbilityResourceOperation),
                 ["Summon"] = typeof(SummonOperation),
+                ["Revive"] = typeof(ReviveOperation),
             },
         };
 
@@ -143,6 +148,8 @@ namespace Refactor
                     return $"{at}.trigger가 필요합니다.";
                 if (effect.UsesPerTurn < 0)
                     return $"{at}.usesPerTurn은 0 이상이어야 합니다.";
+                if (effect.Target != null && effect.Target.Count < 1)
+                    return $"{at}.target.count는 1 이상이어야 합니다.";
                 if (effect.Operations == null || effect.Operations.Contains(null))
                     return $"{at}.operations에 빈 항목이 있습니다.";
 
