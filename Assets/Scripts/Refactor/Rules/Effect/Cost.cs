@@ -39,4 +39,16 @@ namespace Refactor
         public override void Pay(EffectContext context)
             => context.Processor.ChangeAbilityResource(context.OwnerId, -amount);
     }
+
+    // 효과 주인의 행동력을 쓴다.
+    public sealed class ActionResourceCost : Cost
+    {
+        [JsonProperty(Required = Required.Always)] private int amount = 0;
+
+        public override bool IsCostEnough(EffectContext context)
+            => context.State.Players[context.OwnerId].ActionResource >= amount;
+
+        public override void Pay(EffectContext context)
+            => context.Processor.ChangeActionResource(context.OwnerId, -amount);
+    }
 }

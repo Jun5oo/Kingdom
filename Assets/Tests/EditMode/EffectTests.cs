@@ -45,6 +45,15 @@ namespace Kingdom.Tests
             { ""type"": ""Trigger"", ""trigger"": ""OnUnitDead"",
               ""operations"": [ { ""type"": ""Summon"", ""cardId"": ""grave"" } ] }";
 
+        // 카드 ⑥ 범위 공격: 행동력 1을 쓰고 상대 영웅을 골라, 그 칸과 상하좌우 1칸의 상대 유닛에게 CP만큼 피해.
+        private const string BomberEffects = @"
+            { ""type"": ""Ignition"", ""usesPerTurn"": 1,
+              ""cost"": { ""type"": ""ActionResource"", ""amount"": 1 },
+              ""target"": { ""type"": ""ChooseUnit"", ""owner"": ""Opponent"", ""tag"": ""Hero"" },
+              ""operations"": [ { ""type"": ""AreaDamage"", ""offsets"": [
+                  { ""x"": 0, ""y"": 0 }, { ""x"": 0, ""y"": 1 }, { ""x"": 0, ""y"": -1 },
+                  { ""x"": 1, ""y"": 0 }, { ""x"": -1, ""y"": 0 } ] } ] }";
+
         private GameEngine engine;
 
         // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
@@ -72,6 +81,7 @@ namespace Kingdom.Tests
                 ("gravedigger.json", UnitJson("gravedigger", "Normal", GravediggerEffects)),
                 ("necromancer.json", UnitJson("necromancer", "Normal", NecromancerEffects)),
                 ("banker.json", UnitJson("banker", "Normal", BankerEffects)),
+                ("bomber.json", UnitJson("bomber", "Normal", BomberEffects)),
             }));
             engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
             Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
@@ -235,6 +245,47 @@ namespace Kingdom.Tests
 
             StringAssert.Contains("digger.json", exception.Message);
             StringAssert.Contains("grave", exception.Message);
+        }
+
+        [Test]
+        public void AreaAttackDamagesOpponentsInRangeAndTheyDieTogether()
+        {
+            // 1 폭격수, 2 상대 영웅(중심), 3 상대(범위 안), 4 상대(범위 밖), 5 아군(범위 안)
+            StartGame(Place(1, "bomber", 0, 0), Place(2, "hero", 3, 3), Place(2, "fighter", 3, 4),
+                Place(2, "fighter", 5, 5), Place(1, "fighter", 2, 3));
+
+            SubmitResult activated = engine.Submit(1, new ActivateEffectCommand(1, 0));
+
+            Assert.IsTrue(activated.Succeeded, activated.Reason);
+            Assert.AreEqual(GameEngine.ActionsPerTurn - 1, engine.State.Players[1].ActionResource);
+            CollectionAssert.AreEqual(new[] { 2 }, activated.Events.OfType<ChoiceRequested>().Single().Choice.Candidates);
+
+            SubmitResult chosen = engine.Submit(1, new ChooseCommand(2));
+
+            Assert.IsTrue(chosen.Succeeded, chosen.Reason);
+            CollectionAssert.AreEqual(new[] { 2, 3 }, chosen.Events.OfType<UnitDamaged>().Select(e => e.UnitId).ToArray());
+            CollectionAssert.AreEqual(new[] { 2, 3 }, chosen.Events.OfType<UnitDied>().Select(e => e.UnitId).ToArray());
+            // 피해를 모두 준 뒤에 함께 사망한다.
+            int lastDamaged = chosen.Events.ToList().FindLastIndex(e => e is UnitDamaged);
+            int firstDied = chosen.Events.ToList().FindIndex(e => e is UnitDied);
+            Assert.Less(lastDamaged, firstDied);
+            Assert.AreEqual(10, engine.State.Units[4].CurrentHP);
+            Assert.AreEqual(10, engine.State.Units[5].CurrentHP);
+            Assert.AreEqual(10, engine.State.Units[1].CurrentHP); // 반격 없음
+        }
+
+        [Test]
+        public void AreaAttackNeedsActionResource()
+        {
+            StartGame(Place(1, "bomber", 0, 0), Place(2, "hero", 3, 3));
+            SubmitOk(1, new MoveCommand(1, new GridPos(0, 1)));
+            SubmitOk(1, new MoveCommand(1, new GridPos(0, 2)));
+
+            SubmitResult result = engine.Submit(1, new ActivateEffectCommand(1, 0));
+
+            Assert.IsFalse(result.Succeeded);
+            StringAssert.Contains("비용", result.Reason);
+            Assert.IsFalse(engine.GetAvailableCommands(1).OfType<ActivateEffectCommand>().Any());
         }
     }
 }

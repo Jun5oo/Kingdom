@@ -31,6 +31,7 @@ namespace Refactor
             {
                 ["All"] = typeof(AllCost),
                 ["AbilityResource"] = typeof(AbilityResourceCost),
+                ["ActionResource"] = typeof(ActionResourceCost),
             },
             [typeof(Target)] = new()
             {
@@ -42,6 +43,7 @@ namespace Refactor
                 ["ChangeAbilityResource"] = typeof(ChangeAbilityResourceOperation),
                 ["Summon"] = typeof(SummonOperation),
                 ["Revive"] = typeof(ReviveOperation),
+                ["AreaDamage"] = typeof(AreaDamageOperation),
             },
         };
 
