@@ -10,7 +10,7 @@ namespace Kingdom.Tests
     {
         // 카드 ① 사망 트리거: 내가 상대 영웅을 죽이면 자원 +1, 아군 영웅이 죽으면 그 칸에 무덤 소환.
         private const string WatcherLua = @"
-            return { [1] = {
+            return {
               { type = 'Trigger', trigger = 'OnUnitDead',
                 condition = function(ctx)
                   local dead = ctx:deadUnit()
@@ -26,21 +26,21 @@ namespace Kingdom.Tests
                   local dead = ctx:deadUnit()
                   ctx:summon('grave', dead.x, dead.y, dead.cardId)
                 end },
-            } }";
+            }";
 
         // 카드 ② 자기희생: 턴당 1회 스스로를 릴리스하고 자원 +1.
         private const string MartyrLua = @"
-            return { [1] = {
+            return {
               { type = 'Ignition', usesPerTurn = 1,
                 operation = function(ctx)
                   ctx:release(ctx.sourceUnitId)
                   ctx:changeAbilityResource(1)
                 end },
-            } }";
+            }";
 
         // 카드 ③ 부활: 자원 2를 쓰고 아군 무덤을 골라, 무덤을 릴리스하고 그 칸에 원래 유닛을 소환.
         private const string NecromancerLua = @"
-            return { [1] = {
+            return {
               { type = 'Ignition', usesPerTurn = 1,
                 cost = { abilityResource = 2 },
                 target = function(ctx) return ctx:findUnits('Self', 'Graveyard') end,
@@ -50,40 +50,40 @@ namespace Kingdom.Tests
                     if t.originCardId then ctx:summon(t.originCardId, t.x, t.y) end
                   end
                 end },
-            } }";
+            }";
 
         private const string BankerLua = @"
-            return { [1] = {
+            return {
               { type = 'Ignition', usesPerTurn = 1, operation = function(ctx) ctx:changeAbilityResource(2) end },
-            } }";
+            }";
 
         private const string DrummerLua = @"
-            return { [1] = {
+            return {
               { type = 'Ignition', usesPerTurn = 1, operation = function(ctx) ctx:changeAbilityResource(1) end },
-            } }";
+            }";
 
         private const string AvengerLua = @"
-            return { [1] = {
+            return {
               { type = 'Trigger', trigger = 'OnUnitDead',
                 condition = function(ctx)
                   local dead = ctx:deadUnit()
                   return dead.ownerId ~= ctx.ownerId and ctx:tagOf(dead.cardId) == 'Hero'
                 end,
                 operation = function(ctx) ctx:release(ctx.sourceUnitId) end },
-            } }";
+            }";
 
         private const string GravediggerLua = @"
-            return { [1] = {
+            return {
               { type = 'Trigger', trigger = 'OnUnitDead',
                 operation = function(ctx)
                   local dead = ctx:deadUnit()
                   ctx:summon('grave', dead.x, dead.y, dead.cardId)
                 end },
-            } }";
+            }";
 
         // 카드 ⑥ 범위 공격: 행동력 1을 쓰고 상대 영웅을 골라, 그 칸과 상하좌우 1칸의 상대 유닛에게 CP만큼 피해.
         private const string BomberLua = @"
-            return { [1] = {
+            return {
               { type = 'Ignition', usesPerTurn = 1,
                 cost = { actionResource = 1 },
                 target = function(ctx) return ctx:findUnits('Opponent', 'Hero') end,
@@ -92,18 +92,16 @@ namespace Kingdom.Tests
                     ctx:damageArea(t.x, t.y, { {0, 0}, {0, 1}, {0, -1}, {1, 0}, {-1, 0} })
                   end
                 end },
-            } }";
+            }";
 
         private GameEngine engine;
 
         // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
         private static string UnitJson(string id, string tag) => $@"{{
             ""id"": ""{id}"", ""name"": ""{id}"", ""tag"": ""{tag}"",
-            ""levels"": [ {{
-                ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
-                ""movement"": {{ ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }},
-                ""attack"": {{ ""directions"": ""Orthogonal"", ""maxDistance"": 1 }}
-            }} ]
+            ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
+            ""movement"": {{ ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }},
+            ""attack"": {{ ""directions"": ""Orthogonal"", ""maxDistance"": 1 }}
         }}";
 
         // 효과가 있는 카드는 JSON과 같은 이름의 Lua 파일을 함께 넘긴다.
@@ -133,7 +131,7 @@ namespace Kingdom.Tests
         }
 
         private static UnitPlacement Place(int ownerId, string cardId, int x, int y)
-            => new(ownerId, cardId, 1, new GridPos(x, y));
+            => new(ownerId, cardId, new GridPos(x, y));
 
         private void SubmitOk(int playerId, GameCommand command)
         {
@@ -288,7 +286,7 @@ namespace Kingdom.Tests
         [Test]
         public void LuaSyntaxErrorReportsFileAndLine()
         {
-            InvalidDataException exception = LoadFails("return { [1] = { { type = 'Ignition', operation = function(ctx) ctx:release( end } } }");
+            InvalidDataException exception = LoadFails("return { { type = 'Ignition', operation = function(ctx) ctx:release( end } }");
 
             StringAssert.Contains("broken.lua:(1,", exception.Message);
         }
@@ -297,9 +295,9 @@ namespace Kingdom.Tests
         public void MisspelledEffectKeyFailsToLoad()
         {
             InvalidDataException exception = LoadFails(
-                "return { [1] = { { type = 'Ignition', usesPerturn = 1, operation = function(ctx) end } } }");
+                "return { { type = 'Ignition', usesPerturn = 1, operation = function(ctx) end } }");
 
-            StringAssert.Contains("broken.lua: [1][1]", exception.Message);
+            StringAssert.Contains("broken.lua: [1]", exception.Message);
             StringAssert.Contains("usesPerturn", exception.Message);
         }
 
@@ -316,7 +314,7 @@ namespace Kingdom.Tests
         public void ConditionCannotChangeState()
         {
             CardDatabase database = new(CardLoader.Load(Card("cheater", "Normal",
-                "return { [1] = { { type = 'Ignition', condition = function(ctx) ctx:changeAbilityResource(5) return true end, operation = function(ctx) end } } }")));
+                "return { { type = 'Ignition', condition = function(ctx) ctx:changeAbilityResource(5) return true end, operation = function(ctx) end } }")));
             engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
             Assert.IsTrue(engine.StartGame(new[] { Place(1, "cheater", 0, 0), Place(2, "cheater", 4, 6) }, out string reason), reason);
 

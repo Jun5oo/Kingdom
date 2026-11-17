@@ -6,14 +6,12 @@ namespace Refactor
     {
         public int OwnerId { get; }
         public string CardId { get; }
-        public int Level { get; }
         public GridPos Position { get; }
 
-        public UnitPlacement(int ownerId, string cardId, int level, GridPos position)
+        public UnitPlacement(int ownerId, string cardId, GridPos position)
         {
             OwnerId = ownerId;
             CardId = cardId;
-            Level = level;
             Position = position;
         }
     }

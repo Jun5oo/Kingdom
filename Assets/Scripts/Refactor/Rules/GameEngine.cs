@@ -42,7 +42,7 @@ namespace Refactor
                 return false;
             }
 
-            List<UnitLevelData> levels = new(placements.Count);
+            List<CardDefinition> cards = new(placements.Count);
             HashSet<(int x, int y)> reservedCells = new();
 
             foreach (UnitPlacement placement in placements)
@@ -69,19 +69,13 @@ namespace Refactor
                     return false;
                 }
 
-                if (!card.TryGetLevel(placement.Level, out UnitLevelData levelData))
-                {
-                    reason = $"카드에 해당 등급이 없습니다: {placement.CardId}, {placement.Level}성";
-                    return false;
-                }
-
-                if (levelData.BaseHP < 1)
+                if (card.BaseHP < 1)
                 {
                     reason = $"카드의 Base HP가 1 이상이어야 합니다: {placement.CardId}";
                     return false;
                 }
 
-                levels.Add(levelData);
+                cards.Add(card);
             }
 
             // 검증이 끝난 뒤에만 ID를 발급한다.
@@ -89,7 +83,7 @@ namespace Refactor
             for (int i = 0; i < placements.Count; i++)
             {
                 units.Add(new UnitState(State.AllocateUnitId(), placements[i].CardId, placements[i].OwnerId,
-                    levels[i].BaseCP, levels[i].BaseHP, placements[i].Level));
+                    cards[i].BaseCP, cards[i].BaseHP));
             }
 
             for (int i = 0; i < units.Count; i++)
@@ -186,10 +180,10 @@ namespace Refactor
             return true;
         }
 
-        // 유닛의 현재 등급에 해당하는 원본 데이터를 조회한다. 상태는 변경하지 않는다.
-        public bool TryGetUnitLevelData(int unitId, out UnitLevelData levelData, out string reason)
+        // 유닛의 원본 카드 정의를 조회한다. 상태는 변경하지 않는다.
+        public bool TryGetUnitCard(int unitId, out CardDefinition card, out string reason)
         {
-            levelData = null;
+            card = null;
 
             if (!State.Units.TryGetValue(unitId, out UnitState unit))
             {
@@ -197,15 +191,9 @@ namespace Refactor
                 return false;
             }
 
-            if (!cardDatabase.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
+            if (!cardDatabase.TryGetCard(unit.CardDefinitionId, out card))
             {
                 reason = $"등록되지 않은 카드입니다: {unit.CardDefinitionId}";
-                return false;
-            }
-
-            if (!card.TryGetLevel(unit.Level, out levelData))
-            {
-                reason = $"카드에 해당 등급이 없습니다: {unit.CardDefinitionId}, {unit.Level}성";
                 return false;
             }
 
@@ -225,10 +213,10 @@ namespace Refactor
                 return false;
             }
 
-            if (!TryGetUnitLevelData(unitId, out UnitLevelData data, out reason))
+            if (!TryGetUnitCard(unitId, out CardDefinition card, out reason))
                 return false;
 
-            if (data.Movement == null)
+            if (card.Movement == null)
             {
                 reason = "이동 규칙이 없습니다.";
                 return false;
@@ -241,7 +229,7 @@ namespace Refactor
             }
 
             return movementValidator.CanMove(
-                State.Board, data.Movement,
+                State.Board, card.Movement,
                 fromX, fromY, targetX, targetY, out reason);
         }
         // UI의 공격 미리보기에도 사용할 수 있는 읽기 전용 검증.
@@ -276,7 +264,7 @@ namespace Refactor
                 reason = "공격력이 없어 공격할 수 없습니다.";
                 return false;
             }
-            if (!TryGetUnitLevelData(attackerId, out UnitLevelData data, out reason))
+            if (!TryGetUnitCard(attackerId, out CardDefinition card, out reason))
                 return false;
 
             if (!State.Board.TryGetPosition(attackerId, out int fromX, out int fromY) ||
@@ -286,7 +274,7 @@ namespace Refactor
                 return false;
             }
 
-            return combatResolver.CanReach(State.Board, data.Attack,
+            return combatResolver.CanReach(State.Board, card.Attack,
                 fromX, fromY, targetX, targetY, out reason);
         }
         // UI의 효과 버튼 표시에도 사용할 수 있는 읽기 전용 검증. 기동 효과만 직접 발동할 수 있다.
@@ -295,16 +283,16 @@ namespace Refactor
             if (!CanActWithUnit(playerId, unitId, out reason))
                 return false;
 
-            if (!TryGetUnitLevelData(unitId, out UnitLevelData data, out reason))
+            if (!TryGetUnitCard(unitId, out CardDefinition card, out reason))
                 return false;
 
-            if (effectIndex < 0 || effectIndex >= data.Effects.Count)
+            if (effectIndex < 0 || effectIndex >= card.Effects.Count)
             {
                 reason = "존재하지 않는 효과입니다.";
                 return false;
             }
 
-            EffectData effect = data.Effects[effectIndex];
+            EffectData effect = card.Effects[effectIndex];
             if (effect.Type != EffectType.Ignition)
             {
                 reason = "직접 발동하는 효과가 아닙니다.";
@@ -441,10 +429,10 @@ namespace Refactor
                 }
             }
 
-            if (!TryGetUnitLevelData(unitId, out UnitLevelData data, out _))
+            if (!TryGetUnitCard(unitId, out CardDefinition card, out _))
                 return;
 
-            for (int i = 0; i < data.Effects.Count; i++)
+            for (int i = 0; i < card.Effects.Count; i++)
             {
                 if (CanActivateEffect(playerId, unitId, i, out _))
                     commands.Add(new ActivateEffectCommand(unitId, i));

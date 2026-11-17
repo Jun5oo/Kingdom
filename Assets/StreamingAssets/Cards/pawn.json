@@ -4,13 +4,9 @@
   "description": "pawn",
   "race": "Undead",
   "tag": "Normal",
-  "levels": [
-    {
-      "level": 1,
-      "baseCP": 10,
-      "baseHP": 10,
-      "movement": { "type": "Line", "directions": "Orthogonal", "maxDistance": 1 },
-      "attack": { "directions": "None", "maxDistance": 0 }
-    }
-  ]
+  "level": 1,
+  "baseCP": 10,
+  "baseHP": 10,
+  "movement": { "type": "Line", "directions": "Orthogonal", "maxDistance": 1 },
+  "attack": { "directions": "None", "maxDistance": 0 }
 }

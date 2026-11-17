@@ -28,12 +28,12 @@ namespace Kingdom.Tests
         }
 
         private void StartWithTwoPawns() => StartGame(
-            new UnitPlacement(1, "pawn", 1, new GridPos(2, 0)),
-            new UnitPlacement(2, "pawn", 1, new GridPos(4, 6)));
+            new UnitPlacement(1, "pawn", new GridPos(2, 0)),
+            new UnitPlacement(2, "pawn", new GridPos(4, 6)));
 
         private void StartAdjacent(string defenderCardId) => StartGame(
-            new UnitPlacement(1, "fighter", 1, new GridPos(2, 0)),
-            new UnitPlacement(2, defenderCardId, 1, new GridPos(2, 1)));
+            new UnitPlacement(1, "fighter", new GridPos(2, 0)),
+            new UnitPlacement(2, defenderCardId, new GridPos(2, 1)));
 
         [Test]
         public void MoveOneStepSucceedsAndReportsEvents()

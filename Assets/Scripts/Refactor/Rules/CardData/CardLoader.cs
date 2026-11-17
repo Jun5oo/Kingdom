@@ -108,33 +108,21 @@ namespace Refactor
         {
             if (string.IsNullOrWhiteSpace(card.CardId))
                 return "id가 비어 있습니다.";
-            if (card.Levels.Count == 0)
-                return "levels가 비어 있습니다.";
-
-            HashSet<int> seenLevels = new();
-            for (int i = 0; i < card.Levels.Count; i++)
-            {
-                UnitLevelData level = card.Levels[i];
-                if (level == null)
-                    return $"levels[{i}]가 비어 있습니다.";
-                if (level.Level < 1)
-                    return $"levels[{i}].level은 1 이상이어야 합니다.";
-                if (!seenLevels.Add(level.Level))
-                    return $"levels[{i}].level {level.Level}이 중복됩니다.";
-                if (level.BaseCP < 0)
-                    return $"levels[{i}].baseCP는 0 이상이어야 합니다.";
-                if (level.BaseHP < 1)
-                    return $"levels[{i}].baseHP는 1 이상이어야 합니다.";
-                if (level.Movement == null)
-                    return $"levels[{i}].movement가 비어 있습니다.";
-                if (level.Attack == null || level.Attack.MaxDistance < 0)
-                    return $"levels[{i}].attack.maxDistance는 0 이상이어야 합니다.";
-            }
+            if (card.Level < 1)
+                return "level은 1 이상이어야 합니다.";
+            if (card.BaseCP < 0)
+                return "baseCP는 0 이상이어야 합니다.";
+            if (card.BaseHP < 1)
+                return "baseHP는 1 이상이어야 합니다.";
+            if (card.Movement == null)
+                return "movement가 비어 있습니다.";
+            if (card.Attack == null || card.Attack.MaxDistance < 0)
+                return "attack.maxDistance는 0 이상이어야 합니다.";
 
             return null;
         }
 
-        // 스크립트는 { [등급] = { 효과, ... } } 테이블을 돌려준다. 실행해서 받은 함수는 EffectData가 보관한다.
+        // 스크립트는 효과 목록 { 효과, ... }을 돌려준다. 실행해서 받은 함수는 EffectData가 보관한다.
         private static void LoadScript(string fileName, string code, CardDefinition card)
         {
             // 파일, OS 접근 같은 모듈을 빼서 카드 코드가 엔진 밖을 건드리지 못하게 한다.
@@ -150,28 +138,20 @@ namespace Refactor
             }
 
             if (result.Type != DataType.Table)
-                throw new InvalidDataException($"{fileName}: 등급별 효과 테이블을 return 해야 합니다.");
+                throw new InvalidDataException($"{fileName}: 효과 목록 테이블을 return 해야 합니다.");
 
-            foreach (TablePair pair in result.Table.Pairs)
+            Table list = result.Table;
+            List<EffectData> effects = new();
+            for (int i = 1; i <= list.Length; i++)
             {
-                if (!TryGetInt(pair.Key, out int level) || !card.TryGetLevel(level, out UnitLevelData data))
-                    throw new InvalidDataException($"{fileName}: [{pair.Key.ToPrintString()}]에 해당하는 등급이 JSON에 없습니다.");
-                if (pair.Value.Type != DataType.Table)
-                    throw new InvalidDataException($"{fileName}: [{level}]은 효과 목록이어야 합니다.");
+                string at = $"{fileName}: [{i}]";
+                if (list.Get(i).Type != DataType.Table)
+                    throw new InvalidDataException($"{at}는 효과 테이블이어야 합니다.");
 
-                Table list = pair.Value.Table;
-                List<EffectData> effects = new();
-                for (int i = 1; i <= list.Length; i++)
-                {
-                    string at = $"{fileName}: [{level}][{i}]";
-                    if (list.Get(i).Type != DataType.Table)
-                        throw new InvalidDataException($"{at}는 효과 테이블이어야 합니다.");
-
-                    effects.Add(ParseEffect(list.Get(i).Table, at));
-                }
-
-                data.Effects = effects;
+                effects.Add(ParseEffect(list.Get(i).Table, at));
             }
+
+            card.Effects = effects;
         }
 
         private static EffectData ParseEffect(Table table, string at)

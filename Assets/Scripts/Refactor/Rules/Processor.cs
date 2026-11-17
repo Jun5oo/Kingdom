@@ -105,19 +105,19 @@ namespace Refactor
         }
 
         // 칸이 비어 있지 않으면 소환하지 않는다(§4.4).
-        public bool TrySummon(string cardId, int level, int ownerId, GridPos position, string originCardId = null)
+        public bool TrySummon(string cardId, int ownerId, GridPos position, string originCardId = null)
         {
             if (!state.Board.Contains(position.X, position.Y) || state.Board.GetUnitIdAt(position.X, position.Y).HasValue)
                 return false;
 
-            if (!cards.TryGetLevel(cardId, level, out UnitLevelData data))
-                throw new InvalidOperationException($"소환할 카드 정의가 없습니다: {cardId}, {level}성");
+            if (!cards.TryGetCard(cardId, out CardDefinition card))
+                throw new InvalidOperationException($"소환할 카드 정의가 없습니다: {cardId}");
 
-            UnitState unit = new(state.AllocateUnitId(), cardId, ownerId, data.BaseCP, data.BaseHP, level, originCardId);
+            UnitState unit = new(state.AllocateUnitId(), cardId, ownerId, card.BaseCP, card.BaseHP, originCardId);
             if (!state.TrySpawnUnit(unit, position.X, position.Y))
                 throw new InvalidOperationException($"유닛을 소환할 수 없습니다: {cardId}");
 
-            Raise(new UnitSummoned(unit.Id, cardId, ownerId, level, position, unit.CP, unit.CurrentHP));
+            Raise(new UnitSummoned(unit.Id, cardId, ownerId, position, unit.CP, unit.CurrentHP));
             return true;
         }
 
@@ -250,10 +250,10 @@ namespace Refactor
 
         private IReadOnlyList<EffectData> GetEffects(UnitState unit)
         {
-            if (!cards.TryGetLevel(unit.CardDefinitionId, unit.Level, out UnitLevelData data))
-                throw new InvalidOperationException($"유닛의 카드 정의가 없습니다: {unit.CardDefinitionId}, {unit.Level}성");
+            if (!cards.TryGetCard(unit.CardDefinitionId, out CardDefinition card))
+                throw new InvalidOperationException($"유닛의 카드 정의가 없습니다: {unit.CardDefinitionId}");
 
-            return data.Effects;
+            return card.Effects;
         }
     }
 }

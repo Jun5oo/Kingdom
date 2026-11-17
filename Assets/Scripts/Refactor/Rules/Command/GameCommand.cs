@@ -36,7 +36,7 @@ namespace Refactor
     {
     }
 
-    // EffectIndex는 유닛의 현재 레벨 효과 목록에서의 위치다.
+    // EffectIndex는 유닛 카드의 효과 목록에서의 위치다.
     public sealed class ActivateEffectCommand : GameCommand
     {
         public int UnitId { get; }

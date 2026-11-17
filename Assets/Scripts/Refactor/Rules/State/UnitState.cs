@@ -12,22 +12,17 @@ namespace Refactor
         public int CP { get; internal set; }
         public int MaxHP { get; internal set; }
         public int CurrentHP { get; internal set; }
-        public int Level { get; internal set; }
         // 무덤처럼 다른 유닛이 죽은 자리에서 생겨났으면 그 유닛의 카드 ID. 부활할 때 쓴다.
         public string OriginCardId { get; }
 
-        // 효과 인덱스별 이번 턴 사용 횟수. 레벨이 바뀌면 효과 목록이 교체되므로 함께 초기화한다(§6.4).
+        // 효과 인덱스별 이번 턴 사용 횟수.
         private readonly Dictionary<int, int> effectUsesThisTurn = new();
 
-        // 위치는 BoardState에서만 보관한다.
-        public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int maxHP, int level = 1,
-            string originCardId = null)
+        // 위치는 BoardState에서만, 레벨은 카드 정의에서만 보관한다.
+        public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int maxHP, string originCardId = null)
         {
             if (string.IsNullOrWhiteSpace(cardDefinitionId))
                 throw new ArgumentException("카드 ID가 필요합니다.", nameof(cardDefinitionId));
-
-            if (level < 1)
-                throw new ArgumentOutOfRangeException(nameof(level), "등급은 1 이상이어야 합니다.");
 
             if (maxHP < 1)
                 throw new ArgumentOutOfRangeException(nameof(maxHP), "최대 HP는 1 이상이어야 합니다.");
@@ -38,7 +33,6 @@ namespace Refactor
             CP = cp;
             MaxHP = maxHP;
             CurrentHP = maxHP;
-            Level = level;
             OriginCardId = originCardId;
         }
 

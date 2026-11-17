@@ -12,10 +12,8 @@ namespace Kingdom.Tests
         public const string PawnJson = @"{
             ""id"": ""pawn"",
             ""name"": ""pawn"",
-            ""levels"": [ {
-                ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
-                ""movement"": { ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }
-            } ]
+            ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
+            ""movement"": { ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }
         }";
 
         [Test]
@@ -38,7 +36,7 @@ namespace Kingdom.Tests
                 () => CardLoader.Load(new[] { ("bad.json", json) }));
 
             StringAssert.Contains("bad.json", exception.Message);
-            StringAssert.Contains("levels[0].movement", exception.Message);
+            StringAssert.Contains("movement", exception.Message);
             StringAssert.Contains("Lien", exception.Message);
         }
     }

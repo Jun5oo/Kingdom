@@ -67,17 +67,15 @@ namespace Refactor
         public int UnitId { get; }
         public string CardId { get; }
         public int OwnerId { get; }
-        public int Level { get; }
         public GridPos Position { get; }
         public int CP { get; }
         public int HP { get; }
 
-        public UnitSummoned(int unitId, string cardId, int ownerId, int level, GridPos position, int cp, int hp)
+        public UnitSummoned(int unitId, string cardId, int ownerId, GridPos position, int cp, int hp)
         {
             UnitId = unitId;
             CardId = cardId;
             OwnerId = ownerId;
-            Level = level;
             Position = position;
             CP = cp;
             HP = hp;

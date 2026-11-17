@@ -24,11 +24,10 @@ namespace Refactor
         {
             [SerializeField] private int ownerId;
             [SerializeField] private string cardId;
-            [SerializeField, Min(1)] private int level;
             [SerializeField] private Vector2Int position;
 
             public UnitPlacement ToPlacement() =>
-                new(ownerId, cardId, level, new GridPos(position.x, position.y));
+                new(ownerId, cardId, new GridPos(position.x, position.y));
         }
 
         private void Start()

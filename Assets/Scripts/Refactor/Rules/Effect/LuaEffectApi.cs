@@ -89,9 +89,8 @@ namespace Refactor
         public void ChangeAbilityResource(int amount) => Processor.ChangeAbilityResource(context.OwnerId, amount);
 
         // 효과 주인의 유닛으로 소환한다. 칸이 차 있으면 소환하지 않고 false. originCardId는 소환된 유닛이 기억할 원래 카드다.
-        // shortcut: 레벨업이 없어 항상 1성으로 소환한다. 레벨업을 만들 때 등급 인수를 추가한다.
         public bool Summon(string cardId, int x, int y, string originCardId = null)
-            => Processor.TrySummon(cardId, 1, context.OwnerId, new GridPos(x, y), originCardId);
+            => Processor.TrySummon(cardId, context.OwnerId, new GridPos(x, y), originCardId);
 
         // (x, y)에 오프셋 { {dx, dy}, ... }(보드 절대 좌표, §5.4)을 더한 칸의 상대 유닛에게 효과 주인의 CP만큼 피해를 준다. 반격은 없다.
         public void DamageArea(int x, int y, Table offsets)
