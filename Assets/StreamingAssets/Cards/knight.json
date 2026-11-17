@@ -10,8 +10,7 @@
       "baseCP": 5,
       "baseHP": 15,
       "movement": { "type": "Knight" },
-      "attack": { "directions": "Orthogonal, Diagonal", "maxDistance": 1 },
-      "effects": []
+      "attack": { "directions": "Orthogonal, Diagonal", "maxDistance": 1 }
     }
   ]
 }

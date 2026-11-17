@@ -80,8 +80,7 @@ namespace Refactor
 
             EffectContext context = CreateContext(pending);
             context.Targets = targets;
-            foreach (Operation operation in pending.Effect.Operations)
-                operation.Execute(context);
+            pending.Effect.Execute(context);
         }
 
         // 모든 피해가 지나가는 지점. 5단계에서 여신의 성역 확인을 여기에 넣는다.
@@ -179,10 +178,10 @@ namespace Refactor
         {
             EffectData effect = pending.Effect;
             EffectContext context = CreateContext(pending);
-            if (effect.Condition != null && !effect.Condition.CanExecute(context))
+            if (!effect.CanExecute(context))
                 return;
 
-            if (effect.Cost != null && !effect.Cost.IsCostEnough(context))
+            if (!effect.IsCostEnough(context))
                 return;
 
             // 주인이 이미 떠났으면 다시 쓸 일이 없으므로 횟수를 세지 않는다.
@@ -194,20 +193,19 @@ namespace Refactor
                 source.MarkEffectUsed(pending.EffectIndex);
             }
 
-            effect.Cost?.Pay(context);
+            effect.PayCost(context);
 
-            // 후보가 없으면 대상이 필요한 Operation만 건너뛴다(§4.4).
-            List<int> candidates = effect.Target?.GetCandidates(context);
+            // 후보가 없으면 빈 대상으로 operation을 실행한다. 대상을 도는 동작은 자연히 건너뛴다(§4.4).
+            List<int> candidates = effect.GetCandidates(context);
             if (candidates != null && candidates.Count > 0)
             {
                 state.ChoosingEffect = pending;
-                state.PendingChoice = new PendingChoice(pending.OwnerId, candidates, Math.Min(effect.Target.Count, candidates.Count));
+                state.PendingChoice = new PendingChoice(pending.OwnerId, candidates, Math.Min(effect.TargetCount, candidates.Count));
                 Raise(new ChoiceRequested(state.PendingChoice));
                 return;
             }
 
-            foreach (Operation operation in effect.Operations)
-                operation.Execute(context);
+            effect.Execute(context);
         }
 
         private EffectContext CreateContext(PendingEffect pending)

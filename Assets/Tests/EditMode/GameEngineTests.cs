@@ -10,16 +10,16 @@ namespace Kingdom.Tests
         private GameEngine engine;
 
         // 상하좌우 1칸을 공격할 수 있는 테스트 카드를 만든다.
-        private static string FighterJson(string id, int hp) => CardJsonLoaderTests.PawnJson
+        private static string FighterJson(string id, int hp) => CardLoaderTests.PawnJson
             .Replace(@"""id"": ""pawn""", $@"""id"": ""{id}""")
             .Replace(@"""baseHP"": 10", $@"""baseHP"": {hp}")
             .Replace(@"""movement""", @"""attack"": { ""directions"": ""Orthogonal"", ""maxDistance"": 1 }, ""movement""");
 
         private void StartGame(params UnitPlacement[] placements)
         {
-            CardDatabase database = new(CardJsonLoader.Load(new[]
+            CardDatabase database = new(CardLoader.Load(new[]
             {
-                ("pawn.json", CardJsonLoaderTests.PawnJson),
+                ("pawn.json", CardLoaderTests.PawnJson),
                 ("fighter.json", FighterJson("fighter", 10)),
                 ("tank.json", FighterJson("tank", 30)),
             }));

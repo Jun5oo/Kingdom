@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Refactor
 {
-    // StreamingAssets/Cards의 카드 JSON을 읽어 CardDatabase를 만든다.
+    // StreamingAssets/Cards의 카드 JSON과 Lua를 읽어 CardDatabase를 만든다.
     public static class CardFiles
     {
         // shortcut: File API로 읽으므로 PC 빌드 전용, Android/WebGL을 지원할 때 UnityWebRequest로 교체
@@ -15,7 +15,7 @@ namespace Refactor
         {
             try
             {
-                database = new CardDatabase(CardJsonLoader.LoadDirectory(Directory));
+                database = new CardDatabase(CardLoader.LoadDirectory(Directory));
                 return true;
             }
             catch (Exception exception) when (exception is IOException or InvalidDataException or ArgumentException)

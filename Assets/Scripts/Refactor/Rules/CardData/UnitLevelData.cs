@@ -12,7 +12,7 @@ namespace Refactor
         [JsonProperty(Required = Required.Always)] public MovementRule Movement { get; private set; }
         [JsonProperty] public RangeData Attack { get; private set; } = new();
 
-        // 해당 등급의 전체 효과 목록. 이전 등급에서 자동으로 상속하지 않는다.
-        [JsonProperty] public IReadOnlyList<EffectData> Effects { get; private set; } = new List<EffectData>();
+        // 해당 등급의 전체 효과 목록. 이전 등급에서 자동으로 상속하지 않는다. JSON이 아니라 같은 이름의 Lua 파일에서 채운다.
+        public IReadOnlyList<EffectData> Effects { get; internal set; } = new List<EffectData>();
     }
 }

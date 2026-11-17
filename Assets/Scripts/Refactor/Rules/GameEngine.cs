@@ -319,20 +319,21 @@ namespace Refactor
 
             // Condition은 상태를 바꾸지 않으므로 Processor 없이 확인한다.
             EffectContext context = new(State, cardDatabase, null, unitId, playerId, null);
-            if (effect.Condition != null && !effect.Condition.CanExecute(context))
+            if (!effect.CanExecute(context))
             {
                 reason = "효과의 발동 조건을 만족하지 않습니다.";
                 return false;
             }
 
-            if (effect.Cost != null && !effect.Cost.IsCostEnough(context))
+            if (!effect.IsCostEnough(context))
             {
                 reason = "효과의 비용이 부족합니다.";
                 return false;
             }
 
             // 유효한 대상이 없으면 사용할 수 없다(§4.4).
-            if (effect.Target != null && effect.Target.GetCandidates(context).Count == 0)
+            List<int> candidates = effect.GetCandidates(context);
+            if (candidates != null && candidates.Count == 0)
             {
                 reason = "선택할 수 있는 대상이 없습니다.";
                 return false;

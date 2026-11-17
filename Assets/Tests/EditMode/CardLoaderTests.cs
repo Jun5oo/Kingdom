@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Kingdom.Tests
 {
-    public sealed class CardJsonLoaderTests
+    public sealed class CardLoaderTests
     {
         // 한 줄 이동만 가능한 테스트용 카드.
         public const string PawnJson = @"{
@@ -22,7 +22,7 @@ namespace Kingdom.Tests
         public void LoadsEveryCardFileWithoutError()
         {
             List<CardDefinition> cards =
-                CardJsonLoader.LoadDirectory(Path.Combine(Application.streamingAssetsPath, "Cards"));
+                CardLoader.LoadDirectory(Path.Combine(Application.streamingAssetsPath, "Cards"));
 
             Assert.That(cards, Is.Not.Empty);
             // 파일 사이의 중복 ID는 CardDatabase가 검사한다.
@@ -35,7 +35,7 @@ namespace Kingdom.Tests
             string json = PawnJson.Replace(@"""Line""", @"""Lien""");
 
             InvalidDataException exception = Assert.Throws<InvalidDataException>(
-                () => CardJsonLoader.Load(new[] { ("bad.json", json) }));
+                () => CardLoader.Load(new[] { ("bad.json", json) }));
 
             StringAssert.Contains("bad.json", exception.Message);
             StringAssert.Contains("levels[0].movement", exception.Message);
