@@ -14,6 +14,7 @@ namespace Refactor
         private readonly Dictionary<int, UnitState> units = new();
         // 트리거 순서(§4.2)의 기준이므로 생성 순으로만 증가하고 재사용하지 않는다.
         private int nextUnitId = 1;
+        private int nextStatusId = 1;
 
         // 외부에서는 목록을 조회만 한다. 등록/제거는 아래 메서드를 거친다.
         public IReadOnlyDictionary<int, PlayerState> Players { get; }
@@ -28,6 +29,8 @@ namespace Refactor
         internal Queue<PendingEffect> TriggerQueue { get; } = new();
         // 사망은 큐가 빈 뒤 한꺼번에 처리하므로, 그때까지 마지막으로 피해를 준 플레이어를 기억한다.
         internal Dictionary<int, int> LastDamageSource { get; } = new();
+        // 파괴도 사망 일괄 처리를 기다린다. 유닛 ID → 파괴한 플레이어.
+        internal Dictionary<int, int> PendingDestroy { get; } = new();
         // 선택 대기로 멈춘 효과. 비용은 이미 지불했다.
         internal PendingEffect? ChoosingEffect { get; set; }
 
@@ -52,6 +55,11 @@ namespace Refactor
         }
 
         internal int AllocateUnitId() => nextUnitId++;
+
+        internal int AllocateStatusId() => nextStatusId++;
+
+        // 보드에 있지만 사망 일괄 처리를 기다리는 유닛. 대상으로 고르거나 다시 때리지 않는다.
+        internal bool IsDying(UnitState unit) => unit.CurrentHP <= 0 || PendingDestroy.ContainsKey(unit.Id);
 
         // 상태의 기본 제약만 검사한다. 소환 비용/범위는 행동 처리기가 검사한다.
         // 실패할 때는 유닛 목록과 보드를 모두 변경하지 않는다.

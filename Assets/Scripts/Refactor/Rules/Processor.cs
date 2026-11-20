@@ -50,6 +50,7 @@ namespace Refactor
                 if (!ResolveDeaths())
                 {
                     state.LastDamageSource.Clear();
+                    state.PendingDestroy.Clear();
                     return;
                 }
             }
@@ -61,7 +62,7 @@ namespace Refactor
         public void Activate(int unitId, int effectIndex)
         {
             UnitState unit = state.Units[unitId];
-            Execute(new PendingEffect(unitId, unit.OwnerId, GetEffects(unit)[effectIndex], effectIndex, null));
+            Execute(new PendingEffect(unitId, unit.CardDefinitionId, unit.OwnerId, GetEffects(unit)[effectIndex], effectIndex, null));
         }
 
         // 엔진이 CanChoose로 검증을 끝낸 뒤 부른다. 멈췄던 효과를 Operation부터 이어서 실행한다.
@@ -83,15 +84,63 @@ namespace Refactor
             pending.Effect.Execute(context);
         }
 
-        // 모든 피해가 지나가는 지점. 5단계에서 여신의 성역 확인을 여기에 넣는다.
+        // 모든 피해가 지나가는 지점.
         public void Damage(int unitId, int amount, int sourcePlayerId)
         {
             if (!state.Units.TryGetValue(unitId, out UnitState unit))
                 return;
 
+            amount = PreventDamage(unit, amount);
             unit.CurrentHP -= amount;
             state.LastDamageSource[unitId] = sourcePlayerId;
             Raise(new UnitDamaged(unitId, amount, unit.CurrentHP));
+        }
+
+        // 즉시 제거하지 않고 사망 일괄 처리에서 원인 Destroy로 처리한다. 피해가 아니므로 보호막으로 막을 수 없다.
+        public void Destroy(int unitId, int sourcePlayerId)
+        {
+            if (state.Units.ContainsKey(unitId))
+                state.PendingDestroy[unitId] = sourcePlayerId;
+        }
+
+        // 같은 유닛에 여러 개가 쌓인다(§5.3).
+        public void AddStatus(int unitId, StatusType? type, int? turns, int ownerId, string sourceCardId, EffectData onExpire)
+        {
+            if (!state.Units.TryGetValue(unitId, out UnitState unit))
+                return;
+
+            Status status = new(state.AllocateStatusId(), type, turns, ownerId, sourceCardId, onExpire);
+            unit.AddStatus(status);
+            Raise(new StatusAdded(unitId, status.Id, type, turns, sourceCardId));
+        }
+
+        // 턴이 시작되는 플레이어 유닛의 상태 이상만 줄인다. 만료 효과는 나온 순서(유닛 ID)로 큐 뒤에 붙는다.
+        public void TickStatuses(int playerId)
+        {
+            List<UnitState> units = new();
+            foreach (UnitState unit in state.Units.Values)
+            {
+                if (unit.OwnerId == playerId)
+                    units.Add(unit);
+            }
+            units.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+            foreach (UnitState unit in units)
+            {
+                foreach (Status status in new List<Status>(unit.Statuses))
+                {
+                    if (!status.RemainingTurns.HasValue)
+                        continue;
+
+                    status.RemainingTurns -= 1;
+                    if (status.RemainingTurns > 0)
+                        continue;
+
+                    RemoveStatus(unit, status);
+                    if (status.OnExpire != null)
+                        state.TriggerQueue.Enqueue(new PendingEffect(unit.Id, status.SourceCardId, status.OwnerId, status.OnExpire, -1, null));
+                }
+            }
         }
 
         // 릴리스는 사망 일괄 처리를 기다리지 않고 즉시 보드에서 제거한다(§4.3).
@@ -161,7 +210,7 @@ namespace Refactor
                 for (int i = 0; i < effects.Count; i++)
                 {
                     if (effects[i].Type == EffectType.Trigger && effects[i].Trigger == trigger)
-                        state.TriggerQueue.Enqueue(new PendingEffect(unit.Id, unit.OwnerId, effects[i], i, gameEvent));
+                        state.TriggerQueue.Enqueue(new PendingEffect(unit.Id, unit.CardDefinitionId, unit.OwnerId, effects[i], i, gameEvent));
                 }
             }
         }
@@ -184,8 +233,8 @@ namespace Refactor
             if (!effect.IsCostEnough(context))
                 return;
 
-            // 주인이 이미 떠났으면 다시 쓸 일이 없으므로 횟수를 세지 않는다.
-            if (state.Units.TryGetValue(pending.SourceUnitId, out UnitState source))
+            // 주인이 이미 떠났으면 다시 쓸 일이 없으므로 횟수를 세지 않는다. 상태 이상의 만료 효과는 횟수 제한이 없다.
+            if (effect.UsesPerTurn > 0 && state.Units.TryGetValue(pending.SourceUnitId, out UnitState source))
             {
                 if (!source.CanUseEffect(pending.EffectIndex, effect.UsesPerTurn))
                     return;
@@ -209,16 +258,40 @@ namespace Refactor
         }
 
         private EffectContext CreateContext(PendingEffect pending)
-            => new(state, cards, this, pending.SourceUnitId, pending.OwnerId, pending.TriggerEvent);
+            => new(state, cards, this, pending.SourceUnitId, pending.SourceCardId, pending.OwnerId, pending.TriggerEvent);
 
-        // HP가 0 이하인 유닛을 한꺼번에 제거한 뒤 나온 순서로 사망 이벤트를 낸다. 사망자가 있었으면 true.
+        // 피해를 막거나 줄이는 키워드. 적용 순서가 결과를 바꾸므로 순서를 여기서 고정한다(§5.3).
+        private int PreventDamage(UnitState unit, int amount)
+        {
+            // 겹쳐 걸린 보호막도 1회에 모두 사라진다. 피해가 0이면 소모되지 않는다.
+            if (amount > 0 && unit.HasStatus(StatusType.Shield))
+            {
+                foreach (Status status in new List<Status>(unit.Statuses))
+                {
+                    if (status.Type == StatusType.Shield)
+                        RemoveStatus(unit, status);
+                }
+                return 0;
+            }
+
+            return amount;
+        }
+
+        // 만료, 보호막 소모 등 모든 제거가 여기를 지난다. 만료 효과는 실행하지 않는다.
+        private void RemoveStatus(UnitState unit, Status status)
+        {
+            unit.RemoveStatus(status);
+            Raise(new StatusRemoved(unit.Id, status.Id));
+        }
+
+        // 사망 대기 유닛(HP 0 이하, 파괴 예약)을 한꺼번에 제거한 뒤 나온 순서로 사망 이벤트를 낸다. 사망자가 있었으면 true.
         // 모두 제거한 뒤 이벤트를 내므로, 함께 죽은 유닛끼리는 서로의 사망에 반응하지 않는다.
         private bool ResolveDeaths()
         {
             List<UnitState> dead = new();
             foreach (UnitState unit in state.Units.Values)
             {
-                if (unit.CurrentHP <= 0)
+                if (state.IsDying(unit))
                     dead.Add(unit);
             }
 
@@ -233,6 +306,13 @@ namespace Refactor
             for (int i = 0; i < dead.Count; i++)
             {
                 UnitState unit = dead[i];
+                // 파괴와 치명 피해를 함께 받았으면 파괴로 본다.
+                if (state.PendingDestroy.TryGetValue(unit.Id, out int destroyer))
+                {
+                    Raise(new UnitDied(unit.Id, unit.CardDefinitionId, unit.OwnerId, positions[i], DeathCause.Destroy, destroyer), unit);
+                    continue;
+                }
+
                 int? killer = state.LastDamageSource.TryGetValue(unit.Id, out int source) ? source : (int?)null;
                 Raise(new UnitDied(unit.Id, unit.CardDefinitionId, unit.OwnerId, positions[i], DeathCause.Damage, killer), unit);
             }

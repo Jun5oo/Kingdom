@@ -10,6 +10,8 @@ namespace Refactor
         public CardDatabase Cards { get; }
         // 효과를 가진 유닛. 이미 보드를 떠났을 수 있다.
         public int SourceUnitId { get; }
+        // 효과를 정의한 카드.
+        public string SourceCardId { get; }
         public int OwnerId { get; }
         // 효과를 발동시킨 이벤트. 기동 효과면 null.
         public GameEvent TriggerEvent { get; }
@@ -21,12 +23,13 @@ namespace Refactor
         public IReadOnlyList<TargetUnit> Targets { get; internal set; } = Array.Empty<TargetUnit>();
 
         internal EffectContext(GameState state, CardDatabase cards, Processor processor,
-            int sourceUnitId, int ownerId, GameEvent triggerEvent)
+            int sourceUnitId, string sourceCardId, int ownerId, GameEvent triggerEvent)
         {
             State = state;
             Cards = cards;
             Processor = processor;
             SourceUnitId = sourceUnitId;
+            SourceCardId = sourceCardId;
             OwnerId = ownerId;
             TriggerEvent = triggerEvent;
         }

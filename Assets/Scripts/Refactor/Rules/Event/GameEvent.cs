@@ -117,6 +117,39 @@ namespace Refactor
         }
     }
 
+    public sealed class StatusAdded : GameEvent
+    {
+        public int UnitId { get; }
+        public int StatusId { get; }
+        // 키워드가 아니면 null.
+        public StatusType? Type { get; }
+        // null이면 영구.
+        public int? RemainingTurns { get; }
+        // 화면이 아이콘과 설명을 찾을 때 쓴다.
+        public string SourceCardId { get; }
+
+        public StatusAdded(int unitId, int statusId, StatusType? type, int? remainingTurns, string sourceCardId)
+        {
+            UnitId = unitId;
+            StatusId = statusId;
+            Type = type;
+            RemainingTurns = remainingTurns;
+            SourceCardId = sourceCardId;
+        }
+    }
+
+    public sealed class StatusRemoved : GameEvent
+    {
+        public int UnitId { get; }
+        public int StatusId { get; }
+
+        public StatusRemoved(int unitId, int statusId)
+        {
+            UnitId = unitId;
+            StatusId = statusId;
+        }
+    }
+
     public sealed class TurnStarted : GameEvent
     {
         public int PlayerId { get; }

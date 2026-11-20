@@ -94,6 +94,56 @@ namespace Kingdom.Tests
                 end },
             }";
 
+        // 카드 ④ 지연 파괴: 자신에게 2턴 상태 이상을 걸고, 만료되면 자신을 파괴.
+        private const string DoomedLua = @"
+            return {
+              { type = 'Ignition', usesPerTurn = 1,
+                operation = function(ctx)
+                  ctx:addStatus(ctx.sourceUnitId, { turns = 2,
+                    onExpire = function(ctx) ctx:destroy(ctx.sourceUnitId) end })
+                end },
+            }";
+
+        // 카드 ⑦ 보호막: 자원 2를 쓰고 아군 1명에게 2턴 보호막.
+        private const string GuardianLua = @"
+            return {
+              { type = 'Ignition', usesPerTurn = 1,
+                cost = { abilityResource = 2 },
+                target = function(ctx) return ctx:findUnits('Self', nil) end,
+                operation = function(ctx, targets)
+                  for _, t in ipairs(targets) do ctx:addStatus(t.unitId, { type = 'Shield', turns = 2 }) end
+                end },
+            }";
+
+        // 비용 없이 자신에게 영구 보호막. 겹쳐 거는 테스트용.
+        private const string BlessedLua = @"
+            return {
+              { type = 'Ignition', operation = function(ctx) ctx:addStatus(ctx.sourceUnitId, { type = 'Shield' }) end },
+            }";
+
+        // 1턴 뒤 자원 +1. 같은 효과가 교체되지 않고 쌓이는지 확인한다.
+        private const string TickerLua = @"
+            return {
+              { type = 'Ignition',
+                operation = function(ctx)
+                  ctx:addStatus(ctx.sourceUnitId, { turns = 1, onExpire = function(ctx) ctx:changeAbilityResource(1) end })
+                end },
+            }";
+
+        private const string SmiterLua = @"
+            return {
+              { type = 'Ignition', usesPerTurn = 1,
+                target = function(ctx) return ctx:findUnits('Opponent', nil) end,
+                operation = function(ctx, targets)
+                  for _, t in ipairs(targets) do ctx:destroy(t.unitId) end
+                end },
+            }";
+
+        private const string TypoLua = @"
+            return {
+              { type = 'Ignition', operation = function(ctx) ctx:addStatus(ctx.sourceUnitId, { type = 'Sheild' }) end },
+            }";
+
         private GameEngine engine;
 
         // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
@@ -125,7 +175,13 @@ namespace Kingdom.Tests
                     .Concat(Card("gravedigger", "Normal", GravediggerLua))
                     .Concat(Card("necromancer", "Normal", NecromancerLua))
                     .Concat(Card("banker", "Normal", BankerLua))
-                    .Concat(Card("bomber", "Normal", BomberLua))));
+                    .Concat(Card("bomber", "Normal", BomberLua))
+                    .Concat(Card("doomed", "Normal", DoomedLua))
+                    .Concat(Card("guardian", "Normal", GuardianLua))
+                    .Concat(Card("blessed", "Normal", BlessedLua))
+                    .Concat(Card("ticker", "Normal", TickerLua))
+                    .Concat(Card("smiter", "Normal", SmiterLua))
+                    .Concat(Card("typo", "Normal", TypoLua))));
             engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
             Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
         }
@@ -137,6 +193,15 @@ namespace Kingdom.Tests
         {
             SubmitResult result = engine.Submit(playerId, command);
             Assert.IsTrue(result.Succeeded, result.Reason);
+        }
+
+        // 양쪽이 한 번씩 턴을 넘겨 플레이어 1의 턴으로 돌아온다. 마지막 턴 종료 결과를 돌려준다.
+        private SubmitResult PassRound()
+        {
+            SubmitOk(1, new EndTurnCommand());
+            SubmitResult result = engine.Submit(2, new EndTurnCommand());
+            Assert.IsTrue(result.Succeeded, result.Reason);
+            return result;
         }
 
         private static InvalidDataException LoadFails(string lua)
@@ -361,6 +426,128 @@ namespace Kingdom.Tests
             Assert.IsFalse(result.Succeeded);
             StringAssert.Contains("비용", result.Reason);
             Assert.IsFalse(engine.GetAvailableCommands(1).OfType<ActivateEffectCommand>().Any());
+        }
+
+        [Test]
+        public void DelayedDestroyFiresAfterTwoOwnTurns()
+        {
+            StartGame(Place(1, "doomed", 0, 0), Place(2, "fighter", 6, 6));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+
+            PassRound();
+            Assert.IsTrue(engine.State.Units.ContainsKey(1));
+            Assert.AreEqual(1, engine.State.Units[1].Statuses.Single().RemainingTurns);
+
+            SubmitResult result = PassRound();
+
+            UnitDied died = result.Events.OfType<UnitDied>().Single();
+            Assert.AreEqual(1, died.UnitId);
+            Assert.AreEqual(DeathCause.Destroy, died.Cause);
+            Assert.AreEqual(1, died.KillerPlayerId);
+            Assert.IsFalse(engine.State.Units.ContainsKey(1));
+        }
+
+        [Test]
+        public void DelayedEffectsStackInsteadOfReplacing()
+        {
+            StartGame(Place(1, "ticker", 0, 0), Place(2, "fighter", 6, 6));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            Assert.AreEqual(2, engine.State.Units[1].Statuses.Count);
+
+            PassRound();
+
+            Assert.AreEqual(2, engine.State.Players[1].AbilityResource);
+            Assert.IsEmpty(engine.State.Units[1].Statuses);
+        }
+
+        [Test]
+        public void ShieldBlocksOneHitThenBreaks()
+        {
+            // 1 수호자, 2 은행가, 3 아군(보호 대상), 4 상대
+            StartGame(Place(1, "guardian", 0, 0), Place(1, "banker", 0, 6), Place(1, "fighter", 3, 3),
+                Place(2, "fighter", 3, 4));
+            SubmitOk(1, new ActivateEffectCommand(2, 0));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new ChooseCommand(3));
+            Assert.AreEqual(0, engine.State.Players[1].AbilityResource);
+            Assert.IsTrue(engine.State.Units[3].HasStatus(StatusType.Shield));
+            SubmitOk(1, new EndTurnCommand());
+
+            SubmitResult blocked = engine.Submit(2, new AttackCommand(4, 3));
+
+            Assert.IsTrue(blocked.Succeeded, blocked.Reason);
+            Assert.AreEqual(0, blocked.Events.OfType<UnitDamaged>().Single().Amount);
+            Assert.AreEqual(10, engine.State.Units[3].CurrentHP);
+            Assert.AreEqual(3, blocked.Events.OfType<StatusRemoved>().Single().UnitId);
+            Assert.IsFalse(engine.State.Units[3].HasStatus(StatusType.Shield));
+
+            SubmitResult second = engine.Submit(2, new AttackCommand(4, 3));
+
+            Assert.IsTrue(second.Succeeded, second.Reason);
+            Assert.AreEqual(3, second.Events.OfType<UnitDied>().Single().UnitId);
+        }
+
+        [Test]
+        public void StackedShieldsBlockOnlyOnce()
+        {
+            StartGame(Place(1, "blessed", 3, 3), Place(2, "fighter", 3, 4));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new EndTurnCommand());
+
+            SubmitResult blocked = engine.Submit(2, new AttackCommand(2, 1));
+
+            Assert.IsTrue(blocked.Succeeded, blocked.Reason);
+            Assert.AreEqual(2, blocked.Events.OfType<StatusRemoved>().Count());
+            Assert.IsEmpty(engine.State.Units[1].Statuses);
+
+            SubmitResult second = engine.Submit(2, new AttackCommand(2, 1));
+            Assert.AreEqual(1, second.Events.OfType<UnitDied>().Single().UnitId);
+        }
+
+        [Test]
+        public void ShieldExpiresAfterTwoTurnsWithoutHit()
+        {
+            StartGame(Place(1, "guardian", 0, 0), Place(1, "banker", 0, 6), Place(2, "fighter", 6, 6));
+            SubmitOk(1, new ActivateEffectCommand(2, 0));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new ChooseCommand(2));
+
+            PassRound();
+            Assert.IsTrue(engine.State.Units[2].HasStatus(StatusType.Shield));
+
+            SubmitResult result = PassRound();
+
+            Assert.AreEqual(2, result.Events.OfType<StatusRemoved>().Single().UnitId);
+            Assert.IsFalse(engine.State.Units[2].HasStatus(StatusType.Shield));
+        }
+
+        [Test]
+        public void ShieldDoesNotStopDestroy()
+        {
+            StartGame(Place(1, "blessed", 0, 0), Place(2, "smiter", 6, 6));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+            SubmitOk(1, new EndTurnCommand());
+            SubmitOk(2, new ActivateEffectCommand(2, 0));
+
+            SubmitResult result = engine.Submit(2, new ChooseCommand(1));
+
+            Assert.IsTrue(result.Succeeded, result.Reason);
+            Assert.IsFalse(result.Events.OfType<UnitDamaged>().Any());
+            UnitDied died = result.Events.OfType<UnitDied>().Single();
+            Assert.AreEqual(DeathCause.Destroy, died.Cause);
+            Assert.AreEqual(2, died.KillerPlayerId);
+        }
+
+        [Test]
+        public void UnknownStatusTypeIsScriptError()
+        {
+            StartGame(Place(1, "typo", 0, 0), Place(2, "fighter", 6, 6));
+
+            System.InvalidOperationException exception = Assert.Throws<System.InvalidOperationException>(
+                () => engine.Submit(1, new ActivateEffectCommand(1, 0)));
+            StringAssert.Contains("Sheild", exception.Message);
         }
     }
 }

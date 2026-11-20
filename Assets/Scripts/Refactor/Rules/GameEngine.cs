@@ -306,7 +306,7 @@ namespace Refactor
             }
 
             // Condition은 상태를 바꾸지 않으므로 Processor 없이 확인한다.
-            EffectContext context = new(State, cardDatabase, null, unitId, playerId, null);
+            EffectContext context = new(State, cardDatabase, null, unitId, card.CardId, playerId, null);
             if (!effect.CanExecute(context))
             {
                 reason = "효과의 발동 조건을 만족하지 않습니다.";
@@ -509,6 +509,8 @@ namespace Refactor
             foreach (UnitState unit in State.Units.Values)
                 unit.ResetEffectUses();
 
+            // 만료 효과가 턴 시작 트리거보다 먼저 큐에 들어간다.
+            processor.TickStatuses(nextPlayer.Id);
             processor.Raise(new TurnStarted(nextPlayer.Id, State.TurnNumber));
             processor.ChangeActionResource(nextPlayer.Id, ActionsPerTurn - nextPlayer.ActionResource);
             processor.RunToCompletion();

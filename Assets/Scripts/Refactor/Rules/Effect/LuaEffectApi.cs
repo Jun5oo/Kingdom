@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using MoonSharp.Interpreter;
 
 namespace Refactor
@@ -12,6 +13,9 @@ namespace Refactor
         private readonly Script script;
         // 조건과 대상 함수는 상태를 바꾸면 안 된다.
         private readonly bool readOnly;
+
+        // addStatus 테이블에 쓸 수 있는 항목. 오타 난 항목이 조용히 무시되지 않게 한다.
+        private static readonly HashSet<string> StatusKeys = new() { "type", "turns", "onExpire" };
 
         // 등록한 타입만 Lua로 넘길 수 있다. 첫 인스턴스를 만들기 전에 한 번 실행된다.
         static LuaEffectApi() => UserData.RegisterType<LuaEffectApi>();
@@ -69,8 +73,8 @@ namespace Refactor
             Table result = new(script);
             foreach (UnitState unit in context.State.Units.Values)
             {
-                // HP가 0 이하인 유닛은 사망 처리를 기다리는 중이므로 고를 수 없다.
-                if (unit.CurrentHP <= 0 || !relation.Matches(unit.OwnerId, context.OwnerId))
+                // 사망 처리를 기다리는 유닛은 고를 수 없다.
+                if (context.State.IsDying(unit) || !relation.Matches(unit.OwnerId, context.OwnerId))
                     continue;
 
                 if (!unitTag.HasValue ||
@@ -113,12 +117,60 @@ namespace Refactor
                     continue;
 
                 UnitState unit = context.State.Units[unitId.Value];
-                // 앞선 피해로 이미 HP가 0 이하인 유닛은 사망 처리를 기다리므로 다시 때리지 않는다.
-                if (!PlayerRelation.Opponent.Matches(unit.OwnerId, context.OwnerId) || unit.CurrentHP <= 0)
+                // 사망 처리를 기다리는 유닛은 다시 때리지 않는다.
+                if (!PlayerRelation.Opponent.Matches(unit.OwnerId, context.OwnerId) || context.State.IsDying(unit))
                     continue;
 
                 processor.Damage(unit.Id, combat.CalculateDamage(source, unit), context.OwnerId);
             }
+        }
+
+        // 즉시 제거하지 않고 사망 일괄 처리에서 원인 Destroy로 처리한다. 보호막으로 막을 수 없다.
+        public void Destroy(int unitId) => Processor.Destroy(unitId, context.OwnerId);
+
+        // 상태 이상을 건다(§5.3). spec = { type, turns, onExpire }. 같은 유닛에 여러 개가 쌓인다.
+        // onExpire는 턴 만료 때만 실행되며, 그때 ctx.sourceUnitId는 상태 이상이 붙은 유닛이다.
+        public void AddStatus(int unitId, Table spec)
+        {
+            Processor processor = Processor;
+            foreach (DynValue key in spec.Keys)
+            {
+                if (key.Type != DataType.String || !StatusKeys.Contains(key.String))
+                    throw new InvalidOperationException($"카드 스크립트 오류: addStatus에 알 수 없는 항목 {key.ToPrintString()}");
+            }
+
+            StatusType? type = null;
+            DynValue typeValue = spec.Get("type");
+            if (!typeValue.IsNil())
+            {
+                if (typeValue.Type != DataType.String || !Enum.TryParse(typeValue.String, out StatusType parsed))
+                    throw new InvalidOperationException($"카드 스크립트 오류: 알 수 없는 상태 이상 종류 {typeValue.ToPrintString()}");
+                type = parsed;
+            }
+
+            int? turns = null;
+            DynValue turnsValue = spec.Get("turns");
+            if (!turnsValue.IsNil())
+            {
+                if (turnsValue.Type != DataType.Number || turnsValue.Number < 1 || turnsValue.Number != Math.Floor(turnsValue.Number))
+                    throw new InvalidOperationException("카드 스크립트 오류: turns는 1 이상의 정수여야 합니다.");
+                turns = (int)turnsValue.Number;
+            }
+
+            DynValue onExpireValue = spec.Get("onExpire");
+            if (!onExpireValue.IsNil() && onExpireValue.Type != DataType.Function)
+                throw new InvalidOperationException("카드 스크립트 오류: onExpire는 함수여야 합니다.");
+            Closure onExpire = onExpireValue.IsNil() ? null : onExpireValue.Function;
+
+            if (onExpire != null && !turns.HasValue)
+                throw new InvalidOperationException("카드 스크립트 오류: onExpire가 있으면 turns가 필요합니다.");
+            if (!type.HasValue && onExpire == null)
+                throw new InvalidOperationException("카드 스크립트 오류: type도 onExpire도 없는 상태 이상은 아무 일도 하지 않습니다.");
+
+            EffectData expireEffect = onExpire == null
+                ? null
+                : new EffectData(EffectType.Trigger, EventTrigger.None, 0, 0, 0, 1, null, null, onExpire);
+            processor.AddStatus(unitId, type, turns, context.OwnerId, context.SourceCardId, expireEffect);
         }
 
         // 고른 대상을 { {unitId, x, y, originCardId}, ... }로 만든다. 고른 시점의 값이라 대상이 보드를 떠나도 읽을 수 있다.

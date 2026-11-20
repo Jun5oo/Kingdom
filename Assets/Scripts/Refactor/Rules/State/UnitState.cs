@@ -17,6 +17,10 @@ namespace Refactor
 
         // 효과 인덱스별 이번 턴 사용 횟수.
         private readonly Dictionary<int, int> effectUsesThisTurn = new();
+        // 붙은 순서대로 둔다. 같은 종류도 쌓인다(§5.3).
+        private readonly List<Status> statuses = new();
+
+        public IReadOnlyList<Status> Statuses => statuses;
 
         // 위치는 BoardState에서만, 레벨은 카드 정의에서만 보관한다.
         public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int maxHP, string originCardId = null)
@@ -50,5 +54,11 @@ namespace Refactor
         }
 
         internal void ResetEffectUses() => effectUsesThisTurn.Clear();
+
+        public bool HasStatus(StatusType type) => statuses.Exists(status => status.Type == type);
+
+        internal void AddStatus(Status status) => statuses.Add(status);
+
+        internal void RemoveStatus(Status status) => statuses.Remove(status);
     }
 }

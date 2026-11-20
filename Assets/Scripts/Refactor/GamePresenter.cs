@@ -183,6 +183,11 @@ namespace Refactor
                     status = $"플레이어 {started.PlayerId}의 턴입니다.";
                     break;
 
+                case StatusAdded:
+                case StatusRemoved:
+                    // 상태 이상 표시는 아직 없다.
+                    break;
+
                 default:
                     throw new ArgumentException($"재생할 수 없는 이벤트입니다: {gameEvent.GetType().Name}", nameof(gameEvent));
             }
