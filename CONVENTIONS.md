@@ -23,6 +23,23 @@ public bool CanMoveUnit(int playerId, int unitId, int targetX, int targetY, out 
 public bool TryGetCard(string cardId, out UnitCardData card)
 ```
 
+## 작성 순서
+
+클래스 멤버는 다음 순서로 둡니다.
+
+1. 상수
+2. 필드
+3. 프로퍼티
+4. 생성자
+5. Unity 생명 주기 함수: 호출되는 순서대로 둡니다(`Awake` → `OnEnable` → `Start` → `FixedUpdate` → `Update` → `LateUpdate` → `OnGUI` → `OnDisable` → `OnDestroy`).
+6. 메인 공용 함수: 클래스의 주 역할을 하는 입구입니다. 예: `GameEngine.Submit`, `GetAvailableCommands`
+7. 특정 기능 함수: 기능 하나를 맡는 함수입니다. 예: `CanMoveUnit`, `SubmitAttack`
+8. 헬퍼 함수: 다른 함수가 쓰는 작은 도우미입니다. 예: `GetEffects`, `CreateContext`
+
+각 단계 안에서는 public을 먼저 두고 private을 나중에 둡니다(public → internal → protected → private).
+
+메인 공용 함수끼리는 호출되는 순서대로 둡니다. 예: `StartGame` → `GetAvailableCommands` → `Submit`. 호출 순서가 정해져 있지 않으면 중요한 것부터 둡니다.
+
 ## 중괄호
 
 `if`, `for`, `foreach`, `while`의 본문이 한 줄이면 중괄호를 생략합니다. 본문은 다음 줄에 들여써서 작성합니다.
@@ -86,6 +103,15 @@ public string CardId => cardId;
 
 ## 기타
 
-- 지역 변수는 `var` 대신 타입을 명시합니다. 대상 타입이 명확하면 `new()`를 사용합니다.
+- 지역 변수는 `var` 대신 타입을 명시합니다.
+- `new()`는 필드와 지역 변수 선언에서만 씁니다. 왼쪽에 타입이 적혀 있기 때문입니다. 인수와 `return`(식 본문 포함)에서는 만드는 타입을 적습니다.
+
+```csharp
+private readonly List<Status> statuses = new();
+Dictionary<int, int> cpByUnit = new();
+
+Execute(new PendingEffect(unitId, cardId, ownerId, effect, index, null));
+return new SubmitResult(events);
+```
 - 주석은 한글로 작성하고, 코드만 봐서는 알 수 없는 의도와 제약을 설명합니다.
 - 클래스 주석은 클래스의 역할만 최대한 짧게 한 줄로 작성합니다.
