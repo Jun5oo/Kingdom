@@ -22,52 +22,38 @@ namespace Refactor
             this.cards = cards ?? throw new ArgumentNullException(nameof(cards));
         }
 
-        // 꺼낸 목록은 결과가 가져가므로 새 목록으로 바꿔, 다음 Submit이 이전 결과를 건드리지 않게 한다.
-        public IReadOnlyList<GameEvent> TakeEvents()
-        {
-            RaiseCPChanges();
-            List<GameEvent> taken = events;
-            events = new();
-            return taken;
-        }
-
-        public void Raise(GameEvent gameEvent) => Raise(gameEvent, null);
-
         // 상태를 바꾸기 전에 부른다. 검증에 실패한 Submit의 기록은 다음 BeginSubmit이 덮어쓴다.
         public void BeginSubmit()
         {
-            cpAtSubmitStart = new();
+            cpAtSubmitStart = new Dictionary<int, int>();
             foreach (int unitId in state.Units.Keys)
                 cpAtSubmitStart[unitId] = GetCP(unitId);
         }
 
-        // 상태 이상과 지속 효과의 수치를 모두 더한 뒤 0 미만이면 0으로 한다. 합을 먼저 내므로 붙은 순서와 결과가 무관하다.
-        // shortcut: 조회할 때마다 보드의 지속 효과를 모두 Lua로 확인한다. 유닛이나 지속 효과가 많아져 느려지면 Submit 단위로 캐시한다.
-        public int GetCP(int unitId)
+        // 엔진이 CanActivateEffect로 검증을 끝낸 뒤 부른다.
+        public void Activate(int unitId, int effectIndex)
         {
             UnitState unit = state.Units[unitId];
-            int cp = unit.BaseCP;
-            foreach (Status status in unit.Statuses)
-                cp += status.BonusCP;
+            Execute(new PendingEffect(unitId, unit.CardDefinitionId, unit.OwnerId, GetEffects(unit)[effectIndex], effectIndex, null));
+        }
 
-            foreach (UnitState source in state.Units.Values)
+        // 엔진이 CanChoose로 검증을 끝낸 뒤 부른다. 멈췄던 효과를 Operation부터 이어서 실행한다.
+        public void Choose(IReadOnlyList<int> unitIds)
+        {
+            PendingEffect pending = state.ChoosingEffect.Value;
+            state.ChoosingEffect = null;
+            state.PendingChoice = null;
+
+            List<TargetUnit> targets = new(unitIds.Count);
+            foreach (int unitId in unitIds)
             {
-                // 사망 처리를 기다리는 유닛의 지속 효과는 이미 꺼진 것으로 본다.
-                if (state.IsDying(source))
-                    continue;
-
-                foreach (EffectData effect in GetEffects(source))
-                {
-                    if (effect.Type != EffectType.Continuous)
-                        continue;
-
-                    EffectContext context = new(state, cards, null, source.Id, source.CardDefinitionId, source.OwnerId, null);
-                    if (effect.CanExecute(context) && effect.GetCandidates(context).Contains(unitId))
-                        cp += effect.CP;
-                }
+                state.Board.TryGetPosition(unitId, out int x, out int y);
+                targets.Add(new TargetUnit(unitId, new GridPos(x, y), state.Units[unitId].OriginCardId));
             }
 
-            return Math.Max(0, cp);
+            EffectContext context = CreateContext(pending);
+            context.Targets = targets;
+            pending.Effect.Execute(context);
         }
 
         // 큐를 모두 처리한 뒤 사망자를 한꺼번에 처리한다. 사망 트리거가 생기면 반복한다(§4.3, 하스스톤식).
@@ -98,30 +84,44 @@ namespace Refactor
             throw new InvalidOperationException("트리거 해결이 끝나지 않습니다. 카드 데이터를 확인하세요.");
         }
 
-        // 엔진이 CanActivateEffect로 검증을 끝낸 뒤 부른다.
-        public void Activate(int unitId, int effectIndex)
+        // 꺼낸 목록은 결과가 가져가므로 새 목록으로 바꿔, 다음 Submit이 이전 결과를 건드리지 않게 한다.
+        public IReadOnlyList<GameEvent> TakeEvents()
         {
-            UnitState unit = state.Units[unitId];
-            Execute(new PendingEffect(unitId, unit.CardDefinitionId, unit.OwnerId, GetEffects(unit)[effectIndex], effectIndex, null));
+            RaiseCPChanges();
+            List<GameEvent> taken = events;
+            events = new List<GameEvent>();
+            return taken;
         }
 
-        // 엔진이 CanChoose로 검증을 끝낸 뒤 부른다. 멈췄던 효과를 Operation부터 이어서 실행한다.
-        public void Choose(IReadOnlyList<int> unitIds)
-        {
-            PendingEffect pending = state.ChoosingEffect.Value;
-            state.ChoosingEffect = null;
-            state.PendingChoice = null;
+        public void Raise(GameEvent gameEvent) => Raise(gameEvent, null);
 
-            List<TargetUnit> targets = new(unitIds.Count);
-            foreach (int unitId in unitIds)
+        // 상태 이상과 지속 효과의 수치를 모두 더한 뒤 0 미만이면 0으로 한다. 합을 먼저 내므로 붙은 순서와 결과가 무관하다.
+        // shortcut: 조회할 때마다 보드의 지속 효과를 모두 Lua로 확인한다. 유닛이나 지속 효과가 많아져 느려지면 Submit 단위로 캐시한다.
+        public int GetCP(int unitId)
+        {
+            UnitState unit = state.Units[unitId];
+            int cp = unit.BaseCP;
+            foreach (Status status in unit.Statuses)
+                cp += status.BonusCP;
+
+            foreach (UnitState source in state.Units.Values)
             {
-                state.Board.TryGetPosition(unitId, out int x, out int y);
-                targets.Add(new TargetUnit(unitId, new GridPos(x, y), state.Units[unitId].OriginCardId));
+                // 사망 처리를 기다리는 유닛의 지속 효과는 이미 꺼진 것으로 본다.
+                if (state.IsDying(source))
+                    continue;
+
+                foreach (EffectData effect in GetEffects(source))
+                {
+                    if (effect.Type != EffectType.Continuous)
+                        continue;
+
+                    EffectContext context = new(state, cards, null, source.Id, source.CardDefinitionId, source.OwnerId, null);
+                    if (effect.CanExecute(context) && effect.GetCandidates(context).Contains(unitId))
+                        cp += effect.CP;
+                }
             }
 
-            EffectContext context = CreateContext(pending);
-            context.Targets = targets;
-            pending.Effect.Execute(context);
+            return Math.Max(0, cp);
         }
 
         // 모든 피해가 지나가는 지점.
@@ -274,14 +274,7 @@ namespace Refactor
                     Raise(new UnitCPChanged(unitId, cp));
             }
 
-            cpAtSubmitStart = new();
-        }
-
-        // 큐에서 기다리는 동안 보드를 떠난 유닛의 트리거는 발동하지 않는다. 자기 사망에 반응하는 트리거는 예외다.
-        private bool IsStillActive(PendingEffect pending)
-        {
-            return state.Units.ContainsKey(pending.SourceUnitId) ||
-                   (pending.TriggerEvent is UnitDied died && died.UnitId == pending.SourceUnitId);
+            cpAtSubmitStart = new Dictionary<int, int>();
         }
 
         // 조건, 횟수, 비용을 확인한 뒤 지불한다. 고를 대상이 있으면 선택 대기로 멈춘다.
@@ -318,9 +311,6 @@ namespace Refactor
 
             effect.Execute(context);
         }
-
-        private EffectContext CreateContext(PendingEffect pending)
-            => new(state, cards, this, pending.SourceUnitId, pending.SourceCardId, pending.OwnerId, pending.TriggerEvent);
 
         // 피해를 막거나 줄이는 키워드. 적용 순서가 결과를 바꾸므로 순서를 여기서 고정한다(§5.3).
         private int PreventDamage(UnitState unit, int amount)
@@ -381,6 +371,16 @@ namespace Refactor
 
             return true;
         }
+
+        // 큐에서 기다리는 동안 보드를 떠난 유닛의 트리거는 발동하지 않는다. 자기 사망에 반응하는 트리거는 예외다.
+        private bool IsStillActive(PendingEffect pending)
+        {
+            return state.Units.ContainsKey(pending.SourceUnitId) ||
+                   (pending.TriggerEvent is UnitDied died && died.UnitId == pending.SourceUnitId);
+        }
+
+        private EffectContext CreateContext(PendingEffect pending)
+            => new EffectContext(state, cards, this, pending.SourceUnitId, pending.SourceCardId, pending.OwnerId, pending.TriggerEvent);
 
         private GridPos RemoveUnit(int unitId)
         {

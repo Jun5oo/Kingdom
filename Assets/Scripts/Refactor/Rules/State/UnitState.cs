@@ -5,6 +5,11 @@ namespace Refactor
 {
     public sealed class UnitState
     {
+        // 효과 인덱스별 이번 턴 사용 횟수.
+        private readonly Dictionary<int, int> effectUsesThisTurn = new();
+        // 붙은 순서대로 둔다. 같은 종류도 쌓인다(§5.3).
+        private readonly List<Status> statuses = new();
+
         // 같은 카드에서 생성된 유닛도 서로 다른 Id를 가진다.
         public int Id { get; }
         public string CardDefinitionId { get; }
@@ -15,11 +20,6 @@ namespace Refactor
         public int CurrentHP { get; internal set; }
         // 무덤처럼 다른 유닛이 죽은 자리에서 생겨났으면 그 유닛의 카드 ID. 부활할 때 쓴다.
         public string OriginCardId { get; }
-
-        // 효과 인덱스별 이번 턴 사용 횟수.
-        private readonly Dictionary<int, int> effectUsesThisTurn = new();
-        // 붙은 순서대로 둔다. 같은 종류도 쌓인다(§5.3).
-        private readonly List<Status> statuses = new();
 
         public IReadOnlyList<Status> Statuses => statuses;
 
@@ -48,6 +48,8 @@ namespace Refactor
             return usesPerTurn == 0 || uses < usesPerTurn;
         }
 
+        public bool HasStatus(StatusType type) => statuses.Exists(status => status.Type == type);
+
         internal void MarkEffectUsed(int effectIndex)
         {
             effectUsesThisTurn.TryGetValue(effectIndex, out int uses);
@@ -55,8 +57,6 @@ namespace Refactor
         }
 
         internal void ResetEffectUses() => effectUsesThisTurn.Clear();
-
-        public bool HasStatus(StatusType type) => statuses.Exists(status => status.Type == type);
 
         internal void AddStatus(Status status) => statuses.Add(status);
 

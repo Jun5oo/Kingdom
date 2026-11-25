@@ -24,6 +24,27 @@ namespace Refactor
         private int remainingActions;
         private string status = string.Empty;
 
+        // 임시 HUD. 별도 HUD View를 만들면 옮긴다.
+        private void OnGUI()
+        {
+            if (engine == null)
+                return;
+
+            GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(520, Screen.width - 24), 150), GUI.skin.box);
+            GUILayout.Label($"{turnNumber}턴 · 플레이어 {currentPlayerId}");
+            GUILayout.Label($"남은 행동: {remainingActions} / {GameEngine.ActionsPerTurn} · 능력 자원: {abilityResources[currentPlayerId]}");
+            GUILayout.Label(status);
+            if (GUILayout.Button("턴 종료"))
+                SubmitCommand(new EndTurnCommand());
+            GUILayout.EndArea();
+        }
+
+        private void OnDestroy()
+        {
+            if (boardView != null)
+                boardView.CellClicked -= OnCellClicked;
+        }
+
         // 엔진 상태는 여기서만 읽는다. 이후 변화는 이벤트로만 받는다.
         public void Initialize(GameEngine engine, CardDatabase database, BoardView boardView, UnitView unitPrefab)
         {
@@ -58,24 +79,6 @@ namespace Refactor
             status = $"플레이어 {currentPlayerId}의 유닛을 선택해주세요.";
         }
 
-        private void OnDestroy()
-        {
-            if (boardView != null)
-                boardView.CellClicked -= OnCellClicked;
-        }
-
-        private void CreateUnitView(int unitId, int ownerId, string cardId, GridPos position,
-            int cp, int maxHP, int currentHP)
-        {
-            if (!database.TryGetCard(cardId, out CardDefinition card))
-                throw new InvalidOperationException($"등록되지 않은 카드입니다: {cardId}");
-
-            UnitView view = boardView.CreateUnitView(unitPrefab, position.X, position.Y);
-            view.Bind(unitId, ownerId, cp, maxHP, currentHP, card);
-            unitViews.Add(unitId, view);
-            unitPositions.Add(unitId, position);
-        }
-
         private void OnCellClicked(int x, int y)
         {
             if (!isActiveAndEnabled)
@@ -100,17 +103,6 @@ namespace Refactor
                 SubmitCommand(new AttackCommand(selectedUnitId.Value, occupant.Value));
             else
                 SubmitCommand(new MoveCommand(selectedUnitId.Value, new GridPos(x, y)));
-        }
-
-        private int? FindUnitAt(int x, int y)
-        {
-            foreach (KeyValuePair<int, GridPos> entry in unitPositions)
-            {
-                if (entry.Value.X == x && entry.Value.Y == y)
-                    return entry.Key;
-            }
-
-            return null;
         }
 
         private void SubmitCommand(GameCommand command)
@@ -218,19 +210,27 @@ namespace Refactor
             boardView.HighlightCell(selected.X, selected.Y, CellHighlight.Selected);
         }
 
-        // 임시 HUD. 별도 HUD View를 만들면 옮긴다.
-        private void OnGUI()
+        private void CreateUnitView(int unitId, int ownerId, string cardId, GridPos position,
+            int cp, int maxHP, int currentHP)
         {
-            if (engine == null)
-                return;
+            if (!database.TryGetCard(cardId, out CardDefinition card))
+                throw new InvalidOperationException($"등록되지 않은 카드입니다: {cardId}");
 
-            GUILayout.BeginArea(new Rect(12, 12, Mathf.Min(520, Screen.width - 24), 150), GUI.skin.box);
-            GUILayout.Label($"{turnNumber}턴 · 플레이어 {currentPlayerId}");
-            GUILayout.Label($"남은 행동: {remainingActions} / {GameEngine.ActionsPerTurn} · 능력 자원: {abilityResources[currentPlayerId]}");
-            GUILayout.Label(status);
-            if (GUILayout.Button("턴 종료"))
-                SubmitCommand(new EndTurnCommand());
-            GUILayout.EndArea();
+            UnitView view = boardView.CreateUnitView(unitPrefab, position.X, position.Y);
+            view.Bind(unitId, ownerId, cp, maxHP, currentHP, card);
+            unitViews.Add(unitId, view);
+            unitPositions.Add(unitId, position);
+        }
+
+        private int? FindUnitAt(int x, int y)
+        {
+            foreach (KeyValuePair<int, GridPos> entry in unitPositions)
+            {
+                if (entry.Value.X == x && entry.Value.Y == y)
+                    return entry.Key;
+            }
+
+            return null;
         }
     }
 }

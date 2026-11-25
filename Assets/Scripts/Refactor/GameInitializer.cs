@@ -27,7 +27,7 @@ namespace Refactor
             [SerializeField] private Vector2Int position;
 
             public UnitPlacement ToPlacement() =>
-                new(ownerId, cardId, new GridPos(position.x, position.y));
+                new UnitPlacement(ownerId, cardId, new GridPos(position.x, position.y));
         }
 
         private void Start()

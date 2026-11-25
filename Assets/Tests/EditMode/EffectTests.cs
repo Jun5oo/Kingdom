@@ -169,70 +169,6 @@ namespace Kingdom.Tests
 
         private GameEngine engine;
 
-        // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
-        private static string UnitJson(string id, string tag) => $@"{{
-            ""id"": ""{id}"", ""name"": ""{id}"", ""tag"": ""{tag}"",
-            ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
-            ""movement"": {{ ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }},
-            ""attack"": {{ ""directions"": ""Orthogonal"", ""maxDistance"": 1 }}
-        }}";
-
-        // 효과가 있는 카드는 JSON과 같은 이름의 Lua 파일을 함께 넘긴다.
-        private static IEnumerable<(string, string)> Card(string id, string tag, string lua = null)
-        {
-            yield return ($"{id}.json", UnitJson(id, tag));
-            if (lua != null)
-                yield return ($"{id}.lua", lua);
-        }
-
-        private void StartGame(params UnitPlacement[] placements)
-        {
-            CardDatabase database = new(CardLoader.Load(
-                Card("fighter", "Normal")
-                    .Concat(Card("hero", "Hero"))
-                    .Concat(Card("grave", "Graveyard"))
-                    .Concat(Card("watcher", "Normal", WatcherLua))
-                    .Concat(Card("martyr", "Normal", MartyrLua))
-                    .Concat(Card("drummer", "Normal", DrummerLua))
-                    .Concat(Card("avenger", "Normal", AvengerLua))
-                    .Concat(Card("gravedigger", "Normal", GravediggerLua))
-                    .Concat(Card("necromancer", "Normal", NecromancerLua))
-                    .Concat(Card("banker", "Normal", BankerLua))
-                    .Concat(Card("bomber", "Normal", BomberLua))
-                    .Concat(Card("doomed", "Normal", DoomedLua))
-                    .Concat(Card("guardian", "Normal", GuardianLua))
-                    .Concat(Card("blessed", "Normal", BlessedLua))
-                    .Concat(Card("ticker", "Normal", TickerLua))
-                    .Concat(Card("smiter", "Normal", SmiterLua))
-                    .Concat(Card("typo", "Normal", TypoLua))
-                    .Concat(Card("aura", "Normal", AuraLua))
-                    .Concat(Card("weakener", "Normal", WeakenerLua))
-                    .Concat(Card("cursed", "Normal", CursedLua))));
-            engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
-            Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
-        }
-
-        private static UnitPlacement Place(int ownerId, string cardId, int x, int y)
-            => new(ownerId, cardId, new GridPos(x, y));
-
-        private void SubmitOk(int playerId, GameCommand command)
-        {
-            SubmitResult result = engine.Submit(playerId, command);
-            Assert.IsTrue(result.Succeeded, result.Reason);
-        }
-
-        // 양쪽이 한 번씩 턴을 넘겨 플레이어 1의 턴으로 돌아온다. 마지막 턴 종료 결과를 돌려준다.
-        private SubmitResult PassRound()
-        {
-            SubmitOk(1, new EndTurnCommand());
-            SubmitResult result = engine.Submit(2, new EndTurnCommand());
-            Assert.IsTrue(result.Succeeded, result.Reason);
-            return result;
-        }
-
-        private static InvalidDataException LoadFails(string lua)
-            => Assert.Throws<InvalidDataException>(() => CardLoader.Load(Card("broken", "Normal", lua)));
-
         [Test]
         public void KillingOpponentHeroGivesAbilityResource()
         {
@@ -655,5 +591,69 @@ namespace Kingdom.Tests
 
             StringAssert.Contains(expected, exception.Message);
         }
+
+        // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
+        private static string UnitJson(string id, string tag) => $@"{{
+            ""id"": ""{id}"", ""name"": ""{id}"", ""tag"": ""{tag}"",
+            ""level"": 1, ""baseCP"": 10, ""baseHP"": 10,
+            ""movement"": {{ ""type"": ""Line"", ""directions"": ""Orthogonal"", ""maxDistance"": 1 }},
+            ""attack"": {{ ""directions"": ""Orthogonal"", ""maxDistance"": 1 }}
+        }}";
+
+        // 효과가 있는 카드는 JSON과 같은 이름의 Lua 파일을 함께 넘긴다.
+        private static IEnumerable<(string, string)> Card(string id, string tag, string lua = null)
+        {
+            yield return ($"{id}.json", UnitJson(id, tag));
+            if (lua != null)
+                yield return ($"{id}.lua", lua);
+        }
+
+        private void StartGame(params UnitPlacement[] placements)
+        {
+            CardDatabase database = new(CardLoader.Load(
+                Card("fighter", "Normal")
+                    .Concat(Card("hero", "Hero"))
+                    .Concat(Card("grave", "Graveyard"))
+                    .Concat(Card("watcher", "Normal", WatcherLua))
+                    .Concat(Card("martyr", "Normal", MartyrLua))
+                    .Concat(Card("drummer", "Normal", DrummerLua))
+                    .Concat(Card("avenger", "Normal", AvengerLua))
+                    .Concat(Card("gravedigger", "Normal", GravediggerLua))
+                    .Concat(Card("necromancer", "Normal", NecromancerLua))
+                    .Concat(Card("banker", "Normal", BankerLua))
+                    .Concat(Card("bomber", "Normal", BomberLua))
+                    .Concat(Card("doomed", "Normal", DoomedLua))
+                    .Concat(Card("guardian", "Normal", GuardianLua))
+                    .Concat(Card("blessed", "Normal", BlessedLua))
+                    .Concat(Card("ticker", "Normal", TickerLua))
+                    .Concat(Card("smiter", "Normal", SmiterLua))
+                    .Concat(Card("typo", "Normal", TypoLua))
+                    .Concat(Card("aura", "Normal", AuraLua))
+                    .Concat(Card("weakener", "Normal", WeakenerLua))
+                    .Concat(Card("cursed", "Normal", CursedLua))));
+            engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
+            Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
+        }
+
+        private static UnitPlacement Place(int ownerId, string cardId, int x, int y)
+            => new UnitPlacement(ownerId, cardId, new GridPos(x, y));
+
+        private void SubmitOk(int playerId, GameCommand command)
+        {
+            SubmitResult result = engine.Submit(playerId, command);
+            Assert.IsTrue(result.Succeeded, result.Reason);
+        }
+
+        // 양쪽이 한 번씩 턴을 넘겨 플레이어 1의 턴으로 돌아온다. 마지막 턴 종료 결과를 돌려준다.
+        private SubmitResult PassRound()
+        {
+            SubmitOk(1, new EndTurnCommand());
+            SubmitResult result = engine.Submit(2, new EndTurnCommand());
+            Assert.IsTrue(result.Succeeded, result.Reason);
+            return result;
+        }
+
+        private static InvalidDataException LoadFails(string lua)
+            => Assert.Throws<InvalidDataException>(() => CardLoader.Load(Card("broken", "Normal", lua)));
     }
 }

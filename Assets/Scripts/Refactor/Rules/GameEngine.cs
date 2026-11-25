@@ -10,8 +10,6 @@ namespace Refactor
         // 턴 시작 시 지급하는 행동 횟수
         public const int ActionsPerTurn = 2;
 
-        // 게임의 정보를 담고 있는 객체 
-        public GameState State { get; }
         // 카드 데이터베이스 
         private readonly CardDatabase cardDatabase;
         // 이동 판별기 
@@ -21,6 +19,9 @@ namespace Refactor
         // 상태 변경과 트리거 해결. 게임 내내 하나를 쓴다.
         private readonly Processor processor;
         private bool isStarted;
+
+        // 게임의 정보를 담고 있는 객체 
+        public GameState State { get; }
 
         public GameEngine(GameState state, CardDatabase cardDatabase)
         {
@@ -105,22 +106,6 @@ namespace Refactor
             return true;
         }
 
-        // 모든 행동의 입구. 검증에 실패하면 상태를 변경하지 않는다.
-        public SubmitResult Submit(int playerId, GameCommand command)
-        {
-            processor.BeginSubmit();
-            return command switch
-            {
-                MoveCommand move => SubmitMove(playerId, move),
-                AttackCommand attack => SubmitAttack(playerId, attack),
-                EndTurnCommand => SubmitEndTurn(playerId),
-                ActivateEffectCommand activate => SubmitActivateEffect(playerId, activate),
-                ChooseCommand choose => SubmitChoose(playerId, choose),
-                null => throw new ArgumentNullException(nameof(command)),
-                _ => throw new ArgumentException($"처리할 수 없는 명령입니다: {command.GetType().Name}", nameof(command)),
-            };
-        }
-
         // 지금 실행할 수 있는 명령 전체. 선택 대기 중이면 고르는 플레이어의 선택 명령만 있다.
         public IReadOnlyList<GameCommand> GetAvailableCommands(int playerId)
         {
@@ -149,6 +134,22 @@ namespace Refactor
             }
 
             return commands;
+        }
+
+        // 모든 행동의 입구. 검증에 실패하면 상태를 변경하지 않는다.
+        public SubmitResult Submit(int playerId, GameCommand command)
+        {
+            processor.BeginSubmit();
+            return command switch
+            {
+                MoveCommand move => SubmitMove(playerId, move),
+                AttackCommand attack => SubmitAttack(playerId, attack),
+                EndTurnCommand => SubmitEndTurn(playerId),
+                ActivateEffectCommand activate => SubmitActivateEffect(playerId, activate),
+                ChooseCommand choose => SubmitChoose(playerId, choose),
+                null => throw new ArgumentNullException(nameof(command)),
+                _ => throw new ArgumentException($"처리할 수 없는 명령입니다: {command.GetType().Name}", nameof(command)),
+            };
         }
 
         public bool CanEndTurn(int playerId, out string reason)
@@ -236,6 +237,7 @@ namespace Refactor
                 State.Board, card.Movement,
                 fromX, fromY, targetX, targetY, out reason);
         }
+
         // UI의 공격 미리보기에도 사용할 수 있는 읽기 전용 검증.
         public bool CanAttackUnit(int playerId, int attackerId, int defenderId, out string reason)
         {
@@ -282,6 +284,7 @@ namespace Refactor
             return combatResolver.CanReach(State.Board, card.Attack,
                 fromX, fromY, targetX, targetY, out reason);
         }
+
         // UI의 효과 버튼 표시에도 사용할 수 있는 읽기 전용 검증. 기동 효과만 직접 발동할 수 있다.
         public bool CanActivateEffect(int playerId, int unitId, int effectIndex, out string reason)
         {
@@ -419,31 +422,6 @@ namespace Refactor
             return true;
         }
 
-        private void AddUnitCommands(int playerId, int unitId, List<GameCommand> commands)
-        {
-            for (int y = 0; y < State.Board.Height; y++)
-            {
-                for (int x = 0; x < State.Board.Width; x++)
-                {
-                    if (CanMoveUnit(playerId, unitId, x, y, out _))
-                        commands.Add(new MoveCommand(unitId, new GridPos(x, y)));
-
-                    int? targetId = State.Board.GetUnitIdAt(x, y);
-                    if (targetId.HasValue && CanAttackUnit(playerId, unitId, targetId.Value, out _))
-                        commands.Add(new AttackCommand(unitId, targetId.Value));
-                }
-            }
-
-            if (!TryGetUnitCard(unitId, out CardDefinition card, out _))
-                return;
-
-            for (int i = 0; i < card.Effects.Count; i++)
-            {
-                if (CanActivateEffect(playerId, unitId, i, out _))
-                    commands.Add(new ActivateEffectCommand(unitId, i));
-            }
-        }
-
         private SubmitResult SubmitMove(int playerId, MoveCommand command)
         {
             GridPos target = command.Target;
@@ -519,6 +497,31 @@ namespace Refactor
             processor.ChangeActionResource(nextPlayer.Id, ActionsPerTurn - nextPlayer.ActionResource);
             processor.RunToCompletion();
             return SubmitResult.Ok(processor.TakeEvents());
+        }
+
+        private void AddUnitCommands(int playerId, int unitId, List<GameCommand> commands)
+        {
+            for (int y = 0; y < State.Board.Height; y++)
+            {
+                for (int x = 0; x < State.Board.Width; x++)
+                {
+                    if (CanMoveUnit(playerId, unitId, x, y, out _))
+                        commands.Add(new MoveCommand(unitId, new GridPos(x, y)));
+
+                    int? targetId = State.Board.GetUnitIdAt(x, y);
+                    if (targetId.HasValue && CanAttackUnit(playerId, unitId, targetId.Value, out _))
+                        commands.Add(new AttackCommand(unitId, targetId.Value));
+                }
+            }
+
+            if (!TryGetUnitCard(unitId, out CardDefinition card, out _))
+                return;
+
+            for (int i = 0; i < card.Effects.Count; i++)
+            {
+                if (CanActivateEffect(playerId, unitId, i, out _))
+                    commands.Add(new ActivateEffectCommand(unitId, i));
+            }
         }
     }
 }

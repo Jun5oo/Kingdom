@@ -17,8 +17,12 @@ namespace Refactor
         // addStatus 테이블에 쓸 수 있는 항목. 오타 난 항목이 조용히 무시되지 않게 한다.
         private static readonly HashSet<string> StatusKeys = new() { "type", "cp", "turns", "onExpire" };
 
-        // 등록한 타입만 Lua로 넘길 수 있다. 첫 인스턴스를 만들기 전에 한 번 실행된다.
-        static LuaEffectApi() => UserData.RegisterType<LuaEffectApi>();
+        public int OwnerId => context.OwnerId;
+        public int SourceUnitId => context.SourceUnitId;
+
+        private Processor Processor => readOnly
+            ? throw new InvalidOperationException("카드 스크립트 오류: condition과 target에서는 상태를 바꿀 수 없습니다.")
+            : context.Processor;
 
         internal LuaEffectApi(EffectContext context, Script script, bool readOnly)
         {
@@ -27,12 +31,8 @@ namespace Refactor
             this.readOnly = readOnly;
         }
 
-        public int OwnerId => context.OwnerId;
-        public int SourceUnitId => context.SourceUnitId;
-
-        private Processor Processor => readOnly
-            ? throw new InvalidOperationException("카드 스크립트 오류: condition과 target에서는 상태를 바꿀 수 없습니다.")
-            : context.Processor;
+        // 등록한 타입만 Lua로 넘길 수 있다. 첫 인스턴스를 만들기 전에 한 번 실행된다.
+        static LuaEffectApi() => UserData.RegisterType<LuaEffectApi>();
 
         // ── 조회 ──
 

@@ -24,6 +24,11 @@ namespace Refactor
     // 카드 Lua 파일에서 읽은 효과 하나. 런타임 상태(사용 횟수 등)는 UnitState가 가진다.
     public sealed class EffectData
     {
+        // Lua 함수. 조건과 대상은 없으면 null이다. 지속 효과에는 operation이 없다.
+        private readonly Closure condition;
+        private readonly Closure target;
+        private readonly Closure operation;
+
         public EffectType Type { get; }
         public EventTrigger Trigger { get; }
         // 턴당 사용 횟수. 0은 무제한.
@@ -34,11 +39,6 @@ namespace Refactor
         public int TargetCount { get; }
         // 지속 효과가 target 유닛에 더하는 CP. 다른 종류는 0이다.
         public int CP { get; }
-
-        // Lua 함수. 조건과 대상은 없으면 null이다. 지속 효과에는 operation이 없다.
-        private readonly Closure condition;
-        private readonly Closure target;
-        private readonly Closure operation;
 
         internal EffectData(EffectType type, EventTrigger trigger, int usesPerTurn,
             int abilityResourceCost, int actionResourceCost, int targetCount, int cp,
@@ -69,14 +69,6 @@ namespace Refactor
             return owner.AbilityResource >= AbilityResourceCost && owner.ActionResource >= ActionResourceCost;
         }
 
-        internal void PayCost(EffectContext context)
-        {
-            if (AbilityResourceCost > 0)
-                context.Processor.ChangeAbilityResource(context.OwnerId, -AbilityResourceCost);
-            if (ActionResourceCost > 0)
-                context.Processor.ChangeActionResource(context.OwnerId, -ActionResourceCost);
-        }
-
         // 대상이 없는 효과면 null. 상태를 바꾸지 않고, 필드에 나온 순서(유닛 ID)로 정렬해 돌려준다.
         // 지속 효과에서는 고를 후보가 아니라 적용받는 유닛 목록이다.
         public List<int> GetCandidates(EffectContext context)
@@ -93,6 +85,14 @@ namespace Refactor
                 candidates.Add((int)id.Number);
             candidates.Sort();
             return candidates;
+        }
+
+        internal void PayCost(EffectContext context)
+        {
+            if (AbilityResourceCost > 0)
+                context.Processor.ChangeAbilityResource(context.OwnerId, -AbilityResourceCost);
+            if (ActionResourceCost > 0)
+                context.Processor.ChangeActionResource(context.OwnerId, -ActionResourceCost);
         }
 
         // 고른 대상은 context.Targets에 담겨 operation의 두 번째 인수로 넘어간다.

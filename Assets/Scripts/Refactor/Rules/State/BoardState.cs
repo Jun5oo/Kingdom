@@ -4,11 +4,11 @@ namespace Refactor
 {
     public sealed class BoardState
     {
-        public int Width { get; }
-        public int Height { get; }
-
         // null은 빈 칸을 의미한다. Unity 객체 대신 유닛 ID만 저장한다.
         private readonly int?[,] occupants;
+
+        public int Width { get; }
+        public int Height { get; }
 
         public BoardState(int width, int height)
         {
@@ -37,19 +37,6 @@ namespace Refactor
             return occupants[x, y];
         }
 
-        // 보드의 기본 제약만 확인한다. 소환 범위 등의 규칙은 처리기에서 검사한다.
-        internal bool TryPlace(int unitId, int x, int y)
-        {
-            if (!Contains(x, y) || occupants[x, y].HasValue)
-                return false;
-
-            if (TryGetPosition(unitId, out _, out _))
-                return false;
-
-            occupants[x, y] = unitId;
-            return true;
-        }
-
         public bool TryGetPosition(int unitId, out int x, out int y)
         {
             for (int column = 0; column < Width; column++)
@@ -68,6 +55,19 @@ namespace Refactor
             x = -1;
             y = -1;
             return false;
+        }
+
+        // 보드의 기본 제약만 확인한다. 소환 범위 등의 규칙은 처리기에서 검사한다.
+        internal bool TryPlace(int unitId, int x, int y)
+        {
+            if (!Contains(x, y) || occupants[x, y].HasValue)
+                return false;
+
+            if (TryGetPosition(unitId, out _, out _))
+                return false;
+
+            occupants[x, y] = unitId;
+            return true;
         }
 
         internal bool TryMove(int unitId, int x, int y)

@@ -16,11 +16,11 @@ namespace Refactor
         // 효과를 발동시킨 이벤트. 기동 효과면 null.
         public GameEvent TriggerEvent { get; }
 
-        // 상태 변경 입구. 발동 가능 여부만 확인할 때는 null이다.
-        internal Processor Processor { get; }
-
         // 고른 대상. 해결 도중 보드를 떠나도 위치와 원래 카드를 읽을 수 있게 고른 시점의 값을 둔다.
         public IReadOnlyList<TargetUnit> Targets { get; internal set; } = Array.Empty<TargetUnit>();
+
+        // 상태 변경 입구. 발동 가능 여부만 확인할 때는 null이다.
+        internal Processor Processor { get; }
 
         internal EffectContext(GameState state, CardDatabase cards, Processor processor,
             int sourceUnitId, string sourceCardId, int ownerId, GameEvent triggerEvent)

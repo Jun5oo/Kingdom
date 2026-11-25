@@ -17,7 +17,7 @@ namespace Refactor
         // JSON의 "type" 이름 → 구체 클래스. 새 부품 클래스를 만들면 여기에 등록한다.
         private static readonly Dictionary<Type, Dictionary<string, Type>> TypesByBase = new()
         {
-            [typeof(MovementRule)] = new()
+            [typeof(MovementRule)] = new Dictionary<string, Type>
             {
                 ["Line"] = typeof(LineMovementRule),
                 ["Knight"] = typeof(KnightMovementRule),

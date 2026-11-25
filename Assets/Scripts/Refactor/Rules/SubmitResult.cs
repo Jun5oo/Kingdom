@@ -17,7 +17,7 @@ namespace Refactor
             Events = events;
         }
 
-        public static SubmitResult Ok(IReadOnlyList<GameEvent> events) => new(true, string.Empty, events);
-        public static SubmitResult Fail(string reason) => new(false, reason, Array.Empty<GameEvent>());
+        public static SubmitResult Ok(IReadOnlyList<GameEvent> events) => new SubmitResult(true, string.Empty, events);
+        public static SubmitResult Fail(string reason) => new SubmitResult(false, reason, Array.Empty<GameEvent>());
     }
 }
