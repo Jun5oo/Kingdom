@@ -9,7 +9,8 @@ namespace Refactor
         public int Id { get; }
         public string CardDefinitionId { get; }
         public int OwnerId { get; internal set; }
-        public int CP { get; internal set; }
+        // 기본 CP. 상태 이상과 지속 효과를 더한 현재 CP는 GameEngine.GetCP로 계산한다.
+        public int BaseCP { get; }
         public int MaxHP { get; internal set; }
         public int CurrentHP { get; internal set; }
         // 무덤처럼 다른 유닛이 죽은 자리에서 생겨났으면 그 유닛의 카드 ID. 부활할 때 쓴다.
@@ -23,7 +24,7 @@ namespace Refactor
         public IReadOnlyList<Status> Statuses => statuses;
 
         // 위치는 BoardState에서만, 레벨은 카드 정의에서만 보관한다.
-        public UnitState(int id, string cardDefinitionId, int ownerId, int cp, int maxHP, string originCardId = null)
+        public UnitState(int id, string cardDefinitionId, int ownerId, int baseCP, int maxHP, string originCardId = null)
         {
             if (string.IsNullOrWhiteSpace(cardDefinitionId))
                 throw new ArgumentException("카드 ID가 필요합니다.", nameof(cardDefinitionId));
@@ -34,7 +35,7 @@ namespace Refactor
             Id = id;
             CardDefinitionId = cardDefinitionId;
             OwnerId = ownerId;
-            CP = cp;
+            BaseCP = baseCP;
             MaxHP = maxHP;
             CurrentHP = maxHP;
             OriginCardId = originCardId;

@@ -13,6 +13,8 @@ namespace Refactor
         private readonly CardDatabase cards;
         // 진행 중인 Submit의 이벤트. Submit이 끝날 때 TakeEvents로 꺼낸다.
         private List<GameEvent> events = new();
+        // Submit이 시작될 때의 유닛별 CP. 오라처럼 이벤트 없이 바뀐 CP를 TakeEvents에서 찾아 알린다.
+        private Dictionary<int, int> cpAtSubmitStart = new();
 
         public Processor(GameState state, CardDatabase cards)
         {
@@ -23,12 +25,50 @@ namespace Refactor
         // 꺼낸 목록은 결과가 가져가므로 새 목록으로 바꿔, 다음 Submit이 이전 결과를 건드리지 않게 한다.
         public IReadOnlyList<GameEvent> TakeEvents()
         {
+            RaiseCPChanges();
             List<GameEvent> taken = events;
             events = new();
             return taken;
         }
 
         public void Raise(GameEvent gameEvent) => Raise(gameEvent, null);
+
+        // 상태를 바꾸기 전에 부른다. 검증에 실패한 Submit의 기록은 다음 BeginSubmit이 덮어쓴다.
+        public void BeginSubmit()
+        {
+            cpAtSubmitStart = new();
+            foreach (int unitId in state.Units.Keys)
+                cpAtSubmitStart[unitId] = GetCP(unitId);
+        }
+
+        // 상태 이상과 지속 효과의 수치를 모두 더한 뒤 0 미만이면 0으로 한다. 합을 먼저 내므로 붙은 순서와 결과가 무관하다.
+        // shortcut: 조회할 때마다 보드의 지속 효과를 모두 Lua로 확인한다. 유닛이나 지속 효과가 많아져 느려지면 Submit 단위로 캐시한다.
+        public int GetCP(int unitId)
+        {
+            UnitState unit = state.Units[unitId];
+            int cp = unit.BaseCP;
+            foreach (Status status in unit.Statuses)
+                cp += status.BonusCP;
+
+            foreach (UnitState source in state.Units.Values)
+            {
+                // 사망 처리를 기다리는 유닛의 지속 효과는 이미 꺼진 것으로 본다.
+                if (state.IsDying(source))
+                    continue;
+
+                foreach (EffectData effect in GetEffects(source))
+                {
+                    if (effect.Type != EffectType.Continuous)
+                        continue;
+
+                    EffectContext context = new(state, cards, null, source.Id, source.CardDefinitionId, source.OwnerId, null);
+                    if (effect.CanExecute(context) && effect.GetCandidates(context).Contains(unitId))
+                        cp += effect.CP;
+                }
+            }
+
+            return Math.Max(0, cp);
+        }
 
         // 큐를 모두 처리한 뒤 사망자를 한꺼번에 처리한다. 사망 트리거가 생기면 반복한다(§4.3, 하스스톤식).
         // 선택 대기가 생기면 멈추고, 선택 응답을 받은 Submit에서 다시 부른다.
@@ -104,12 +144,12 @@ namespace Refactor
         }
 
         // 같은 유닛에 여러 개가 쌓인다(§5.3).
-        public void AddStatus(int unitId, StatusType? type, int? turns, int ownerId, string sourceCardId, EffectData onExpire)
+        public void AddStatus(int unitId, StatusType? type, int bonusCP, int? turns, int ownerId, int sourceUnitId, string sourceCardId, EffectData onExpire)
         {
             if (!state.Units.TryGetValue(unitId, out UnitState unit))
                 return;
 
-            Status status = new(state.AllocateStatusId(), type, turns, ownerId, sourceCardId, onExpire);
+            Status status = new(state.AllocateStatusId(), type, turns, bonusCP, ownerId, sourceUnitId, sourceCardId, onExpire);
             unit.AddStatus(status);
             Raise(new StatusAdded(unitId, status.Id, type, turns, sourceCardId));
         }
@@ -166,7 +206,7 @@ namespace Refactor
             if (!state.TrySpawnUnit(unit, position.X, position.Y))
                 throw new InvalidOperationException($"유닛을 소환할 수 없습니다: {cardId}");
 
-            Raise(new UnitSummoned(unit.Id, cardId, ownerId, position, unit.CP, unit.CurrentHP));
+            Raise(new UnitSummoned(unit.Id, cardId, ownerId, position, GetCP(unit.Id), unit.CurrentHP));
             return true;
         }
 
@@ -213,6 +253,28 @@ namespace Refactor
                         state.TriggerQueue.Enqueue(new PendingEffect(unit.Id, unit.CardDefinitionId, unit.OwnerId, effects[i], i, gameEvent));
                 }
             }
+        }
+
+        // Submit 시작 때(그 사이 소환된 유닛은 소환 이벤트의 값)와 지금 CP가 다른 유닛을 나온 순서로 알린다. 중간 값은 알리지 않는다.
+        private void RaiseCPChanges()
+        {
+            Dictionary<int, int> reported = new(cpAtSubmitStart);
+            foreach (GameEvent gameEvent in events)
+            {
+                if (gameEvent is UnitSummoned summoned)
+                    reported[summoned.UnitId] = summoned.CP;
+            }
+
+            List<int> unitIds = new(state.Units.Keys);
+            unitIds.Sort();
+            foreach (int unitId in unitIds)
+            {
+                int cp = GetCP(unitId);
+                if (reported.TryGetValue(unitId, out int before) && before != cp)
+                    Raise(new UnitCPChanged(unitId, cp));
+            }
+
+            cpAtSubmitStart = new();
         }
 
         // 큐에서 기다리는 동안 보드를 떠난 유닛의 트리거는 발동하지 않는다. 자기 사망에 반응하는 트리거는 예외다.

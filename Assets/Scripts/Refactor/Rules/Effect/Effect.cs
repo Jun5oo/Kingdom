@@ -32,14 +32,16 @@ namespace Refactor
         public int ActionResourceCost { get; }
         // 고를 개수. 후보가 이보다 적으면 후보 수만큼 고른다.
         public int TargetCount { get; }
+        // 지속 효과가 target 유닛에 더하는 CP. 다른 종류는 0이다.
+        public int CP { get; }
 
-        // Lua 함수. 조건과 대상은 없으면 null이다.
+        // Lua 함수. 조건과 대상은 없으면 null이다. 지속 효과에는 operation이 없다.
         private readonly Closure condition;
         private readonly Closure target;
         private readonly Closure operation;
 
         internal EffectData(EffectType type, EventTrigger trigger, int usesPerTurn,
-            int abilityResourceCost, int actionResourceCost, int targetCount,
+            int abilityResourceCost, int actionResourceCost, int targetCount, int cp,
             Closure condition, Closure target, Closure operation)
         {
             Type = type;
@@ -47,10 +49,14 @@ namespace Refactor
             UsesPerTurn = usesPerTurn;
             AbilityResourceCost = abilityResourceCost;
             ActionResourceCost = actionResourceCost;
+            if (type != EffectType.Continuous && operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
             TargetCount = targetCount;
+            CP = cp;
             this.condition = condition;
             this.target = target;
-            this.operation = operation ?? throw new ArgumentNullException(nameof(operation));
+            this.operation = operation;
         }
 
         // 상태를 바꾸지 않는다.
@@ -72,6 +78,7 @@ namespace Refactor
         }
 
         // 대상이 없는 효과면 null. 상태를 바꾸지 않고, 필드에 나온 순서(유닛 ID)로 정렬해 돌려준다.
+        // 지속 효과에서는 고를 후보가 아니라 적용받는 유닛 목록이다.
         public List<int> GetCandidates(EffectContext context)
         {
             if (target == null)

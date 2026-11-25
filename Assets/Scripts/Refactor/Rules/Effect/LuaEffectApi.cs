@@ -15,7 +15,7 @@ namespace Refactor
         private readonly bool readOnly;
 
         // addStatus 테이블에 쓸 수 있는 항목. 오타 난 항목이 조용히 무시되지 않게 한다.
-        private static readonly HashSet<string> StatusKeys = new() { "type", "turns", "onExpire" };
+        private static readonly HashSet<string> StatusKeys = new() { "type", "cp", "turns", "onExpire" };
 
         // 등록한 타입만 Lua로 넘길 수 있다. 첫 인스턴스를 만들기 전에 한 번 실행된다.
         static LuaEffectApi() => UserData.RegisterType<LuaEffectApi>();
@@ -101,8 +101,11 @@ namespace Refactor
         {
             Processor processor = Processor;
             // shortcut: 주인이 떠났으면 CP를 읽을 수 없어 건너뛴다. 사망 시 발동하는 범위 피해 카드가 생기면 떠나기 직전 CP를 쓰도록 바꾼다.
-            if (!context.State.Units.TryGetValue(context.SourceUnitId, out UnitState source))
+            if (!context.State.Units.ContainsKey(context.SourceUnitId))
                 return;
+
+            // 범위 안의 유닛마다 다시 계산하지 않고 시작할 때의 CP로 모두 때린다.
+            int sourceCP = processor.GetCP(context.SourceUnitId);
 
             CombatResolver combat = new();
             foreach (DynValue offset in offsets.Values)
@@ -121,14 +124,14 @@ namespace Refactor
                 if (!PlayerRelation.Opponent.Matches(unit.OwnerId, context.OwnerId) || context.State.IsDying(unit))
                     continue;
 
-                processor.Damage(unit.Id, combat.CalculateDamage(source, unit), context.OwnerId);
+                processor.Damage(unit.Id, combat.CalculateDamage(sourceCP, unit), context.OwnerId);
             }
         }
 
         // 즉시 제거하지 않고 사망 일괄 처리에서 원인 Destroy로 처리한다. 보호막으로 막을 수 없다.
         public void Destroy(int unitId) => Processor.Destroy(unitId, context.OwnerId);
 
-        // 상태 이상을 건다(§5.3). spec = { type, turns, onExpire }. 같은 유닛에 여러 개가 쌓인다.
+        // 상태 이상을 건다(§5.3). spec = { type, cp, turns, onExpire }. 같은 유닛에 여러 개가 쌓인다.
         // onExpire는 턴 만료 때만 실행되며, 그때 ctx.sourceUnitId는 상태 이상이 붙은 유닛이다.
         public void AddStatus(int unitId, Table spec)
         {
@@ -148,6 +151,15 @@ namespace Refactor
                 type = parsed;
             }
 
+            int cp = 0;
+            DynValue cpValue = spec.Get("cp");
+            if (!cpValue.IsNil())
+            {
+                if (cpValue.Type != DataType.Number || cpValue.Number != Math.Floor(cpValue.Number))
+                    throw new InvalidOperationException("카드 스크립트 오류: cp는 정수여야 합니다.");
+                cp = (int)cpValue.Number;
+            }
+
             int? turns = null;
             DynValue turnsValue = spec.Get("turns");
             if (!turnsValue.IsNil())
@@ -164,13 +176,13 @@ namespace Refactor
 
             if (onExpire != null && !turns.HasValue)
                 throw new InvalidOperationException("카드 스크립트 오류: onExpire가 있으면 turns가 필요합니다.");
-            if (!type.HasValue && onExpire == null)
-                throw new InvalidOperationException("카드 스크립트 오류: type도 onExpire도 없는 상태 이상은 아무 일도 하지 않습니다.");
+            if (!type.HasValue && cp == 0 && onExpire == null)
+                throw new InvalidOperationException("카드 스크립트 오류: type, cp, onExpire가 모두 없는 상태 이상은 아무 일도 하지 않습니다.");
 
             EffectData expireEffect = onExpire == null
                 ? null
-                : new EffectData(EffectType.Trigger, EventTrigger.None, 0, 0, 0, 1, null, null, onExpire);
-            processor.AddStatus(unitId, type, turns, context.OwnerId, context.SourceCardId, expireEffect);
+                : new EffectData(EffectType.Trigger, EventTrigger.None, 0, 0, 0, 1, 0, null, null, onExpire);
+            processor.AddStatus(unitId, type, cp, turns, context.OwnerId, context.SourceUnitId, context.SourceCardId, expireEffect);
         }
 
         // 고른 대상을 { {unitId, x, y, originCardId}, ... }로 만든다. 고른 시점의 값이라 대상이 보드를 떠나도 읽을 수 있다.

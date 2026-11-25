@@ -27,7 +27,7 @@ namespace Refactor
         // Lua 효과 테이블에 쓸 수 있는 항목. 오타 난 항목이 조용히 무시되지 않게 한다.
         private static readonly HashSet<string> EffectKeys = new()
         {
-            "type", "trigger", "usesPerTurn", "cost", "condition", "target", "targetCount", "operation",
+            "type", "trigger", "usesPerTurn", "cost", "condition", "target", "targetCount", "operation", "cp",
         };
 
         private static readonly HashSet<string> CostKeys = new() { "abilityResource", "actionResource" };
@@ -187,13 +187,27 @@ namespace Refactor
                 actionCost = ParseInt(cost.Table.Get("actionResource"), "cost.actionResource", at, defaultValue: 0, min: 0);
             }
 
-            Closure operation = ParseFunction(table.Get("operation"), "operation", at)
-                ?? throw new InvalidDataException($"{at}: operation 함수가 필요합니다.");
+            Closure target = ParseFunction(table.Get("target"), "target", at);
+            Closure operation = ParseFunction(table.Get("operation"), "operation", at);
+            int cp = ParseInt(table.Get("cp"), "cp", at, defaultValue: 0, min: int.MinValue);
+            // 지속 효과는 실행하지 않고, CP를 조회할 때 target 유닛에 cp를 더한다(§5.2).
+            if (type == EffectType.Continuous)
+            {
+                if (cp == 0 || target == null)
+                    throw new InvalidDataException($"{at}: Continuous 효과에는 0이 아닌 cp와 target 함수가 필요합니다.");
+                if (operation != null)
+                    throw new InvalidDataException($"{at}: Continuous 효과에는 operation을 쓸 수 없습니다.");
+            }
+            else
+            {
+                if (operation == null)
+                    throw new InvalidDataException($"{at}: operation 함수가 필요합니다.");
+                if (cp != 0)
+                    throw new InvalidDataException($"{at}: cp는 Continuous 효과에만 쓸 수 있습니다.");
+            }
 
-            return new EffectData(type, trigger, usesPerTurn, abilityCost, actionCost, targetCount,
-                ParseFunction(table.Get("condition"), "condition", at),
-                ParseFunction(table.Get("target"), "target", at),
-                operation);
+            return new EffectData(type, trigger, usesPerTurn, abilityCost, actionCost, targetCount, cp,
+                ParseFunction(table.Get("condition"), "condition", at), target, operation);
         }
 
         private static T ParseEnum<T>(DynValue value, string name, string at, bool required) where T : struct, Enum

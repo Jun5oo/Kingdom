@@ -82,6 +82,19 @@ namespace Refactor
         }
     }
 
+    // 상태 이상, 지속 효과 등으로 CP가 바뀌었다. 한 Submit에서 유닛마다 최종 값만 한 번 낸다.
+    public sealed class UnitCPChanged : GameEvent
+    {
+        public int UnitId { get; }
+        public int CP { get; }
+
+        public UnitCPChanged(int unitId, int cp)
+        {
+            UnitId = unitId;
+            CP = cp;
+        }
+    }
+
     public sealed class AbilityResourceChanged : GameEvent
     {
         public int PlayerId { get; }

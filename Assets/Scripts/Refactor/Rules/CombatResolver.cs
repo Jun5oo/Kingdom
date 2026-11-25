@@ -49,9 +49,9 @@ namespace Refactor
         }
 
         // 상태를 변경하지 않고 피해량만 계산한다. 실제 반영은 엔진이 담당한다.
-        public int CalculateDamage(UnitState attacker, UnitState defender)
+        public int CalculateDamage(int attackerCP, UnitState defender)
         {
-            return Math.Min(Math.Max(0, attacker.CP), Math.Max(0, defender.CurrentHP));
+            return Math.Min(Math.Max(0, attackerCP), Math.Max(0, defender.CurrentHP));
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Refactor
                     throw new InvalidOperationException($"보드에 없는 유닛입니다: {unit.Id}");
 
                 CreateUnitView(unit.Id, unit.OwnerId, unit.CardDefinitionId, new GridPos(x, y),
-                    unit.CP, unit.MaxHP, unit.CurrentHP);
+                    engine.GetCP(unit.Id), unit.MaxHP, unit.CurrentHP);
             }
 
             foreach (PlayerState player in state.Players.Values)
@@ -185,7 +185,8 @@ namespace Refactor
 
                 case StatusAdded:
                 case StatusRemoved:
-                    // 상태 이상 표시는 아직 없다.
+                case UnitCPChanged:
+                    // 상태 이상과 수치 변화 표시는 7.5단계에서 붙인다.
                     break;
 
                 default:

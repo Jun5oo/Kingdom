@@ -108,6 +108,7 @@ namespace Refactor
         // 모든 행동의 입구. 검증에 실패하면 상태를 변경하지 않는다.
         public SubmitResult Submit(int playerId, GameCommand command)
         {
+            processor.BeginSubmit();
             return command switch
             {
                 MoveCommand move => SubmitMove(playerId, move),
@@ -179,6 +180,9 @@ namespace Refactor
             reason = string.Empty;
             return true;
         }
+
+        // 카드 기본값 + 상태 이상 수치 + 지속 효과 수정치. 0 미만이면 0이다(§5.2).
+        public int GetCP(int unitId) => processor.GetCP(unitId);
 
         // 유닛의 원본 카드 정의를 조회한다. 상태는 변경하지 않는다.
         public bool TryGetUnitCard(int unitId, out CardDefinition card, out string reason)
@@ -259,13 +263,14 @@ namespace Refactor
                 reason = "이미 사망한 유닛입니다.";
                 return false;
             }
-            if (State.Units[attackerId].CP <= 0)
+            if (!TryGetUnitCard(attackerId, out CardDefinition card, out reason))
+                return false;
+
+            if (GetCP(attackerId) <= 0)
             {
                 reason = "공격력이 없어 공격할 수 없습니다.";
                 return false;
             }
-            if (!TryGetUnitCard(attackerId, out CardDefinition card, out reason))
-                return false;
 
             if (!State.Board.TryGetPosition(attackerId, out int fromX, out int fromY) ||
                 !State.Board.TryGetPosition(defenderId, out int targetX, out int targetY))
@@ -460,10 +465,9 @@ namespace Refactor
             if (!CanAttackUnit(playerId, command.AttackerId, command.DefenderId, out string reason))
                 return SubmitResult.Fail(reason);
 
-            UnitState attacker = State.Units[command.AttackerId];
             UnitState defender = State.Units[command.DefenderId];
 
-            processor.Damage(defender.Id, combatResolver.CalculateDamage(attacker, defender), playerId);
+            processor.Damage(defender.Id, combatResolver.CalculateDamage(GetCP(command.AttackerId), defender), playerId);
             processor.ChangeActionResource(playerId, -1);
             processor.RunToCompletion();
             return SubmitResult.Ok(processor.TakeEvents());

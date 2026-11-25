@@ -144,6 +144,29 @@ namespace Kingdom.Tests
               { type = 'Ignition', operation = function(ctx) ctx:addStatus(ctx.sourceUnitId, { type = 'Sheild' }) end },
             }";
 
+        // 카드 ⑤ 공격력 오라: 내 유닛 공격력 +1.
+        private const string AuraLua = @"
+            return {
+              { type = 'Continuous', cp = 1,
+                target = function(ctx) return ctx:findUnits('Self', nil) end },
+            }";
+
+        // 상대 유닛 하나에 2턴 동안 CP -3.
+        private const string WeakenerLua = @"
+            return {
+              { type = 'Ignition', usesPerTurn = 1,
+                target = function(ctx) return ctx:findUnits('Opponent', nil) end,
+                operation = function(ctx, targets)
+                  for _, t in ipairs(targets) do ctx:addStatus(t.unitId, { cp = -3, turns = 2 }) end
+                end },
+            }";
+
+        // 자신에게 영구 CP -20. CP가 0 아래로 내려가지 않는지 확인한다.
+        private const string CursedLua = @"
+            return {
+              { type = 'Ignition', operation = function(ctx) ctx:addStatus(ctx.sourceUnitId, { cp = -20 }) end },
+            }";
+
         private GameEngine engine;
 
         // 상하좌우 1칸을 이동·공격할 수 있는 CP 10 카드.
@@ -181,7 +204,10 @@ namespace Kingdom.Tests
                     .Concat(Card("blessed", "Normal", BlessedLua))
                     .Concat(Card("ticker", "Normal", TickerLua))
                     .Concat(Card("smiter", "Normal", SmiterLua))
-                    .Concat(Card("typo", "Normal", TypoLua))));
+                    .Concat(Card("typo", "Normal", TypoLua))
+                    .Concat(Card("aura", "Normal", AuraLua))
+                    .Concat(Card("weakener", "Normal", WeakenerLua))
+                    .Concat(Card("cursed", "Normal", CursedLua))));
             engine = new GameEngine(new GameState(new PlayerState(1), new PlayerState(2)), database);
             Assert.IsTrue(engine.StartGame(placements, out string reason), reason);
         }
@@ -548,6 +574,86 @@ namespace Kingdom.Tests
             System.InvalidOperationException exception = Assert.Throws<System.InvalidOperationException>(
                 () => engine.Submit(1, new ActivateEffectCommand(1, 0)));
             StringAssert.Contains("Sheild", exception.Message);
+        }
+
+        [Test]
+        public void AuraRaisesAllyCPOnly()
+        {
+            StartGame(Place(1, "aura", 0, 0), Place(1, "fighter", 3, 3), Place(2, "fighter", 3, 4));
+
+            Assert.AreEqual(11, engine.GetCP(1));
+            Assert.AreEqual(11, engine.GetCP(2));
+            Assert.AreEqual(10, engine.GetCP(3));
+        }
+
+        [Test]
+        public void AurasStack()
+        {
+            StartGame(Place(1, "aura", 0, 0), Place(1, "aura", 6, 0), Place(1, "fighter", 3, 3), Place(2, "fighter", 6, 6));
+
+            Assert.AreEqual(12, engine.GetCP(3));
+        }
+
+        [Test]
+        public void AuraDeathRemovesBonusAndReportsChange()
+        {
+            // 1 오라, 2 아군, 3 상대
+            StartGame(Place(1, "aura", 3, 3), Place(1, "fighter", 0, 0), Place(2, "fighter", 3, 4));
+            SubmitOk(1, new EndTurnCommand());
+
+            SubmitResult result = engine.Submit(2, new AttackCommand(3, 1));
+
+            Assert.IsTrue(result.Succeeded, result.Reason);
+            Assert.AreEqual(10, engine.GetCP(2));
+            UnitCPChanged changed = result.Events.OfType<UnitCPChanged>().Single();
+            Assert.AreEqual(2, changed.UnitId);
+            Assert.AreEqual(10, changed.CP);
+        }
+
+        [Test]
+        public void CPStatusAppliesUntilExpired()
+        {
+            StartGame(Place(1, "weakener", 3, 3), Place(2, "fighter", 3, 4));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+
+            SubmitResult chosen = engine.Submit(1, new ChooseCommand(2));
+
+            Assert.IsTrue(chosen.Succeeded, chosen.Reason);
+            UnitCPChanged weakened = chosen.Events.OfType<UnitCPChanged>().Single();
+            Assert.AreEqual(2, weakened.UnitId);
+            Assert.AreEqual(7, weakened.CP);
+
+            SubmitOk(1, new EndTurnCommand());
+            SubmitResult attack = engine.Submit(2, new AttackCommand(2, 1));
+            Assert.AreEqual(7, attack.Events.OfType<UnitDamaged>().Single().Amount);
+
+            // 상태 이상은 붙은 유닛의 주인(플레이어 2) 턴이 두 번 시작되면 만료된다.
+            SubmitOk(2, new EndTurnCommand());
+            SubmitResult expired = engine.Submit(1, new EndTurnCommand());
+
+            Assert.AreEqual(10, expired.Events.OfType<UnitCPChanged>().Single().CP);
+            Assert.AreEqual(10, engine.GetCP(2));
+        }
+
+        [Test]
+        public void CPDoesNotGoBelowZero()
+        {
+            StartGame(Place(1, "cursed", 3, 3), Place(2, "fighter", 3, 4));
+            SubmitOk(1, new ActivateEffectCommand(1, 0));
+
+            Assert.AreEqual(0, engine.GetCP(1));
+            Assert.IsFalse(engine.CanAttackUnit(1, 1, 2, out string reason));
+            StringAssert.Contains("공격력", reason);
+        }
+
+        [TestCase("return { { type = 'Continuous', target = function(ctx) return {} end } }", "cp")]
+        [TestCase("return { { type = 'Continuous', cp = 1, target = function(ctx) return {} end, operation = function(ctx) end } }", "operation")]
+        [TestCase("return { { type = 'Ignition', cp = 1, operation = function(ctx) end } }", "Continuous")]
+        public void InvalidContinuousEffectFailsToLoad(string lua, string expected)
+        {
+            InvalidDataException exception = LoadFails(lua);
+
+            StringAssert.Contains(expected, exception.Message);
         }
     }
 }
